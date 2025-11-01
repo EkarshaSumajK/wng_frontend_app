@@ -1,0 +1,1057 @@
+import { 
+  Student, 
+  Case, 
+  Assessment, 
+  AssessmentResponse, 
+  AIRecommendation, 
+  Activity, 
+  Observation, 
+  CalendarEvent, 
+  Resource,
+  SchoolMetrics,
+  ClassMetrics,
+  RiskAlert,
+  ConsentRecord,
+  SessionNote,
+  Goal,
+  AssessmentTemplate,
+  DailyBooster
+} from '@/types';
+
+// Mock Students
+export const mockStudents: Student[] = [
+  {
+    id: "s1",
+    name: "Alex Thompson",
+    rollNumber: "2024001",
+    grade: "8A",
+    class: "Mathematics",
+    riskLevel: "high",
+    wellbeingScore: 65,
+    lastAssessment: "2024-01-18",
+    consentStatus: "granted",
+    dateOfBirth: "2010-03-15",
+    parentContact: "sarah.thompson@email.com",
+    notes: "Showing signs of social anxiety, difficulty with peer interactions"
+  },
+  {
+    id: "s2",
+    name: "Jamie Rodriguez",
+    rollNumber: "2024002",
+    grade: "8A",
+    class: "English",
+    riskLevel: "high",
+    wellbeingScore: 68,
+    lastAssessment: "2024-01-19",
+    consentStatus: "granted",
+    dateOfBirth: "2010-07-22",
+    parentContact: "maria.rodriguez@email.com"
+  },
+  {
+    id: "s3",
+    name: "Sam Chen",
+    rollNumber: "2024003",
+    grade: "8B",
+    class: "Mathematics",
+    riskLevel: "medium",
+    wellbeingScore: 75,
+    lastAssessment: "2024-01-17",
+    consentStatus: "granted",
+    dateOfBirth: "2010-11-08",
+    parentContact: "david.chen@email.com"
+  },
+  {
+    id: "s4",
+    name: "Emma Wilson",
+    rollNumber: "2024004",
+    grade: "7A",
+    class: "Science",
+    riskLevel: "low",
+    wellbeingScore: 88,
+    lastAssessment: "2024-01-20",
+    consentStatus: "granted",
+    dateOfBirth: "2011-02-14",
+    parentContact: "lisa.wilson@email.com"
+  },
+  {
+    id: "s5",
+    name: "Jordan Lee",
+    rollNumber: "2024005",
+    grade: "9A",
+    class: "History",
+    riskLevel: "medium",
+    wellbeingScore: 72,
+    lastAssessment: "2024-01-16",
+    consentStatus: "pending",
+    dateOfBirth: "2009-09-30",
+    parentContact: "michael.lee@email.com"
+  },
+  {
+    id: "s6",
+    name: "Maya Patel",
+    rollNumber: "2024006",
+    grade: "9A",
+    class: "Science",
+    riskLevel: "low",
+    wellbeingScore: 92,
+    lastAssessment: "2024-01-21",
+    consentStatus: "granted",
+    dateOfBirth: "2009-05-12",
+    parentContact: "priya.patel@email.com"
+  },
+  {
+    id: "s7",
+    name: "Lucas Brown",
+    rollNumber: "2024007",
+    grade: "8B",
+    class: "English",
+    riskLevel: "medium",
+    wellbeingScore: 78,
+    lastAssessment: "2024-01-15",
+    consentStatus: "granted",
+    dateOfBirth: "2010-08-19",
+    parentContact: "jennifer.brown@email.com"
+  },
+  {
+    id: "s8",
+    name: "Zoe Martinez",
+    rollNumber: "2024008",
+    grade: "7A",
+    class: "Mathematics",
+    riskLevel: "low",
+    wellbeingScore: 85,
+    lastAssessment: "2024-01-19",
+    consentStatus: "granted",
+    dateOfBirth: "2011-01-03",
+    parentContact: "carlos.martinez@email.com"
+  }
+];
+
+// Mock Cases
+export const mockCases: Case[] = [
+  {
+    id: "1",
+    studentId: "s1",
+    studentName: "Alex Thompson",
+    priority: "urgent",
+    status: "in-progress",
+    assignedCounsellor: "Dr. Sarah Johnson",
+    createdAt: "2024-01-15",
+    updatedAt: "2024-01-20",
+    summary: "Student showing signs of severe anxiety and social withdrawal",
+    nextSession: "2024-01-22T10:30:00Z"
+  },
+  {
+    id: "2",
+    studentId: "s2",
+    studentName: "Jamie Rodriguez",
+    priority: "high",
+    status: "open",
+    assignedCounsellor: "Dr. Sarah Johnson",
+    createdAt: "2024-01-18",
+    updatedAt: "2024-01-19",
+    summary: "Academic performance decline with behavioral concerns"
+  },
+  {
+    id: "3",
+    studentId: "s3",
+    studentName: "Sam Chen",
+    priority: "medium",
+    status: "in-progress",
+    assignedCounsellor: "Dr. Sarah Johnson",
+    createdAt: "2024-01-10",
+    updatedAt: "2024-01-20",
+    summary: "Peer relationship difficulties affecting classroom participation"
+  }
+];
+
+// Mock Session Notes
+export const mockSessionNotes: SessionNote[] = [
+  {
+    id: "sn1",
+    caseId: "1",
+    date: "2024-01-20",
+    duration: 45,
+    type: "individual",
+    summary: "Alex showed improvement in expressing emotions. Discussed coping strategies for anxiety.",
+    interventions: ["Deep breathing exercises", "Cognitive restructuring"],
+    nextSteps: ["Practice anxiety management techniques", "Schedule parent meeting"],
+    counsellorId: "c1"
+  },
+  {
+    id: "sn2",
+    caseId: "1",
+    date: "2024-01-18",
+    duration: 50,
+    type: "assessment",
+    summary: "Initial assessment completed. High anxiety scores, some depressive symptoms.",
+    interventions: ["GAD-7 assessment", "PHQ-9 screening"],
+    nextSteps: ["Develop treatment plan", "Begin CBT techniques"],
+    counsellorId: "c1"
+  }
+];
+
+// Mock Goals
+export const mockGoals: Goal[] = [
+  {
+    id: "g1",
+    caseId: "1",
+    title: "Reduce social anxiety symptoms",
+    description: "Work on building confidence in social situations through gradual exposure",
+    targetDate: "2024-03-15",
+    status: "in-progress",
+    progress: 35,
+    createdAt: "2024-01-15"
+  },
+  {
+    id: "g2",
+    caseId: "1",
+    title: "Improve classroom participation",
+    description: "Increase voluntary participation in class discussions and activities",
+    targetDate: "2024-02-28",
+    status: "in-progress",
+    progress: 60,
+    createdAt: "2024-01-15"
+  }
+];
+
+// Mock Assessments
+export const mockAssessments: Assessment[] = [
+  {
+    id: "a1",
+    title: "Student Wellbeing Check",
+    description: "Comprehensive wellbeing assessment covering emotional, social, and academic aspects",
+    type: "wellbeing",
+    questions: [
+      {
+        id: "q1",
+        question: "How would you rate your overall mood this week?",
+        type: "scale",
+        scaleRange: { min: 1, max: 5, labels: ["Very Poor", "Poor", "Okay", "Good", "Excellent"] },
+        required: true
+      },
+      {
+        id: "q2",
+        question: "Have you felt anxious or worried recently?",
+        type: "multiple-choice",
+        options: ["Never", "Rarely", "Sometimes", "Often", "Always"],
+        required: true
+      }
+    ],
+    targetGrades: ["7", "8", "9"],
+    estimatedTime: 15,
+    isActive: true,
+    createdBy: "Dr. Sarah Johnson",
+    createdAt: "2024-01-10"
+  },
+  {
+    id: "a2",
+    title: "Risk Assessment Screening",
+    description: "Brief screening tool to identify students who may need additional support",
+    type: "risk",
+    questions: [
+      {
+        id: "q3",
+        question: "Do you feel safe at school?",
+        type: "yes-no",
+        required: true
+      },
+      {
+        id: "q4",
+        question: "How often do you feel overwhelmed by schoolwork?",
+        type: "scale",
+        scaleRange: { min: 1, max: 4, labels: ["Never", "Sometimes", "Often", "Always"] },
+        required: true
+      }
+    ],
+    targetGrades: ["6", "7", "8", "9", "10"],
+    estimatedTime: 10,
+    isActive: true,
+    createdBy: "Dr. Sarah Johnson",
+    createdAt: "2024-01-05"
+  }
+];
+
+// Mock Assessment Responses
+export const mockAssessmentResponses: AssessmentResponse[] = [
+  {
+    id: "ar1",
+    assessmentId: "a1",
+    studentId: "s1",
+    studentName: "Alex Thompson",
+    responses: [
+      { questionId: "q1", answer: 2 },
+      { questionId: "q2", answer: "Often" }
+    ],
+    score: 65,
+    riskLevel: "high",
+    completedAt: "2024-01-18T14:30:00Z",
+    reviewedBy: "Dr. Sarah Johnson",
+    reviewedAt: "2024-01-18T16:00:00Z"
+  },
+  {
+    id: "ar2",
+    assessmentId: "a2",
+    studentId: "s3",
+    studentName: "Sam Chen",
+    responses: [
+      { questionId: "q3", answer: true },
+      { questionId: "q4", answer: 2 }
+    ],
+    score: 75,
+    riskLevel: "medium",
+    completedAt: "2024-01-17T11:15:00Z"
+  }
+];
+
+// Mock AI Recommendations
+export const mockAIRecommendations: AIRecommendation[] = [
+  {
+    id: "ai1",
+    type: "intervention",
+    confidence: "high",
+    rationale: "Pattern analysis shows consistent anxiety indicators across multiple assessments. Early intervention recommended.",
+    recommendation: "Consider implementing cognitive behavioral therapy techniques with Alex Thompson within the next week.",
+    modelVersion: "WellNest-AI-v2.3",
+    createdAt: "2024-01-20T09:00:00Z",
+    isReviewed: false,
+    relatedStudentId: "s1",
+    relatedCaseId: "1"
+  },
+  {
+    id: "ai2",
+    type: "assessment",
+    confidence: "medium",
+    rationale: "Student shows declining academic performance alongside mood indicators. Additional screening recommended.",
+    recommendation: "Schedule comprehensive academic and emotional assessment for Jamie Rodriguez within 5 days.",
+    modelVersion: "WellNest-AI-v2.3",
+    createdAt: "2024-01-19T15:30:00Z",
+    isReviewed: false,
+    relatedStudentId: "s2"
+  },
+  {
+    id: "ai3",
+    type: "referral",
+    confidence: "high",
+    rationale: "Severity of symptoms and risk factors indicate need for external specialist consultation.",
+    recommendation: "Refer Alex Thompson to external child psychologist for specialized anxiety treatment.",
+    modelVersion: "WellNest-AI-v2.3",
+    createdAt: "2024-01-20T11:45:00Z",
+    isReviewed: true,
+    reviewedBy: "Dr. Sarah Johnson",
+    relatedStudentId: "s1",
+    relatedCaseId: "1"
+  }
+];
+
+// Mock Activities - Expanded
+export const mockActivities: Activity[] = [
+  {
+    id: "act1",
+    title: "Mindful Breathing Circle",
+    description: "A calming group activity focusing on deep breathing and mindfulness techniques",
+    type: "mindfulness",
+    duration: 20,
+    targetGrade: ["6", "7", "8"],
+    materials: ["Comfortable seating", "Soft music", "Timer"],
+    instructions: [
+      "Form a circle with students",
+      "Guide through 5 minutes of deep breathing",
+      "Practice mindfulness observation",
+      "Share experiences in pairs"
+    ],
+    objectives: ["Reduce stress and anxiety", "Improve emotional regulation", "Build mindfulness skills"],
+    createdBy: "Michael Chen",
+    createdAt: "2024-01-15"
+  },
+  {
+    id: "act2",
+    title: "Emotion Check-In Wheel",
+    description: "Interactive activity to help students identify and express their emotions",
+    type: "emotional-regulation",
+    duration: 15,
+    targetGrade: ["5", "6", "7"],
+    materials: ["Emotion wheel printouts", "Colored pencils", "Worksheet"],
+    instructions: [
+      "Form a circle with students",
+      "Guide through 5 minutes of deep breathing",
+      "Practice mindfulness observation",
+      "Share experiences in pairs"
+    ],
+    objectives: ["Increase emotional awareness", "Improve emotional vocabulary", "Encourage peer support"],
+    createdBy: "Dr. Sarah Johnson",
+    createdAt: "2024-01-12"
+  },
+  {
+    id: "act3",
+    title: "Gratitude Journaling",
+    description: "Daily practice of writing down things students are grateful for",
+    type: "mindfulness",
+    duration: 10,
+    targetGrade: ["7", "8", "9", "10"],
+    materials: ["Journals", "Pens", "Gratitude prompts"],
+    instructions: ["Introduce concept of gratitude", "Provide prompts", "Allow quiet writing time", "Optional sharing"],
+    objectives: ["Build positive mindset", "Improve emotional wellbeing", "Develop reflection skills"],
+    createdBy: "Michael Chen",
+    createdAt: "2024-01-10"
+  },
+  {
+    id: "act4",
+    title: "Conflict Resolution Role-Play",
+    description: "Students practice resolving conflicts through guided scenarios",
+    type: "social-skills",
+    duration: 30,
+    targetGrade: ["6", "7", "8"],
+    materials: ["Scenario cards", "Props (optional)", "Reflection sheets"],
+    instructions: ["Divide into groups", "Present conflict scenarios", "Role-play resolutions", "Discuss strategies"],
+    objectives: ["Develop problem-solving skills", "Improve communication", "Build empathy"],
+    createdBy: "Michael Chen",
+    createdAt: "2024-01-08"
+  },
+  {
+    id: "act5",
+    title: "Peer Support Circles",
+    description: "Small group sessions where students support each other",
+    type: "social-skills",
+    duration: 25,
+    targetGrade: ["8", "9", "10"],
+    materials: ["Circle seating", "Discussion prompts", "Ground rules poster"],
+    instructions: ["Establish group norms", "Use talking stick", "Share experiences", "Practice active listening"],
+    objectives: ["Build community", "Develop empathy", "Reduce isolation"],
+    createdBy: "Dr. Sarah Johnson",
+    createdAt: "2024-01-05"
+  },
+  {
+    id: "act6",
+    title: "Stress Ball Creation Workshop",
+    description: "Students make their own stress relief tools",
+    type: "emotional-regulation",
+    duration: 20,
+    targetGrade: ["5", "6", "7"],
+    materials: ["Balloons", "Flour/rice", "Funnels", "Markers"],
+    instructions: ["Demonstrate technique", "Students create balls", "Discuss stress management", "Practice using them"],
+    objectives: ["Provide coping tools", "Teach stress management", "Encourage creativity"],
+    createdBy: "Michael Chen",
+    createdAt: "2024-01-03"
+  },
+  {
+    id: "act7",
+    title: "Team Building Challenge",
+    description: "Cooperative games that require teamwork and communication",
+    type: "team-building",
+    duration: 35,
+    targetGrade: ["7", "8", "9"],
+    materials: ["Various props", "Challenge cards", "Timer", "Prizes (optional)"],
+    instructions: ["Explain challenge", "Form teams", "Monitor progress", "Debrief lessons learned"],
+    objectives: ["Build cooperation", "Improve communication", "Develop leadership"],
+    createdBy: "Michael Chen",
+    createdAt: "2024-01-02"
+  },
+  {
+    id: "act8",
+    title: "Growth Mindset Workshop",
+    description: "Interactive session teaching students about growth vs fixed mindset",
+    type: "academic-support",
+    duration: 25,
+    targetGrade: ["8", "9", "10"],
+    materials: ["Presentation slides", "Worksheets", "Brain plasticity video"],
+    instructions: ["Present concepts", "Show video", "Group discussion", "Personal goal setting"],
+    objectives: ["Change perspective on challenges", "Build resilience", "Improve academic confidence"],
+    createdBy: "Dr. Sarah Johnson",
+    createdAt: "2024-01-01"
+  },
+  {
+    id: "act9",
+    title: "Positive Affirmations Practice",
+    description: "Daily routine of speaking positive statements about oneself",
+    type: "emotional-regulation",
+    duration: 10,
+    targetGrade: ["5", "6", "7", "8"],
+    materials: ["Affirmation cards", "Mirror", "Journal"],
+    instructions: ["Introduce concept", "Model affirmations", "Students practice", "Write personal affirmations"],
+    objectives: ["Build self-esteem", "Combat negative self-talk", "Develop positive identity"],
+    createdBy: "Michael Chen",
+    createdAt: "2023-12-28"
+  },
+  {
+    id: "act10",
+    title: "Empathy Building Exercises",
+    description: "Activities designed to help students understand others' perspectives",
+    type: "social-skills",
+    duration: 30,
+    targetGrade: ["7", "8", "9"],
+    materials: ["Perspective cards", "Emotion photos", "Discussion prompts"],
+    instructions: ["Present scenarios", "Discuss different viewpoints", "Practice perspective-taking", "Reflect on learning"],
+    objectives: ["Develop empathy", "Reduce bullying", "Improve relationships"],
+    createdBy: "Dr. Sarah Johnson",
+    createdAt: "2023-12-25"
+  }
+];
+
+// Mock Assessment Templates
+export const mockAssessmentTemplates: AssessmentTemplate[] = [
+  {
+    id: "at1",
+    title: "Classroom Behavior Checklist",
+    description: "Comprehensive checklist for observing and rating student behavior in classroom settings",
+    category: "behavioral",
+    focus: "On-task behavior, peer interactions, emotional regulation",
+    format: "15-item checklist with 5-point rating scale",
+    duration: 15,
+    targetGrades: ["6", "7", "8", "9", "10"],
+    itemsCount: 15,
+    lastUsed: "2024-01-18"
+  },
+  {
+    id: "at2",
+    title: "Social Skills Assessment",
+    description: "Evaluate student communication, cooperation, and conflict resolution abilities",
+    category: "behavioral",
+    focus: "Communication, cooperation, empathy, conflict resolution",
+    format: "Observation-based rubric with behavioral indicators",
+    duration: 20,
+    targetGrades: ["5", "6", "7", "8"],
+    itemsCount: 12,
+    lastUsed: "2024-01-15"
+  },
+  {
+    id: "at3",
+    title: "Emotional Regulation Scale",
+    description: "Assess student's ability to manage emotions and respond to stressors",
+    category: "behavioral",
+    focus: "Self-awareness, impulse control, stress management",
+    format: "Teacher-rated questionnaire with scenario-based items",
+    duration: 10,
+    targetGrades: ["5", "6", "7", "8", "9", "10"],
+    itemsCount: 10,
+    lastUsed: "2024-01-20"
+  },
+  {
+    id: "at4",
+    title: "Attention and Focus Assessment",
+    description: "Measure student's attention span, distractibility, and task completion",
+    category: "behavioral",
+    focus: "Sustained attention, distractibility, task completion",
+    format: "Structured observation form with frequency ratings",
+    duration: 15,
+    targetGrades: ["4", "5", "6", "7", "8", "9"],
+    itemsCount: 14,
+    lastUsed: "2024-01-12"
+  },
+  {
+    id: "at5",
+    title: "Learning Style Inventory",
+    description: "Identify student's preferred learning modalities and study approaches",
+    category: "cognitive",
+    focus: "Visual, auditory, kinesthetic preferences",
+    format: "20-item self-report questionnaire",
+    duration: 15,
+    targetGrades: ["6", "7", "8", "9", "10", "11", "12"],
+    itemsCount: 20,
+    lastUsed: "2024-01-10"
+  },
+  {
+    id: "at6",
+    title: "Problem-Solving Skills Assessment",
+    description: "Evaluate critical thinking, decision making, and analytical reasoning abilities",
+    category: "cognitive",
+    focus: "Critical thinking, decision making, analytical reasoning",
+    format: "Scenario-based questions with rubric scoring",
+    duration: 25,
+    targetGrades: ["7", "8", "9", "10", "11", "12"],
+    itemsCount: 8,
+    lastUsed: "2024-01-08"
+  },
+  {
+    id: "at7",
+    title: "Memory and Recall Assessment",
+    description: "Test working memory capacity and short-term information retention",
+    category: "cognitive",
+    focus: "Working memory, short-term retention, recall accuracy",
+    format: "Task-based activities with performance scoring",
+    duration: 20,
+    targetGrades: ["5", "6", "7", "8", "9", "10"],
+    itemsCount: 6,
+    lastUsed: "2024-01-05"
+  },
+  {
+    id: "at8",
+    title: "Executive Function Checklist",
+    description: "Assess planning, organization, time management, and cognitive flexibility",
+    category: "cognitive",
+    focus: "Planning, organization, time management, flexibility",
+    format: "Teacher observation checklist with behavioral examples",
+    duration: 10,
+    targetGrades: ["6", "7", "8", "9", "10", "11", "12"],
+    itemsCount: 16,
+    lastUsed: "2024-01-03"
+  }
+];
+
+// Mock Daily Boosters
+export const mockDailyBoosters: DailyBooster[] = [
+  {
+    id: "db1",
+    title: "The Gratitude Chain",
+    type: "story",
+    duration: 7,
+    description: "Inspiring short story about gratitude with student reflection activity",
+    purpose: "Build positive mindset and community connection",
+    targetGrades: ["5", "6", "7", "8"],
+    difficulty: "easy",
+    fullInstructions: `1. Gather students in a comfortable arrangement\n2. Read the story aloud with expression (3 minutes):\n\n"In a small village, there lived a girl named Maya who felt she had nothing to be grateful for. One day, her grandmother gave her a special bracelet and said, 'Each time someone shows you kindness, add a bead to remember.' At first, Maya struggled to find kindness. But then she noticed her brother sharing his lunch, her teacher's encouraging words, a friend's smile. Soon, her bracelet was full of colorful beads, each one a reminder of goodness in her life. Maya realized gratitude wasn't about having everything—it was about noticing the good that was already there."\n\n3. Discussion (2 minutes):\n   - What did Maya learn?\n   - How can we practice gratitude daily?\n\n4. Activity (2 minutes):\n   - Each student shares ONE thing they're grateful for today\n   - Keep it brief and positive\n\n5. Close with a positive affirmation: "Today, I choose to notice the good around me."`
+  },
+  {
+    id: "db2",
+    title: "Perspective Flip",
+    type: "story",
+    duration: 8,
+    description: "Interactive story about seeing situations from different viewpoints",
+    purpose: "Develop empathy and reduce conflicts",
+    targetGrades: ["6", "7", "8", "9"],
+    difficulty: "medium",
+    fullInstructions: `1. Present the scenario (2 minutes):\n\n"Two students, Alex and Jordan, collided in the hallway. Alex's books scattered everywhere. Alex thought Jordan was being careless and rude. Jordan was rushing to help a friend who was upset. Neither knew the other's story."\n\n2. Perspective Activity (3 minutes):\n   - Divide class in half\n   - Half argues from Alex's perspective\n   - Half argues from Jordan's perspective\n   - Switch and argue from opposite view\n\n3. Discussion (2 minutes):\n   - How did your thinking change?\n   - Why is understanding others' perspectives important?\n\n4. Application (1 minute):\n   - Challenge students to pause before judging today\n   - Ask themselves: "What might be their story?"`
+  },
+  {
+    id: "db3",
+    title: "The Resilience Tale",
+    type: "story",
+    duration: 6,
+    description: "Motivational story about overcoming challenges with personal reflection",
+    purpose: "Build resilience and self-confidence",
+    targetGrades: ["7", "8", "9", "10"],
+    difficulty: "easy",
+    fullInstructions: `1. Share the story (3 minutes):\n\n"Thomas Edison failed 10,000 times before inventing the light bulb. When asked about his failures, he said, 'I didn't fail. I just found 10,000 ways that won't work.' Every scientist, athlete, and artist you admire has failed countless times. The difference? They kept going. Your struggles today are building your strength for tomorrow."\n\n2. Quick Reflection (2 minutes):\n   - Students think of one challenge they're facing\n   - What strength are they building by facing it?\n\n3. Share (optional, 1 minute):\n   - Volunteers share one word describing their strength\n\n4. Affirmation:\n   "My challenges are making me stronger."`
+  },
+  {
+    id: "db4",
+    title: "Kindness Ripples",
+    type: "story",
+    duration: 5,
+    description: "Story demonstrating how small acts of kindness spread and multiply",
+    purpose: "Promote prosocial behavior",
+    targetGrades: ["5", "6", "7"],
+    difficulty: "easy",
+    fullInstructions: `1. Tell the story (2 minutes):\n\n"Sophia held the door open for a stranger carrying heavy bags. That stranger, feeling appreciated, bought coffee for the person behind them in line. That person smiled at a stressed parent, who felt encouraged to be patient with their child. The child, feeling loved, helped a classmate who dropped their pencils. All because Sophia held a door."\n\n2. Visual Demonstration (1 minute):\n   - Draw ripples on board\n   - Show how one action spreads\n\n3. Kindness Challenge (2 minutes):\n   - Each student plans ONE small act of kindness for today\n   - Can be as simple as a genuine compliment or helping someone\n   - Report back tomorrow how it felt`
+  },
+  {
+    id: "db5",
+    title: "The Mindful Moment",
+    type: "story",
+    duration: 8,
+    description: "Guided visualization story for relaxation and focus",
+    purpose: "Reduce stress and improve attention",
+    targetGrades: ["6", "7", "8", "9", "10"],
+    difficulty: "engaging",
+    fullInstructions: `1. Setup (1 minute):\n   - Students sit comfortably, feet flat on floor\n   - Can close eyes or look down gently\n   - Take 3 deep breaths together\n\n2. Guided Visualization (5 minutes):\n   Read slowly and calmly:\n\n"Imagine you're standing at the edge of a peaceful lake. The water is calm and clear. Feel the warm sun on your face. Hear gentle waves lapping the shore. With each breath in, breathe in peace and calm. With each breath out, release any worry or stress. The lake is so still, it reflects the sky perfectly. Your mind can be like this lake—calm, clear, reflecting only what you choose. When thoughts come, imagine them as clouds passing across the sky. Notice them, but let them drift by. Return to the calm lake, to your steady breathing. You are safe. You are calm. You are ready for your day."\n\n3. Gradual Return (1 minute):\n   - Wiggle fingers and toes\n   - Stretch gently\n   - Open eyes when ready\n\n4. Quick Check (1 minute):\n   - "How do you feel?" - thumbs up/middle/down`
+  },
+  {
+    id: "db6",
+    title: "Brain Teaser Warm-Up",
+    type: "puzzle",
+    duration: 7,
+    description: "Collaborative riddles and lateral thinking puzzles",
+    purpose: "Activate critical thinking and team cooperation",
+    targetGrades: ["6", "7", "8", "9"],
+    difficulty: "medium",
+    fullInstructions: `Present these puzzles one at a time. Give 1-2 minutes per puzzle for discussion:\n\n1. "I have cities but no houses, forests but no trees, water but no fish. What am I?"\n   (Answer: A map)\n\n2. "The more you take, the more you leave behind. What am I?"\n   (Answer: Footsteps)\n\n3. "What gets wetter the more it dries?"\n   (Answer: A towel)\n\n4. "I'm light as a feather, but the strongest person can't hold me for long. What am I?"\n   (Answer: Breath)\n\nEncourage:\n- Thinking outside the box\n- Discussing with neighbors\n- Creative reasoning\n\nCelebrate both correct answers AND creative thinking!`
+  },
+  {
+    id: "db7",
+    title: "Pattern Detective",
+    type: "puzzle",
+    duration: 6,
+    description: "Visual pattern identification challenge",
+    purpose: "Enhance observation skills and focus",
+    targetGrades: ["5", "6", "7", "8"],
+    difficulty: "easy",
+    fullInstructions: `1. Present patterns on board (3 minutes):\n\nPattern 1: 2, 4, 8, 16, __ (Answer: 32)\nPattern 2: O, T, T, F, F, S, S, __ (Answer: E - first letters of numbers)\nPattern 3: Draw: ◯△◯△△◯△△△__ (Answer: ◯)\n\n2. Student Activity (2 minutes):\n   - Students create their own pattern\n   - Trade with neighbor to solve\n\n3. Share (1 minute):\n   - 2-3 volunteers share creative patterns\n\nSkills practiced:\n- Observation\n- Logic\n- Creativity`
+  },
+  {
+    id: "db8",
+    title: "Word Play Challenge",
+    type: "puzzle",
+    duration: 8,
+    description: "Anagrams, word associations, and creative wordplay",
+    purpose: "Build vocabulary and creative thinking",
+    targetGrades: ["7", "8", "9", "10"],
+    difficulty: "medium",
+    fullInstructions: `Choose 2-3 activities:\n\n1. Anagram Speed Round (3 minutes):\n   LISTEN = SILENT\n   ASTRONOMER = MOON STARER\n   Present scrambled words on board\n   Students race to unscramble\n\n2. Word Association (2 minutes):\n   Start with a word (e.g., "OCEAN")\n   Students rapid-fire related words\n   Goal: See how long the chain can go\n\n3. Synonym Switch (3 minutes):\n   Give a common word (e.g., "happy")\n   Students brainstorm alternatives\n   Award creativity (e.g., "ecstatic," "jubilant")\n\nBenefits:\n- Expands vocabulary\n- Activates language centers\n- Fun and energizing!`
+  },
+  {
+    id: "db9",
+    title: "Math Magic",
+    type: "puzzle",
+    duration: 7,
+    description: "Quick mental math challenges and number tricks",
+    purpose: "Build numerical fluency and confidence",
+    targetGrades: ["6", "7", "8", "9"],
+    difficulty: "medium",
+    fullInstructions: `1. Number Trick (3 minutes):\n   "Pick any number. Add 5. Multiply by 2. Subtract 4. Divide by 2. Subtract your original number. Your answer is 3!"\n   - Demonstrate\n   - Explain the algebra\n   - Students try with different numbers\n\n2. Quick Calculations (2 minutes):\n   - 25 × 4 = ? (100)\n   - 15% of 200 = ? (30)\n   - 7² = ? (49)\n   Teach shortcuts and tricks\n\n3. Pattern Challenge (2 minutes):\n   1, 1, 2, 3, 5, 8, 13, __ (Fibonacci: 21)\n\nGoal: Show math can be fun and surprising!`
+  },
+  {
+    id: "db10",
+    title: "Memory Match",
+    type: "puzzle",
+    duration: 5,
+    description: "Quick memory games and recall challenges",
+    purpose: "Practice working memory and engagement",
+    targetGrades: ["5", "6", "7", "8"],
+    difficulty: "easy",
+    fullInstructions: `1. List Memorization (2 minutes):\n   Display 8-10 random items on board for 30 seconds\n   (e.g., apple, book, chair, cloud, drum, star, key, bell)\n   Erase the list\n   Students write down what they remember\n\n2. Story Memory (2 minutes):\n   Tell a very short story with specific details\n   Ask recall questions:\n   - What color was the character's hat?\n   - What did they eat for breakfast?\n   - Where were they going?\n\n3. Quick Tips (1 minute):\n   - Chunking strategy\n   - Creating mental images\n   - Making associations\n\nFun way to practice memory skills!`
+  },
+  {
+    id: "db11",
+    title: "Energizer Stretch",
+    type: "movement",
+    duration: 5,
+    description: "Guided stretching and movement sequence",
+    purpose: "Reduce restlessness and increase focus",
+    targetGrades: ["5", "6", "7", "8", "9"],
+    difficulty: "easy",
+    fullInstructions: `Lead students through this sequence:\n\n1. Standing Stretches (2 minutes):\n   - Reach arms high, hold 5 seconds\n   - Gentle side bends (left and right)\n   - Shoulder rolls (forward and back)\n   - Neck rolls (slow and gentle)\n\n2. Energizing Movements (2 minutes):\n   - March in place (30 seconds)\n   - Arm circles (15 seconds each direction)\n   - Gentle twists (left and right)\n   - Shake it out!\n\n3. Calming Down (1 minute):\n   - Deep breathing (3 slow breaths)\n   - Body scan (notice how you feel)\n   - Ready to focus!\n\nGreat for transitions or mid-lesson energy boost!`,
+    materials: ["Clear space for movement"]
+  },
+  {
+    id: "db12",
+    title: "Focus Flow",
+    type: "movement",
+    duration: 6,
+    description: "Slow, mindful movements with breath awareness",
+    purpose: "Attention regulation and stress relief",
+    targetGrades: ["6", "7", "8", "9", "10"],
+    difficulty: "engaging",
+    fullInstructions: `Combine gentle movement with mindfulness:\n\n1. Setup (1 minute):\n   - Stand comfortably\n   - Feet hip-width apart\n   - Hands at sides\n\n2. Flow Sequence (4 minutes):\n   Repeat this cycle 3-4 times:\n   - Inhale: Raise arms slowly overhead\n   - Exhale: Lower arms down slowly\n   - Inhale: Reach to the right\n   - Exhale: Return to center\n   - Inhale: Reach to the left\n   - Exhale: Return to center\n   - Inhale: Arms forward\n   - Exhale: Bring to heart\n\n3. Closing (1 minute):\n   - Stand still\n   - Notice your heartbeat\n   - Take 3 deep breaths\n   - Feel centered and calm\n\nMovement + Breath = Focused Mind!`,
+    materials: ["Quiet space", "Optional: soft background music"]
+  },
+  {
+    id: "db13",
+    title: "Team Sync",
+    type: "movement",
+    duration: 7,
+    description: "Group synchronization activities for cooperation",
+    purpose: "Build cooperation and social connection",
+    targetGrades: ["5", "6", "7", "8"],
+    difficulty: "engaging",
+    fullInstructions: `Fun synchronized activities:\n\n1. Clap Patterns (3 minutes):\n   - Teacher demonstrates a rhythm\n   - Class repeats together\n   - Gradually increase complexity\n   - Try students leading\n\n2. Mirror Movement (2 minutes):\n   - Pair students up\n   - One leads, one mirrors\n   - Switch roles\n   - Slow, flowing movements\n\n3. Group Wave (2 minutes):\n   - Stand in a circle\n   - Create a wave motion\n   - Add sounds\n   - Reverse direction\n\nBuilds:\n- Coordination\n- Attention\n- Social bonding\n- Fun!`,
+    materials: ["Open space for movement"]
+  }
+];
+
+// Mock Observations
+export const mockObservations: Observation[] = [
+  {
+    id: "obs1",
+    studentId: "s1",
+    studentName: "Alex Thompson",
+    teacherId: "t1",
+    date: "2024-01-19",
+    context: "Mathematics class - group work activity",
+    behavior: "Student appeared withdrawn, avoided eye contact with peers, worked alone despite group assignment",
+    triggers: "Large group setting, peer interaction required",
+    interventions: "Offered alternative individual task, checked in privately",
+    outcome: "Student completed work individually, seemed more comfortable",
+    followUpNeeded: true,
+    sharedWithCounsellor: true
+  },
+  {
+    id: "obs2",
+    studentId: "s2",
+    studentName: "Jamie Rodriguez",
+    teacherId: "t1",
+    date: "2024-01-20",
+    context: "English class - presentation day",
+    behavior: "Became agitated when called to present, refused to come to front of class",
+    triggers: "Public speaking, being center of attention",
+    interventions: "Allowed alternative presentation format (written submission)",
+    outcome: "Student calmed down, submitted written work instead",
+    followUpNeeded: true,
+    sharedWithCounsellor: false
+  }
+];
+
+// Mock Calendar Events
+export const mockCalendarEvents: CalendarEvent[] = [
+  {
+    id: "cal1",
+    title: "Alex Thompson - Individual Session",
+    description: "Weekly counseling session focusing on anxiety management",
+    type: "session",
+    startTime: "2025-09-22T10:30:00Z",
+    endTime: "2025-09-22T11:15:00Z",
+    attendees: ["Dr. Sarah Johnson", "Alex Thompson"],
+    location: "Counseling Office A",
+    status: "scheduled",
+    relatedCaseId: "1",
+    relatedStudentId: "s1"
+  },
+  {
+    id: "cal2",
+    title: "Wellbeing Assessment - Grade 8A",
+    description: "Administer student wellbeing check assessment",
+    type: "assessment",
+    startTime: "2025-09-23T09:00:00Z",
+    endTime: "2025-09-23T09:30:00Z",
+    attendees: ["Michael Chen", "Grade 8A Students"],
+    location: "Classroom 8A",
+    status: "scheduled"
+  },
+  {
+    id: "cal3",
+    title: "Parent Meeting - Thompson Family",
+    description: "Discuss Alex's progress and home support strategies",
+    type: "meeting",
+    startTime: "2025-09-25T15:00:00Z",
+    endTime: "2025-09-25T16:00:00Z",
+    attendees: ["Dr. Sarah Johnson", "Sarah Thompson", "Alex Thompson"],
+    location: "Meeting Room B",
+    status: "scheduled",
+    relatedCaseId: "1",
+    relatedStudentId: "s1"
+  },
+  {
+    id: "cal4",
+    title: "Jamie Rodriguez - Assessment Session",
+    description: "Conduct comprehensive behavioral assessment",
+    type: "assessment",
+    startTime: "2025-09-24T14:00:00Z",
+    endTime: "2025-09-24T15:00:00Z",
+    attendees: ["Dr. Sarah Johnson", "Jamie Rodriguez"],
+    location: "Counseling Office B",
+    status: "scheduled",
+    relatedCaseId: "2",
+    relatedStudentId: "s2"
+  },
+  {
+    id: "cal5",
+    title: "Grade 8B - Mindfulness Activity",
+    description: "Group mindfulness and stress management session",
+    type: "activity",
+    startTime: "2025-09-26T13:00:00Z",
+    endTime: "2025-09-26T13:30:00Z",
+    attendees: ["Michael Chen", "Grade 8B Students"],
+    location: "Classroom 8B",
+    status: "scheduled"
+  },
+  {
+    id: "cal6",
+    title: "Staff Wellbeing Meeting",
+    description: "Weekly team meeting to discuss student cases",
+    type: "meeting",
+    startTime: "2025-09-27T16:00:00Z",
+    endTime: "2025-09-27T17:00:00Z",
+    attendees: ["Dr. Sarah Johnson", "Michael Chen", "School Leadership"],
+    location: "Staff Room",
+    status: "scheduled"
+  }
+];
+
+// Mock Resources
+export const mockResources: Resource[] = [
+  {
+    id: "res1",
+    title: "Anxiety Management Techniques for Teens",
+    description: "Comprehensive guide covering cognitive behavioral therapy techniques for adolescent anxiety",
+    type: "guide",
+    category: "anxiety",
+    url: "https://example.com/anxiety-guide",
+    tags: ["CBT", "teens", "anxiety", "self-help"],
+    rating: 4.8,
+    downloads: 1250,
+    createdAt: "2024-01-10"
+  },
+  {
+    id: "res2",
+    title: "Mindfulness Meditation for Students",
+    description: "15-minute guided meditation video specifically designed for school-age children",
+    type: "video",
+    category: "anxiety",
+    url: "https://example.com/mindfulness-video",
+    tags: ["mindfulness", "meditation", "students", "stress-relief"],
+    rating: 4.6,
+    downloads: 892,
+    createdAt: "2024-01-08"
+  },
+  {
+    id: "res3",
+    title: "Emotional Regulation Worksheet Pack",
+    description: "Collection of printable worksheets for identifying and managing emotions",
+    type: "worksheet",
+    category: "behavioral",
+    fileUrl: "/resources/emotion-worksheets.pdf",
+    tags: ["emotions", "worksheets", "regulation", "printable"],
+    rating: 4.9,
+    downloads: 2100,
+    createdAt: "2024-01-05"
+  }
+];
+
+// Mock School Metrics
+export const mockSchoolMetrics: SchoolMetrics = {
+  wellbeingIndex: 78,
+  studentsScreened: 340,
+  totalStudents: 450,
+  riskDistribution: {
+    low: 280,
+    medium: 45,
+    high: 15
+  },
+  counsellorWorkload: [
+    { name: "Dr. Sarah Johnson", activeCases: 24, capacity: 30 },
+    { name: "Dr. Michael Roberts", activeCases: 18, capacity: 25 },
+    { name: "Ms. Jennifer Lee", activeCases: 21, capacity: 28 }
+  ],
+  monthlyTrends: [
+    { month: "Sep 2023", wellbeingIndex: 72, casesOpened: 15, casesClosed: 8, assessmentsCompleted: 120 },
+    { month: "Oct 2023", wellbeingIndex: 75, casesOpened: 12, casesClosed: 10, assessmentsCompleted: 98 },
+    { month: "Nov 2023", wellbeingIndex: 76, casesOpened: 18, casesClosed: 14, assessmentsCompleted: 134 },
+    { month: "Dec 2023", wellbeingIndex: 78, casesOpened: 10, casesClosed: 12, assessmentsCompleted: 89 },
+    { month: "Jan 2024", wellbeingIndex: 78, casesOpened: 14, casesClosed: 9, assessmentsCompleted: 156 }
+  ]
+};
+
+// Mock Class Metrics
+export const mockClassMetrics: ClassMetrics[] = [
+  {
+    id: "1",
+    name: "Grade 8A - Mathematics",
+    teacher: "Michael Chen",
+    wellbeingIndex: 85,
+    participationRate: 92,
+    atRiskCount: 2,
+    totalStudents: 28,
+    lastUpdated: "2024-01-20",
+    trends: [
+      { week: "Week 1", wellbeingScore: 82, participationRate: 90 },
+      { week: "Week 2", wellbeingScore: 84, participationRate: 91 },
+      { week: "Week 3", wellbeingScore: 85, participationRate: 92 }
+    ]
+  },
+  {
+    id: "2",
+    name: "Grade 8B - Mathematics",
+    teacher: "Michael Chen",
+    wellbeingIndex: 78,
+    participationRate: 88,
+    atRiskCount: 4,
+    totalStudents: 26,
+    lastUpdated: "2024-01-20",
+    trends: [
+      { week: "Week 1", wellbeingScore: 75, participationRate: 85 },
+      { week: "Week 2", wellbeingScore: 77, participationRate: 87 },
+      { week: "Week 3", wellbeingScore: 78, participationRate: 88 }
+    ]
+  },
+  {
+    id: "3",
+    name: "Grade 7A - Science", 
+    teacher: "Michael Chen",
+    wellbeingIndex: 90,
+    participationRate: 95,
+    atRiskCount: 1,
+    totalStudents: 24,
+    lastUpdated: "2024-01-20",
+    trends: [
+      { week: "Week 1", wellbeingScore: 88, participationRate: 92 },
+      { week: "Week 2", wellbeingScore: 89, participationRate: 94 },
+      { week: "Week 3", wellbeingScore: 90, participationRate: 95 }
+    ]
+  },
+  {
+    id: "4",
+    name: "Grade 9A - Physics",
+    teacher: "Michael Chen", 
+    wellbeingIndex: 82,
+    participationRate: 86,
+    atRiskCount: 3,
+    totalStudents: 29,
+    lastUpdated: "2024-01-20",
+    trends: [
+      { week: "Week 1", wellbeingScore: 80, participationRate: 83 },
+      { week: "Week 2", wellbeingScore: 81, participationRate: 85 },
+      { week: "Week 3", wellbeingScore: 82, participationRate: 86 }
+    ]
+  },
+  {
+    id: "5",
+    name: "Grade 8A - Chemistry",
+    teacher: "Michael Chen",
+    wellbeingIndex: 76,
+    participationRate: 89,
+    atRiskCount: 5,
+    totalStudents: 27,
+    lastUpdated: "2024-01-20", 
+    trends: [
+      { week: "Week 1", wellbeingScore: 74, participationRate: 86 },
+      { week: "Week 2", wellbeingScore: 75, participationRate: 88 },
+      { week: "Week 3", wellbeingScore: 76, participationRate: 89 }
+    ]
+  }
+];
+
+// Mock Risk Alerts
+export const mockRiskAlerts: RiskAlert[] = [
+  {
+    id: "risk1",
+    studentId: "s1",
+    studentName: "Alex Thompson",
+    level: "high",
+    type: "emotional",
+    description: "Significant increase in anxiety symptoms, social withdrawal observed",
+    triggers: ["Large group settings", "Public speaking", "Peer interactions"],
+    recommendations: ["Individual counseling", "Anxiety management techniques", "Parent consultation"],
+    assignedTo: "Dr. Sarah Johnson",
+    status: "in-review",
+    createdAt: "2024-01-18T10:00:00Z",
+    updatedAt: "2024-01-20T14:30:00Z"
+  },
+  {
+    id: "risk2",
+    studentId: "s2",
+    studentName: "Jamie Rodriguez",
+    level: "high",
+    type: "behavioral",
+    description: "Increasing classroom disruptions, academic performance decline",
+    triggers: ["Frustration with assignments", "Attention difficulties"],
+    recommendations: ["Behavioral intervention plan", "Academic support", "ADHD screening"],
+    assignedTo: "Dr. Sarah Johnson",
+    status: "new",
+    createdAt: "2024-01-19T16:00:00Z",
+    updatedAt: "2024-01-19T16:00:00Z"
+  }
+];
+
+// Mock Consent Records
+export const mockConsentRecords: ConsentRecord[] = [
+  {
+    id: "con1",
+    studentId: "s1",
+    studentName: "Alex Thompson",
+    parentName: "Sarah Thompson",
+    consentType: "assessment",
+    status: "granted",
+    grantedAt: "2024-01-15T09:00:00Z",
+    expiresAt: "2024-07-15T09:00:00Z",
+    documents: ["consent-form-s1.pdf"]
+  },
+  {
+    id: "con2",
+    studentId: "s2",
+    studentName: "Jamie Rodriguez",
+    parentName: "Maria Rodriguez",
+    consentType: "ai-analysis",
+    status: "pending",
+    documents: ["consent-request-s2.pdf"]
+  },
+  {
+    id: "con3",
+    studentId: "s1",
+    studentName: "Alex Thompson",
+    parentName: "Sarah Thompson",
+    consentType: "intervention",
+    status: "granted",
+    grantedAt: "2024-01-16T10:30:00Z",
+    expiresAt: "2024-07-16T10:30:00Z",
+    documents: ["intervention-consent-s1.pdf"]
+  }
+];
