@@ -32,7 +32,7 @@ const AIInsightsPage = lazy(() => import("./pages/counsellor/AIInsightsPage"));
 const CalendarPage = lazy(() => import("./pages/counsellor/CalendarPage"));
 const ResourcesPage = lazy(() => import("./pages/counsellor/ResourcesPage"));
 const WebinarsPage = lazy(() => import("./pages/counsellor/WebinarsPage"));
-const TherapistsPage = lazy(() => import("./pages/counsellor/TherapistsPage"));
+
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const HelpSupportPage = lazy(() => import("./pages/HelpSupportPage"));
 
