@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/shared/StatCard";
 import { EditCalendarEventModal } from "@/components/modals/EditCalendarEventModal";
 import { NewCaseModal } from "@/components/modals/NewCaseModal";
+import { ScheduleSessionModal } from "@/components/modals/ScheduleSessionModal";
 import {
   useMyCalendarEvents,
   useUpdateCalendarEvent,
@@ -30,6 +31,7 @@ import { useCreateCase } from "@/hooks/useCases";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, startOfWeek } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { AnimatedBackground } from "@/components/ui/animated-background";
 
 export default function CalendarPage() {
   const { user } = useAuth();
@@ -40,14 +42,15 @@ export default function CalendarPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
   const [selectedEventForCase, setSelectedEventForCase] = useState<any>(null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
-  const { data: eventsData = [], isLoading } = useMyCalendarEvents(user?.id);
+  const { data: eventsData = [], isLoading } = useMyCalendarEvents();
   const updateEvent = useUpdateCalendarEvent();
   const createCase = useCreateCase();
 
   // Transform API events to calendar format with IST timezone
   const timezone = "Asia/Kolkata";
-  const events = eventsData.map((event: any) => {
+  const events = Array.isArray(eventsData) ? eventsData.map((event: any) => {
     // Parse UTC times and convert to IST
     const startUTC = new Date(event.start_time);
     const endUTC = new Date(event.end_time);
@@ -68,7 +71,7 @@ export default function CalendarPage() {
       related_student_id: event.related_student_id,
       attendees: event.attendees || [],
     };
-  });
+  }) : [];
 
   const now = new Date();
   const todayDate = format(now, "yyyy-MM-dd");
@@ -177,36 +180,75 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Calendar</h1>
-          <p className="text-muted-foreground">
-            Manage your appointments and sessions
-          </p>
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 relative">
+      <AnimatedBackground />
+      {/* Header with modern design */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Calendar
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground ml-13">
+              Manage your appointments and sessions
+            </p>
+          </div>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Schedule Session
-        </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
-        ))}
+      {/* Stats Cards with enhanced design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {stats.map((stat, index) => {
+          const gradients = [
+            { from: 'from-blue-500', to: 'to-cyan-500', bg: 'from-blue-500/10 to-cyan-500/10' },
+            { from: 'from-orange-500', to: 'to-red-500', bg: 'from-orange-500/10 to-red-500/10' },
+            { from: 'from-green-500', to: 'to-emerald-500', bg: 'from-green-500/10 to-emerald-500/10' },
+            { from: 'from-purple-500', to: 'to-pink-500', bg: 'from-purple-500/10 to-pink-500/10' },
+          ];
+          const gradient = gradients[index];
+          
+          return (
+            <Card key={index} className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300 group">
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradient.bg} opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{stat.title}</CardTitle>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient.from} ${gradient.to} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-6 h-6 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-foreground mb-1">{stat.value}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {requestedEvents.length > 0 && (
-        <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-600" />
-              Pending Requests
-            </CardTitle>
-            <CardDescription>
-              {requestedEvents.length} wellness check{requestedEvents.length !== 1 ? 's' : ''} awaiting your approval
-            </CardDescription>
+        <Card className="border-2 border-warning bg-gradient-to-r from-warning/10 to-warning/5 shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+                  <AlertCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Pending Requests</CardTitle>
+                  <CardDescription className="text-sm mt-1">
+                    {requestedEvents.length} wellness check{requestedEvents.length !== 1 ? 's' : ''} awaiting your approval
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="destructive" className="text-sm px-3 py-1">
+                {requestedEvents.length} Pending
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -241,15 +283,24 @@ export default function CalendarPage() {
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Today's Schedule
-            </CardTitle>
-            <CardDescription>
-              {selectedDate} - {todaysEvents.length} appointments
-            </CardDescription>
+        <Card className="border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Today's Schedule</CardTitle>
+                  <CardDescription className="text-sm mt-1">
+                    {selectedDate} - {todaysEvents.length} appointments
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-sm">
+                {todaysEvents.length} Today
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -447,6 +498,11 @@ export default function CalendarPage() {
         onOpenChange={setIsNewCaseModalOpen}
         onSubmit={handleCreateCaseSubmit}
         initialStudentId={selectedEventForCase?.related_student_id}
+      />
+
+      <ScheduleSessionModal
+        open={isScheduleModalOpen}
+        onOpenChange={setIsScheduleModalOpen}
       />
     </div>
   );

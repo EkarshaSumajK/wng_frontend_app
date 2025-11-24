@@ -1,584 +1,922 @@
-import { useState } from "react";
-import { Search, Calendar, Video, Users, Filter, Clock, Award, X, Play, BookOpen } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Search, Calendar, Video, Users, Clock, Award, X, Play, BookOpen, Star, Heart, Share2, ChevronRight, TrendingUp, CheckCircle, Eye, Filter, Target } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { useWebinars, useMyWebinarRegistrations, useRegisterWebinar, useUnregisterWebinar } from "@/hooks/useWebinars";
+import { toast } from "sonner";
+
+// Webinar Card Component (Moved outside to prevent re-renders/flickering)
+const WebinarCard = ({ webinar, showPlayButton = false, isRegistered, onClick }: { webinar: any; showPlayButton?: boolean; isRegistered: boolean; onClick: (w: any) => void }) => {
+  // Mock data for styling if not present in webinar object
+  const originalPrice = webinar.originalPrice || 2499;
+  const currentPrice = webinar.price === "Free" ? 0 : (typeof webinar.price === 'number' ? webinar.price : 1999);
+  const discount = currentPrice === 0 ? 100 : Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -4 }}
+      className="h-full"
+    >
+      <Card 
+        className="group relative overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer h-full rounded-2xl bg-white flex flex-col"
+        onClick={() => onClick(webinar)}
+      >
+        {/* Image Section */}
+        <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-gray-100">
+          {webinar.speakerImage ? (
+            <img 
+              src={webinar.speakerImage} 
+              alt={webinar.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+              <Video className="w-12 h-12" />
+            </div>
+          )}
+          
+          {/* Status Badge - Top Left */}
+          <div className="absolute top-3 left-3">
+            <Badge 
+              variant="secondary" 
+              className={`
+                px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-md shadow-sm border-0
+                ${webinar.status === 'Live' ? 'bg-white text-red-600' : 'bg-white text-gray-800'}
+              `}
+            >
+              {webinar.status === 'Live' ? '● LIVE' : webinar.status}
+            </Badge>
+          </div>
+
+          {/* Play Button Overlay (for Recorded) */}
+          {showPlayButton && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                <Play className="w-5 h-5 text-primary ml-1" fill="currentColor" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="p-4 flex flex-col flex-grow">
+          {/* Category/Tag */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+              {webinar.category || "WEBINAR"}
+            </span>
+            {isRegistered && (
+              <div className="flex items-center gap-1 text-green-600 text-[10px] font-bold uppercase tracking-wider ml-auto">
+                <CheckCircle className="w-3 h-3" />
+                <span>Registered</span>
+              </div>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3 className="font-bold text-base text-gray-900 leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            {webinar.title}
+          </h3>
+
+          {/* Meta Info */}
+          <div className="space-y-1 mb-4">
+            <p className="text-xs text-gray-500 font-medium">
+              Started on {new Date(webinar.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+            </p>
+            <p className="text-xs text-gray-500">
+              {webinar.duration || "60 mins"} • {webinar.language || "English"}
+            </p>
+          </div>
+
+          {/* Footer: Price & Offer */}
+          <div className="mt-auto pt-3 border-t border-gray-100">
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-bold text-gray-900">
+                {currentPrice === 0 ? "Free" : `₹${currentPrice.toLocaleString()}`}
+              </span>
+              {currentPrice > 0 && (
+                <>
+                  <span className="text-xs text-gray-400 line-through">
+                    ₹{originalPrice.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-bold text-orange-500">
+                    {discount}% OFF
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+    </motion.div>
+  );
+};
 
 export default function WebinarsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  
+  // Modal & UI States
   const [selectedWebinar, setSelectedWebinar] = useState<any>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<any>(null);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [therapistSearch, setTherapistSearch] = useState("");
+  const [therapistCategory, setTherapistCategory] = useState("all");
+  const [showAll, setShowAll] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "registered" | "trending">("all");
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  // Mock webinars data
-  const webinars = [
-    {
-      id: 1,
-      title: "Building Resilience in Students",
-      speaker: "Dr. Sarah Johnson",
-      speakerTitle: "Clinical Psychologist",
-      date: "Nov 15, 2025",
-      time: "4:00 PM IST",
-      duration: "90 mins",
-      attendees: 245,
-      category: "Student Wellbeing",
-      status: "Upcoming",
-      price: "Free",
-      description: "Learn evidence-based strategies to help students develop resilience and cope with challenges effectively.",
-      topics: ["Stress Management", "Coping Skills", "Growth Mindset", "Emotional Regulation"],
-      level: "Beginner",
-    },
-    {
-      id: 2,
-      title: "Trauma-Informed Counseling Practices",
-      speaker: "Prof. Michael Chen",
-      speakerTitle: "Professor of Psychology",
-      date: "Nov 22, 2025",
-      time: "3:00 PM IST",
-      duration: "120 mins",
-      attendees: 189,
-      category: "Professional Development",
-      status: "Upcoming",
-      price: "₹299",
-      description: "Comprehensive training on trauma-informed approaches in school counseling settings.",
-      topics: ["Trauma Recognition", "Safe Spaces", "Therapeutic Techniques", "Self-Care"],
-      level: "Intermediate",
-    },
-    {
-      id: 3,
-      title: "Managing Anxiety in the Classroom",
-      speaker: "Dr. Priya Sharma",
-      speakerTitle: "Child Psychologist",
-      date: "Nov 8, 2025",
-      time: "5:00 PM IST",
-      duration: "60 mins",
-      attendees: 312,
-      category: "Mental Health",
-      status: "Recorded",
-      price: "₹199",
-      description: "Practical strategies for identifying and supporting students experiencing anxiety.",
-      topics: ["Anxiety Symptoms", "Intervention Strategies", "Classroom Accommodations", "Parent Communication"],
-      level: "Beginner",
-    },
-    {
-      id: 4,
-      title: "Suicide Prevention & Intervention",
-      speaker: "Dr. Rajesh Kumar",
-      speakerTitle: "Crisis Intervention Specialist",
-      date: "Nov 18, 2025",
-      time: "2:00 PM IST",
-      duration: "120 mins",
-      attendees: 423,
-      category: "Crisis Management",
-      status: "Upcoming",
-      price: "Free",
-      description: "Critical training on recognizing warning signs and implementing effective intervention protocols.",
-      topics: ["Warning Signs", "Risk Assessment", "Safety Planning", "Follow-up Care"],
-      level: "Advanced",
-    },
-    {
-      id: 5,
-      title: "Social-Emotional Learning Implementation",
-      speaker: "Dr. Anita Desai",
-      speakerTitle: "Educational Psychologist",
-      date: "Nov 25, 2025",
-      time: "4:30 PM IST",
-      duration: "90 mins",
-      attendees: 267,
-      category: "Curriculum",
-      status: "Upcoming",
-      price: "₹399",
-      description: "Step-by-step guide to implementing SEL programs in your school counseling practice.",
-      topics: ["SEL Framework", "Program Design", "Assessment Tools", "Outcome Measurement"],
-      level: "Intermediate",
-    },
-    {
-      id: 6,
-      title: "Understanding ADHD in Schools",
-      speaker: "Dr. Vikram Mehta",
-      speakerTitle: "Learning Disabilities Expert",
-      date: "Nov 12, 2025",
-      time: "3:30 PM IST",
-      duration: "75 mins",
-      attendees: 198,
-      category: "Learning Disabilities",
-      status: "Recorded",
-      price: "₹249",
-      description: "Comprehensive overview of ADHD identification, support strategies, and accommodations.",
-      topics: ["ADHD Types", "Behavioral Strategies", "Academic Support", "Medication Management"],
-      level: "Beginner",
-    },
-    {
-      id: 7,
-      title: "Creating Safe Spaces for LGBTQ+ Students",
-      speaker: "Dr. Sneha Patel",
-      speakerTitle: "Diversity & Inclusion Counselor",
-      date: "Dec 2, 2025",
-      time: "5:00 PM IST",
-      duration: "90 mins",
-      attendees: 156,
-      category: "Inclusion",
-      status: "Upcoming",
-      price: "₹299",
-      description: "Learn how to create inclusive, supportive environments for LGBTQ+ students.",
-      topics: ["Identity Development", "Coming Out Support", "Anti-Bullying", "Ally Training"],
-      level: "Intermediate",
-    },
-    {
-      id: 8,
-      title: "Effective Parent-Counselor Communication",
-      speaker: "Dr. Meera Iyer",
-      speakerTitle: "Family Therapist",
-      date: "Nov 20, 2025",
-      time: "6:00 PM IST",
-      duration: "60 mins",
-      attendees: 334,
-      category: "Communication",
-      status: "Upcoming",
-      price: "Free",
-      description: "Master the art of communicating sensitive mental health information to parents.",
-      topics: ["Difficult Conversations", "Cultural Sensitivity", "Collaboration Strategies", "Boundary Setting"],
-      level: "Beginner",
-    },
-    {
-      id: 9,
-      title: "Mindfulness & Self-Care for Counselors",
-      speaker: "Dr. Kabir Singh",
-      speakerTitle: "Wellness Coach",
-      date: "Nov 5, 2025",
-      time: "4:00 PM IST",
-      duration: "90 mins",
-      attendees: 289,
-      category: "Self-Care",
-      status: "Recorded",
-      price: "₹199",
-      description: "Essential self-care practices to prevent burnout and maintain professional effectiveness.",
-      topics: ["Burnout Prevention", "Mindfulness Techniques", "Work-Life Balance", "Compassion Fatigue"],
-      level: "All Levels",
-    },
-    {
-      id: 10,
-      title: "Addressing Cyberbullying",
-      speaker: "Dr. Nisha Gupta",
-      speakerTitle: "Digital Safety Expert",
-      date: "Nov 28, 2025",
-      time: "3:00 PM IST",
-      duration: "75 mins",
-      attendees: 412,
-      category: "Safety",
-      status: "Upcoming",
-      price: "₹349",
-      description: "Strategies for preventing, identifying, and responding to cyberbullying incidents.",
-      topics: ["Digital Citizenship", "Incident Response", "Legal Considerations", "Prevention Programs"],
-      level: "Intermediate",
-    },
-    {
-      id: 11,
-      title: "Depression Recognition & Support",
-      speaker: "Dr. Sameer Joshi",
-      speakerTitle: "Adolescent Psychiatrist",
-      date: "Dec 5, 2025",
-      time: "4:30 PM IST",
-      duration: "90 mins",
-      attendees: 223,
-      category: "Mental Health",
-      status: "Upcoming",
-      price: "₹299",
-      description: "Learn to identify depression symptoms and provide appropriate support and referrals.",
-      topics: ["Depression Types", "Screening Tools", "Treatment Options", "Referral Process"],
-      level: "Intermediate",
-    },
-    {
-      id: 12,
-      title: "Group Counseling Techniques",
-      speaker: "Dr. Arjun Reddy",
-      speakerTitle: "Group Therapy Specialist",
-      date: "Nov 10, 2025",
-      time: "2:30 PM IST",
-      duration: "120 mins",
-      attendees: 367,
-      category: "Counseling Skills",
-      status: "Recorded",
-      price: "₹399",
-      description: "Master effective group counseling techniques for school settings.",
-      topics: ["Group Dynamics", "Facilitation Skills", "Activity Planning", "Conflict Resolution"],
-      level: "Advanced",
-    },
-  ];
+  // Therapist View State
+  const [showAllTherapists, setShowAllTherapists] = useState(false);
 
-  const filteredWebinars = webinars.filter((webinar) => {
-    const matchesSearch = webinar.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         webinar.speaker.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || webinar.category === selectedCategory;
-    const matchesStatus = selectedStatus === "all" || webinar.status === selectedStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  // Debounce search input to avoid too many renders
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300); // 300ms delay
 
-  const upcomingCount = webinars.filter(w => w.status === "Upcoming").length;
-  const recordedCount = webinars.filter(w => w.status === "Recorded").length;
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch webinars data from API (without search parameter - we filter client-side)
+  const { data: webinarsData, isLoading: webinarsLoading } = useWebinars({});
+
+  // Fetch user's registrations
+  const { data: registrationsData, isLoading: registrationsLoading } = useMyWebinarRegistrations();
+  const registerMutation = useRegisterWebinar();
+  const unregisterMutation = useUnregisterWebinar();
+
+  // Get registered webinar IDs for easy lookup
+  const registeredWebinarIds = useMemo(() => {
+    if (!registrationsData?.registrations) return new Set();
+    return new Set(registrationsData.registrations.map((r: any) => r.webinar_id));
+  }, [registrationsData]);
+
+  // Transform API data to match existing component structure
+  const webinars = useMemo(() => {
+    if (!webinarsData?.webinars) return [];
+    return webinarsData.webinars.map((w: any) => ({
+      id: w.webinar_id,
+      title: w.title,
+      speaker: w.speaker_name,
+      speakerTitle: w.speaker_title || "",
+      speakerImage: w.speaker_image_url || "",
+      thumbnail: w.thumbnail_url || "",
+      date: new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: new Date(w.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' }),
+      duration: `${w.duration_minutes} mins`,
+      attendees: w.attendee_count,
+      category: w.category,
+      status: w.status,
+      price: w.price > 0 ? w.price : 0,
+      originalPrice: w.price > 0 ? Math.round(w.price * 1.25) : 0, // Mock original price
+      description: w.description || "",
+      topics: w.topics || [],
+      level: w.level,
+      views: w.views.toString(),
+      language: "English", // Mock language
+    }));
+  }, [webinarsData]);
+
+  // Handle registration
+  const handleRegister = async (webinar: any) => {
+    try {
+      if (isRegistered(webinar.id)) {
+        await unregisterMutation.mutateAsync(webinar.id);
+        toast.success("Unregistered successfully");
+      } else {
+        await registerMutation.mutateAsync(webinar.id);
+        toast.success("Registered successfully");
+      }
+    } catch (error) {
+      toast.error("Action failed. Please try again.");
+    }
+  };
+
+  // Categorize webinars
+  const registeredWebinars = useMemo(() => {
+    if (!webinarsData?.webinars || !registrationsData?.registrations) return [];
+    const registeredIds = new Set(registrationsData.registrations.map((r: any) => r.webinar_id));
+    return webinars.filter((w: any) => registeredIds.has(w.id));
+  }, [webinars, registrationsData]);
+
+  // Mock data for trending and watched webinars
+  const trendingWebinars = webinars.slice(0, 6);
+  const watchedWebinars = webinars.slice(2, 8);
+
+  // Check if webinar is registered
+  const isRegistered = (webinarId: number) => registeredWebinarIds.has(webinarId);
+
+  // Extract unique filter options from data
+  const uniqueCategories = useMemo(() => Array.from(new Set(webinars.map((w: any) => w.category))).filter(Boolean) as string[], [webinars]);
+  const uniqueStatuses = useMemo(() => Array.from(new Set(webinars.map((w: any) => w.status))).filter(Boolean) as string[], [webinars]);
+  const uniqueLevels = useMemo(() => Array.from(new Set(webinars.map((w: any) => w.level))).filter(Boolean) as string[], [webinars]);
+  const uniqueLanguages = useMemo(() => Array.from(new Set(webinars.map((w: any) => w.language))).filter(Boolean) as string[], [webinars]);
+
+  // Determine which webinars to display based on active tab, filters, sorting, and pagination
+  const displayedWebinars = useMemo(() => {
+    // 1. Select Base List
+    let baseList = webinars;
+    if (activeTab === "registered") {
+      baseList = registeredWebinars;
+    } else if (activeTab === "trending") {
+      baseList = trendingWebinars;
+    }
+
+    // 2. Apply Filters (Search & Sidebar)
+    let filtered = baseList.filter((webinar: any) => {
+      const matchesSearch = 
+        webinar.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        webinar.speaker.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        webinar.category.toLowerCase().includes(debouncedSearch.toLowerCase());
+      
+      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(webinar.category);
+      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(webinar.status);
+      const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(webinar.level);
+      const matchesLanguage = selectedLanguages.length === 0 || selectedLanguages.includes(webinar.language);
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesLevel && matchesLanguage;
+    });
+
+    // 3. Apply Sorting
+    if (sortBy === "newest") {
+      filtered.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    } else if (sortBy === "price_low") {
+      filtered.sort((a: any, b: any) => a.price - b.price);
+    } else if (sortBy === "price_high") {
+      filtered.sort((a: any, b: any) => b.price - a.price);
+    }
+    // "relevance" keeps original order
+
+    return filtered;
+  }, [activeTab, webinars, registeredWebinars, trendingWebinars, debouncedSearch, selectedCategories, selectedStatuses, selectedLevels, selectedLanguages, sortBy]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(displayedWebinars.length / itemsPerPage);
+  const paginatedWebinars = displayedWebinars.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset pagination when filters/tabs change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, debouncedSearch, selectedCategories, selectedStatuses, selectedLevels, selectedLanguages, sortBy]);
+
+  // Filter Component
+  const FilterSection = ({ title, options, selected, setSelected }: { title: string, options: string[], selected: string[], setSelected: (val: string[]) => void }) => (
+    <div className="py-4 border-b border-gray-100 last:border-0">
+      <div className="flex items-center justify-between mb-2 cursor-pointer group">
+        <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">{title}</h4>
+        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200" />
+      </div>
+      <div className="space-y-2 mt-2">
+        {options.map((option) => (
+          <div key={option} className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id={`${title}-${option}`}
+              checked={selected.includes(option)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setSelected([...selected, option]);
+                } else {
+                  setSelected(selected.filter(item => item !== option));
+                }
+              }}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label
+              htmlFor={`${title}-${option}`}
+              className="text-sm text-gray-600 cursor-pointer hover:text-gray-900"
+            >
+              {option}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Professional Development Webinars</h1>
-        <p className="text-muted-foreground">
-          Enhance your counseling skills with expert-led training sessions
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50/50">
+      <AnimatedBackground />
+      
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Webinars & Workshops</h1>
+          <p className="text-gray-500">Learn from top mental health professionals</p>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Webinars</CardTitle>
-            <Video className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{webinars.length}</div>
-            <p className="text-xs text-muted-foreground">Available for registration</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{upcomingCount}</div>
-            <p className="text-xs text-muted-foreground">Live sessions scheduled</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recorded</CardTitle>
-            <Play className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{recordedCount}</div>
-            <p className="text-xs text-muted-foreground">Watch anytime</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Filters */}
+          <div className="w-full lg:w-64 flex-shrink-0">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-24">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+                {(selectedCategories.length > 0 || selectedStatuses.length > 0 || selectedLevels.length > 0 || selectedLanguages.length > 0) && (
+                  <button 
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      setSelectedStatuses([]);
+                      setSelectedLevels([]);
+                      setSelectedLanguages([]);
+                    }}
+                    className="text-xs text-red-500 font-bold uppercase hover:text-red-600"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search webinars by title or speaker..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+              <FilterSection 
+                title="Status" 
+                options={uniqueStatuses} 
+                selected={selectedStatuses} 
+                setSelected={setSelectedStatuses} 
+              />
+              <FilterSection 
+                title="Category" 
+                options={uniqueCategories} 
+                selected={selectedCategories} 
+                setSelected={setSelectedCategories} 
+              />
+              <FilterSection 
+                title="Level" 
+                options={uniqueLevels} 
+                selected={selectedLevels} 
+                setSelected={setSelectedLevels} 
+              />
+              <FilterSection 
+                title="Language" 
+                options={uniqueLanguages} 
+                selected={selectedLanguages} 
+                setSelected={setSelectedLanguages} 
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-[220px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="Student Wellbeing">Student Wellbeing</SelectItem>
-                <SelectItem value="Mental Health">Mental Health</SelectItem>
-                <SelectItem value="Crisis Management">Crisis Management</SelectItem>
-                <SelectItem value="Professional Development">Professional Development</SelectItem>
-                <SelectItem value="Communication">Communication</SelectItem>
-                <SelectItem value="Self-Care">Self-Care</SelectItem>
-                <SelectItem value="Safety">Safety</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Upcoming">Upcoming</SelectItem>
-                <SelectItem value="Recorded">Recorded</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
-          {(searchQuery || selectedCategory !== "all" || selectedStatus !== "all") && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Showing {filteredWebinars.length} of {webinars.length} webinars
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("all");
-                  setSelectedStatus("all");
-                }}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Webinars List */}
-      <div className="space-y-4">
-        {filteredWebinars.map((webinar) => (
-          <Card key={webinar.id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* Webinar Thumbnail */}
-                <div className="flex-shrink-0">
-                  <div className="w-full md:w-40 h-40 rounded-lg bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center relative overflow-hidden">
-                    <Video className="w-16 h-16 text-white z-10" />
-                    <div className="absolute inset-0 bg-black/20" />
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Top Bar: Sort & Search */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div className="relative w-full sm:w-96">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search webinars, topics, speakers..."
+                  className="pl-10 bg-white border-gray-200 focus:border-primary focus:ring-primary rounded-xl"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Sort by:</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px] bg-white border-gray-200 rounded-xl">
+                    <SelectValue placeholder="Relevance" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="price_low">Price: Low to High</SelectItem>
+                    <SelectItem value="price_high">Price: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex space-x-4 mb-4">
+              <button
+                className={`px-4 py-2 rounded-md ${activeTab === "all" ? "bg-primary text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setActiveTab("all")}
+              >
+                All
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md ${activeTab === "registered" ? "bg-primary text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setActiveTab("registered")}
+              >
+                Registered
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md ${activeTab === "trending" ? "bg-primary text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setActiveTab("trending")}
+              >
+                Trending
+              </button>
+            </div>
+            {/* Webinars Grid */}
+            {webinarsLoading ? (
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-[28rem] rounded-2xl bg-gray-100 animate-pulse" />
+                ))}
+              </div>
+            ) : paginatedWebinars.length > 0 ? (
+              <>
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                  {paginatedWebinars.map((webinar: any) => (
+                    <WebinarCard 
+                      key={webinar.id} 
+                      webinar={webinar} 
+                      showPlayButton={webinar.status === "Recorded"} 
+                      isRegistered={isRegistered(webinar.id)}
+                      onClick={setSelectedWebinar}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-full w-10 h-10 border-gray-200 hover:bg-gray-50 hover:text-primary"
+                    >
+                      <ChevronRight className="w-5 h-5 rotate-180" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
+                            currentPage === page
+                              ? "bg-primary text-white shadow-lg shadow-primary/25 scale-110"
+                              : "text-gray-500 hover:bg-gray-100"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="rounded-full w-10 h-10 border-gray-200 hover:bg-gray-50 hover:text-primary"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">No webinars found</h3>
+                <p className="text-gray-500">Try adjusting your filters or search query</p>
+                <Button 
+                  variant="link" 
+                  className="mt-2 text-primary"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategories([]);
+                    setSelectedStatuses([]);
+                    setSelectedLevels([]);
+                    setSelectedLanguages([]);
+                  }}
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            )}
+
+            {/* Featured Therapists Section (Below Grid) */}
+            {!webinarsLoading && (
+              <div className="mt-12">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">Featured Therapists</h2>
+                  <div 
+                    className="flex items-center text-primary hover:text-primary/80 cursor-pointer text-sm font-bold transition-colors"
+                    onClick={() => setShowAllTherapists(!showAllTherapists)}
+                  >
+                    {showAllTherapists ? "Show Less" : "View All"} <ChevronRight className={`w-4 h-4 ml-1 transition-transform duration-300 ${showAllTherapists ? "rotate-90" : ""}`} />
                   </div>
                 </div>
                 
-                {/* Webinar Details */}
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold mb-1">{webinar.title}</h3>
-                        <p className="text-muted-foreground">
-                          by {webinar.speaker} • {webinar.speakerTitle}
-                        </p>
-                      </div>
-                      <Badge 
-                        variant={webinar.status === "Upcoming" ? "default" : "secondary"}
-                        className="ml-4"
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {webinars.slice(0, showAllTherapists ? undefined : 4).map((webinar: any, index: number) => (
+                    <motion.div
+                      key={webinar.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                    >
+                      <Card 
+                        className="group relative overflow-visible border-0 shadow-none bg-transparent cursor-pointer h-full"
+                        onClick={() => setSelectedTherapist(webinar)}
                       >
-                        {webinar.status}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{webinar.date} at {webinar.time}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{webinar.duration}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{webinar.attendees} registered</span>
-                      </div>
-                      <Badge variant="outline">{webinar.category}</Badge>
-                    </div>
-                  </div>
+                        <div className="relative h-full flex flex-col">
+                          {/* Image Section */}
+                          <div className="relative z-10 w-full h-64 flex-shrink-0 flex items-end justify-center overflow-hidden rounded-t-3xl bg-gray-50">
+                            {webinar.speakerImage ? (
+                              <img 
+                                src={webinar.speakerImage} 
+                                alt={webinar.speaker}
+                                className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                <Users className="w-20 h-20" />
+                              </div>
+                            )}
+                          </div>
 
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {webinar.description}
-                  </p>
+                          {/* Info Box */}
+                          <div className="relative z-20 flex-1 w-full -mt-4 bg-[#1e293b] rounded-2xl p-6 pt-8 text-center shadow-xl flex flex-col justify-between">
+                            {/* Floating Badge */}
+                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                              <Badge className="bg-white text-gray-900 hover:bg-white border-0 px-3 py-1 shadow-sm text-xs font-bold">
+                                {Math.floor(Math.random() * 10) + 5}+ years exp
+                              </Badge>
+                            </div>
 
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {webinar.level}
-                      </Badge>
-                      <span className="text-lg font-semibold text-primary">
-                        {webinar.price}
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedWebinar(webinar)}
-                      >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Details
-                      </Button>
-                      <Button size="sm">
-                        {webinar.status === "Upcoming" ? (
-                          <>
-                            <Calendar className="w-4 h-4 mr-2" />
-                            Register
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4 mr-2" />
-                            Watch
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-white mt-2 mb-1 line-clamp-1">{webinar.speaker}</h3>
+                              <p className="text-gray-400 text-sm font-medium mb-4 line-clamp-2">{webinar.speakerTitle}</p>
+                            </div>
+                            
+                            <div className="flex justify-center">
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold uppercase tracking-wide">
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                Wellness Verified
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {filteredWebinars.length === 0 && (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Video className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No webinars found</h3>
-              <p className="text-muted-foreground mb-4">
-                Try adjusting your search or filters
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("all");
-                  setSelectedStatus("all");
-                }}
-              >
-                Clear Filters
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Webinar Detail Modal */}
-      <Dialog open={!!selectedWebinar} onOpenChange={() => setSelectedWebinar(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={!!selectedWebinar} onOpenChange={(open) => !open && setSelectedWebinar(null)}>
+
+        <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-3xl border-0 [&>button]:hidden">
           {selectedWebinar && (
-            <>
-              <DialogHeader>
-                <div className="flex items-start gap-4">
-                  <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <Video className="w-12 h-12 text-white" />
+            <div className="flex flex-col h-[90vh]">
+              {/* Modal Header Image */}
+              <div className="relative h-64 sm:h-80 flex-shrink-0">
+                {selectedWebinar.thumbnail ? (
+                  <img 
+                    src={selectedWebinar.thumbnail} 
+                    alt={selectedWebinar.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                    <Video className="w-20 h-20 text-white/20" />
                   </div>
-                  <div className="flex-1">
-                    <DialogTitle className="text-2xl mb-2">{selectedWebinar.title}</DialogTitle>
-                    <DialogDescription className="text-base">
-                      by {selectedWebinar.speaker} • {selectedWebinar.speakerTitle}
-                    </DialogDescription>
-                    <div className="flex items-center gap-3 mt-3">
-                      <Badge variant={selectedWebinar.status === "Upcoming" ? "default" : "secondary"}>
-                        {selectedWebinar.status}
-                      </Badge>
-                      <Badge variant="outline">{selectedWebinar.category}</Badge>
-                      <Badge variant="secondary">{selectedWebinar.level}</Badge>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+                  onClick={() => setSelectedWebinar(null)}
+                >
+                  <X className="w-6 h-6" />
+                </Button>
+
+                {/* Views Badge - Top Left */}
+                <div className="absolute top-4 left-4 z-20">
+                  <Badge className="bg-black/80 text-white backdrop-blur-sm rounded-full shadow-lg border-0 text-sm px-3 py-1.5">
+                    <Eye className="w-4 h-4 mr-1.5" />
+                    {selectedWebinar.views} views
+                  </Badge>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <Badge className="mb-4 bg-primary text-primary-foreground border-0 px-3 py-1 text-sm">
+                    {selectedWebinar.category}
+                  </Badge>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
+                    {selectedWebinar.title}
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-6 text-white/90">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden border border-white/30">
+                        {selectedWebinar.speakerImage ? (
+                          <img src={selectedWebinar.speakerImage} alt={selectedWebinar.speaker} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs font-bold">
+                            {selectedWebinar.speaker.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{selectedWebinar.speaker}</p>
+                        <p className="text-xs text-white/70">{selectedWebinar.speakerTitle}</p>
+                      </div>
+                    </div>
+                    <div className="h-8 w-px bg-white/20" />
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-xs text-white/70 uppercase tracking-wider font-bold">Date</p>
+                        <p className="font-medium">{selectedWebinar.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-xs text-white/70 uppercase tracking-wider font-bold">Time</p>
+                        <p className="font-medium">{selectedWebinar.time}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </DialogHeader>
+              </div>
 
-              <Separator className="my-4" />
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto bg-white">
+                <div className="p-8 grid gap-12 lg:grid-cols-3">
+                  <div className="lg:col-span-2 space-y-8">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <BookOpen className="w-5 h-5 text-primary" />
+                        About this Session
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed text-lg">
+                        {selectedWebinar.description}
+                      </p>
+                    </div>
 
-              <div className="space-y-6">
-                {/* Schedule Info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm font-medium">Date & Time</span>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Target className="w-5 h-5 text-primary" />
+                        What You'll Learn
+                      </h3>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {selectedWebinar.topics.map((topic: string, i: number) => (
+                          <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors">
+                            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            </div>
+                            <span className="text-gray-700 font-medium leading-snug">{topic}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-lg font-semibold">{selectedWebinar.date}</p>
-                    <p className="text-sm text-muted-foreground">{selectedWebinar.time}</p>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm font-medium">Duration</span>
+
+                  {/* Sidebar in Modal */}
+                  <div className="space-y-6">
+                    <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100">
+                      <h4 className="font-bold text-gray-900 mb-4">Session Details</h4>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Duration</span>
+                          <span className="font-medium text-gray-900">{selectedWebinar.duration}</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Language</span>
+                          <span className="font-medium text-gray-900">English</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Level</span>
+                          <span className="font-medium text-gray-900">{selectedWebinar.level}</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Certificate</span>
+                          <span className="font-medium text-gray-900">Yes</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-lg font-semibold">{selectedWebinar.duration}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm font-medium">Registered</span>
-                    </div>
-                    <p className="text-lg font-semibold">{selectedWebinar.attendees} attendees</p>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Award className="w-4 h-4" />
-                      <span className="text-sm font-medium">Price</span>
-                    </div>
-                    <p className="text-lg font-semibold text-primary">{selectedWebinar.price}</p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
-
-                {/* Description */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">About This Webinar</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {selectedWebinar.description}
-                  </p>
+              {/* Sticky Footer */}
+              <div className="p-6 bg-white border-t border-gray-100 flex items-center justify-between flex-shrink-0 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-gray-900">
+                    {selectedWebinar.price === "Free" ? "Free" : selectedWebinar.price}
+                  </span>
+                  {selectedWebinar.price !== "Free" && (
+                    <span className="text-sm text-gray-500 line-through">₹2,499</span>
+                  )}
                 </div>
-
-                {/* Topics Covered */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Topics Covered</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedWebinar.topics.map((topic: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-sm">
-                        {topic}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* What You'll Learn */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">What You'll Learn</h3>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      <span>Evidence-based strategies and techniques</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      <span>Practical tools you can implement immediately</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      <span>Real-world case studies and examples</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      <span>Q&A session with the expert speaker</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      <span>Downloadable resources and materials</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <Separator />
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Button className="flex-1">
-                    {selectedWebinar.status === "Upcoming" ? (
+                <div className="flex gap-4">
+                  <Button variant="outline" size="lg" className="rounded-xl border-gray-300 hover:bg-gray-50">
+                    <Share2 className="w-5 h-5 mr-2" />
+                    Share
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    className={`rounded-xl px-8 font-bold text-lg shadow-lg shadow-primary/20 ${
+                      isRegistered(selectedWebinar.id) 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-primary hover:bg-primary/90'
+                    }`}
+                    onClick={() => handleRegister(selectedWebinar)}
+                    disabled={registerMutation.isPending || unregisterMutation.isPending}
+                  >
+                    {registerMutation.isPending || unregisterMutation.isPending ? (
                       <>
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Register Now
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Processing...
+                      </>
+                    ) : isRegistered(selectedWebinar.id) ? (
+                      <>
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Registered
                       </>
                     ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Watch Recording
-                      </>
+                      "Register Now"
                     )}
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Users className="w-4 h-4 mr-2" />
-                    Share with Colleagues
                   </Button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Therapist Detail Modal */}
+      {/* Therapist Detail Modal */}
+      <Dialog open={!!selectedTherapist} onOpenChange={(open) => !open && setSelectedTherapist(null)}>
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden p-0 gap-0 [&>button]:hidden">
+          {selectedTherapist && (
+            <div className="flex flex-col h-[90vh]">
+              {/* Modal Header Image */}
+              <div className="relative h-64 sm:h-80 flex-shrink-0">
+                {selectedTherapist.speakerImage ? (
+                  <img 
+                    src={selectedTherapist.speakerImage} 
+                    alt={selectedTherapist.speaker}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                    <span className="text-9xl font-bold text-primary/20">
+                      {selectedTherapist.speaker?.charAt(0) || 'T'}
+                    </span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+                  onClick={() => setSelectedTherapist(null)}
+                >
+                  <X className="w-6 h-6" />
+                </Button>
+
+                {/* Verified Badge - Top Left */}
+                <div className="absolute top-4 left-4 z-20">
+                  <div className="flex items-center gap-2 bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full shadow-lg border border-white/20">
+                    <Award className="w-4 h-4" />
+                    <span className="text-sm font-bold">Wellness Verified</span>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <Badge className="mb-4 bg-white/20 backdrop-blur-sm border-white/30 text-white px-3 py-1 text-sm hover:bg-white/30">
+                    {selectedTherapist.category}
+                  </Badge>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2 leading-tight">
+                    {selectedTherapist.speaker}
+                  </h2>
+                  <p className="text-xl text-white/90 font-medium">{selectedTherapist.speakerTitle}</p>
+                  
+                  <div className="flex items-center gap-4 mt-4 text-white/80">
+                    <div className="flex items-center gap-1.5">
+                      <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                      <span className="font-bold text-white">4.9</span>
+                      <span className="text-sm">(120+ reviews)</span>
+                    </div>
+                    <div className="h-4 w-px bg-white/30" />
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-4 h-4" />
+                      <span className="font-bold text-white">{selectedTherapist.attendees}+</span>
+                      <span className="text-sm">Students Mentored</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto bg-white">
+                <div className="p-8 grid gap-12 lg:grid-cols-3">
+                  <div className="lg:col-span-2 space-y-8">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Users className="w-5 h-5 text-primary" />
+                        About
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed text-lg">
+                        {selectedTherapist.speaker} is a highly experienced {selectedTherapist.speakerTitle.toLowerCase()} specializing in {selectedTherapist.category.toLowerCase()}. 
+                        With years of experience working with students and educational institutions, they bring evidence-based practices and compassionate care to every session.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Target className="w-5 h-5 text-primary" />
+                        Specializations
+                      </h3>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedTherapist.topics.map((topic: string, index: number) => (
+                          <div key={index} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors">
+                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            <span className="text-gray-700 font-medium">{topic}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sidebar in Modal */}
+                  <div className="space-y-6">
+                    <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100">
+                      <h4 className="font-bold text-gray-900 mb-4">Quick Stats</h4>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Experience</span>
+                          <span className="font-medium text-gray-900">{Math.floor(Math.random() * 10) + 5}+ Years</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Webinars</span>
+                          <span className="font-medium text-gray-900">{Math.floor(Math.random() * 20) + 5}</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                          <span className="text-gray-500">Language</span>
+                          <span className="font-medium text-gray-900">English, Hindi</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-blue-50 border border-blue-100">
+                      <h4 className="font-bold text-blue-900 mb-2">Credentials</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2 text-blue-800 text-sm">
+                          <Award className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>Licensed Clinical Psychologist</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-blue-800 text-sm">
+                          <Award className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>M.Phil in Clinical Psychology</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sticky Footer */}
+              <div className="p-6 bg-white border-t border-gray-100 flex items-center justify-between flex-shrink-0 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Next Available Slot</span>
+                  <span className="text-lg font-bold text-gray-900">Tomorrow, 10:00 AM</span>
+                </div>
+                {/* Buttons removed as per request */}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
     </div>
   );
 }

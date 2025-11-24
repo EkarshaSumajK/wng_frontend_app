@@ -90,7 +90,13 @@ export function ViewCaseDetailModal({ isOpen, onClose, caseData }: ViewCaseDetai
                     <User className="w-4 h-4" />
                     <span>Student</span>
                   </div>
-                  <p className="font-medium">{caseData.student?.name || 'Unknown'}</p>
+                  <p className="font-medium">
+                    {caseData.student?.name || 
+                     caseData.student?.first_name && caseData.student?.last_name 
+                       ? `${caseData.student.first_name} ${caseData.student.last_name}` 
+                       : caseData.student_name || 
+                     'Unknown Student'}
+                  </p>
                 </div>
 
                 <div>
@@ -98,7 +104,7 @@ export function ViewCaseDetailModal({ isOpen, onClose, caseData }: ViewCaseDetai
                     <Users className="w-4 h-4" />
                     <span>Assigned Counsellor</span>
                   </div>
-                  <p className="font-medium">{caseData.assigned_counsellor || 'Unassigned'}</p>
+                  <p className="font-medium">{caseData.counsellor?.name || caseData.counsellor?.display_name || 'Unassigned'}</p>
                 </div>
 
                 <div>

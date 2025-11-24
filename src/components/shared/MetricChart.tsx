@@ -21,7 +21,7 @@ const DEFAULT_COLORS = [
   'hsl(var(--destructive))'
 ];
 
-export function MetricChart({
+export const MetricChart = React.memo(function MetricChart({
   title,
   data,
   type,
@@ -139,4 +139,4 @@ export function MetricChart({
       </CardContent>
     </Card>
   );
-}
+});

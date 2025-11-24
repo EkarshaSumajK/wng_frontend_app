@@ -60,7 +60,7 @@ export default function ClassesOnboarding({ schoolId }: ClassesOnboardingProps) 
     }
   };
 
-  const classesList = classes || [];
+  const classesList = (classes as any[]) || [];
 
   // Filter classes based on search query
   const filteredClasses = useMemo(() => {

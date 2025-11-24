@@ -122,9 +122,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               }
             }
             
+            // Parse display name to remove title prefix (Mr., Mrs., Ms., Dr., etc.)
+            const parseDisplayName = (displayName: string): string => {
+              if (!displayName) return '';
+              // Remove common title prefixes
+              const cleanName = displayName.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s+/i, '').trim();
+              return cleanName || displayName;
+            };
+
             setUser({
               id: userData.user_id,
-              name: userData.display_name,
+              name: userData.first_name && userData.last_name 
+                ? `${userData.first_name} ${userData.last_name}` 
+                : parseDisplayName(userData.display_name) || userData.email?.split('@')[0],
               email: userData.email,
               role: userData.role as UserRole,
               school_id: userData.school_id,
@@ -189,10 +199,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }
       
+      // Parse display name to remove title prefix (Mr., Mrs., Ms., Dr., etc.)
+      const parseDisplayName = (displayName: string): string => {
+        if (!displayName) return '';
+        // Remove common title prefixes
+        const cleanName = displayName.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s+/i, '').trim();
+        return cleanName || displayName;
+      };
+
       // Set user
       const userData: User = {
         id: data.user.user_id,
-        name: data.user.display_name,
+        name: data.user.first_name && data.user.last_name 
+          ? `${data.user.first_name} ${data.user.last_name}` 
+          : parseDisplayName(data.user.display_name) || data.user.email?.split('@')[0],
         email: data.user.email,
         role: data.user.role as UserRole,
         school_id: data.user.school_id,

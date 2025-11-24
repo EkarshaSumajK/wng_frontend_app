@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -22,6 +22,7 @@ import DataOnboarding from "./pages/onboarding/DataOnboarding";
 import RoleSelection from "./pages/onboarding/RoleSelection";
 
 // Lazy load all other pages for faster initial load
+const CounsellorHome = lazy(() => import("./pages/counsellor/CounsellorHome"));
 const CounsellorDashboard = lazy(() => import("./pages/counsellor/CounsellorDashboard"));
 const CasesPage = lazy(() => import("./pages/counsellor/CasesPage"));
 const StudentsPage = lazy(() => import("./pages/counsellor/StudentsPage"));
@@ -31,8 +32,13 @@ const AIInsightsPage = lazy(() => import("./pages/counsellor/AIInsightsPage"));
 const CalendarPage = lazy(() => import("./pages/counsellor/CalendarPage"));
 const ResourcesPage = lazy(() => import("./pages/counsellor/ResourcesPage"));
 const WebinarsPage = lazy(() => import("./pages/counsellor/WebinarsPage"));
+const TherapistsPage = lazy(() => import("./pages/counsellor/TherapistsPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const HelpSupportPage = lazy(() => import("./pages/HelpSupportPage"));
 
+const TeacherHome = lazy(() => import("./pages/teacher/TeacherHome"));
 const TeacherDashboard = lazy(() => import("./pages/teacher/TeacherDashboard"));
+const TeacherCasesPage = lazy(() => import("./pages/teacher/CasesPage"));
 const TeacherResourcesPage = lazy(() => import("./pages/teacher/ResourcesPage"));
 const TeacherCalendarPage = lazy(() => import("./pages/teacher/TeacherCalendarPage"));
 const TeacherAssessmentsPage = lazy(() => import("./pages/teacher/AssessmentsPage"));
@@ -40,6 +46,7 @@ const TeacherActivitiesPage = lazy(() => import("./pages/teacher/ActivitiesPage"
 const StudentMonitoringPage = lazy(() => import("./pages/teacher/StudentMonitoringPage"));
 const TeacherWebinarsPage = lazy(() => import("./pages/teacher/WebinarsPage"));
 
+const LeadershipHome = lazy(() => import("./pages/leadership/LeadershipHome"));
 const LeadershipDashboard = lazy(() => import("./pages/leadership/LeadershipDashboard"));
 const OnboardingPage = lazy(() => import("./pages/leadership/OnboardingPage"));
 const SchoolOverviewPage = lazy(() => import("./pages/leadership/SchoolOverviewPage"));
@@ -62,10 +69,9 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 10 * 60 * 1000, // 10 minutes - data stays fresh longer
-      cacheTime: 30 * 60 * 1000, // 30 minutes - cache persists much longer
+      gcTime: 30 * 60 * 1000, // 30 minutes - cache persists much longer
       refetchOnMount: false, // Don't refetch on component mount if data is fresh
       refetchOnReconnect: true, // Refetch when connection is restored
-      suspense: false, // Disable suspense for better error handling
     },
     mutations: {
       retry: 1,
@@ -98,7 +104,8 @@ const App = () => (
               }
             >
               {/* Counsellor Routes */}
-              <Route path="/counsellor" element={<CounsellorDashboard />} />
+              <Route path="/counsellor" element={<CounsellorHome />} />
+              <Route path="/counsellor/dashboard" element={<CounsellorDashboard />} />
               <Route path="/counsellor/cases" element={<CasesPage />} />
               <Route path="/counsellor/students" element={<StudentsPage />} />
               <Route path="/counsellor/assessments" element={<AssessmentsPage />} />
@@ -107,18 +114,25 @@ const App = () => (
               <Route path="/counsellor/calendar" element={<CalendarPage />} />
               <Route path="/counsellor/resources" element={<ResourcesPage />} />
               <Route path="/counsellor/webinars" element={<WebinarsPage />} />
+              <Route path="/counsellor/profile" element={<ProfilePage />} />
+              <Route path="/counsellor/help" element={<HelpSupportPage />} />
               
               {/* Teacher Routes */}
-              <Route path="/teacher" element={<TeacherDashboard />} />
+              <Route path="/teacher" element={<TeacherHome />} />
+              <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+              <Route path="/teacher/cases" element={<TeacherCasesPage />} />
               <Route path="/teacher/students" element={<StudentMonitoringPage />} />
               <Route path="/teacher/assessments" element={<TeacherAssessmentsPage />} />
               <Route path="/teacher/activities" element={<TeacherActivitiesPage />} />
               <Route path="/teacher/resources" element={<TeacherResourcesPage />} />
               <Route path="/teacher/calendar" element={<TeacherCalendarPage />} />
               <Route path="/teacher/webinars" element={<TeacherWebinarsPage />} />
+              <Route path="/teacher/profile" element={<ProfilePage />} />
+              <Route path="/teacher/help" element={<HelpSupportPage />} />
               
               {/* Leadership Routes */}
-              <Route path="/leadership" element={<LeadershipDashboard />} />
+              <Route path="/leadership" element={<LeadershipHome />} />
+              <Route path="/leadership/dashboard" element={<LeadershipDashboard />} />
               <Route path="/leadership/onboarding" element={<OnboardingPage />} />
               <Route path="/leadership/overview" element={<SchoolOverviewPage />} />
               <Route path="/leadership/analytics" element={<AnalyticsPage />} />
@@ -132,9 +146,12 @@ const App = () => (
               <Route path="/leadership/marketplace" element={<MarketplacePage />} />
               <Route path="/leadership/resources" element={<LeadershipResourcesPage />} />
               <Route path="/leadership/webinars" element={<LeadershipWebinarsPage />} />
+              <Route path="/leadership/profile" element={<ProfilePage />} />
+              <Route path="/leadership/help" element={<HelpSupportPage />} />
               
               {/* Principal Routes (alias for Leadership) */}
-              <Route path="/principal" element={<LeadershipDashboard />} />
+              <Route path="/principal" element={<LeadershipHome />} />
+              <Route path="/principal/dashboard" element={<LeadershipDashboard />} />
               <Route path="/principal/onboarding" element={<OnboardingPage />} />
               <Route path="/principal/overview" element={<SchoolOverviewPage />} />
               <Route path="/principal/analytics" element={<AnalyticsPage />} />
@@ -148,6 +165,8 @@ const App = () => (
               <Route path="/principal/marketplace" element={<MarketplacePage />} />
               <Route path="/principal/resources" element={<LeadershipResourcesPage />} />
               <Route path="/principal/webinars" element={<LeadershipWebinarsPage />} />
+              <Route path="/principal/profile" element={<ProfilePage />} />
+              <Route path="/principal/help" element={<HelpSupportPage />} />
             </Route>
             
             {/* Catch-all route */}

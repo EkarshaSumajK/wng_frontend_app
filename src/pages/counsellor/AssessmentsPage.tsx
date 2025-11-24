@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Plus, Eye, Play, Users, Clock, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Eye, Play, Users, Clock, CheckCircle, AlertCircle, Trash2, ClipboardList, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/shared/DataTable';
-import { StatCard } from '@/components/shared/StatCard';
 import { Assessment, AssessmentResponse } from '@/types';
-import { CreateAssessmentModal } from '@/components/modals/CreateAssessmentModal';
+import { Input } from '@/components/ui/input';
+
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -18,11 +18,14 @@ import {
   useAssessment
 } from '@/hooks/useAssessments';
 import { useClasses } from '@/hooks/useClasses';
+import { FilterSection } from '@/components/shared/FilterSection';
 
 export default function AssessmentsPage() {
   const { user } = useAuth();
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch assessments for the school
   const { data: assessments = [], isLoading: assessmentsLoading } = useAssessments({
@@ -38,42 +41,13 @@ export default function AssessmentsPage() {
   const { data: classes = [] } = useClasses({ school_id: user?.school_id });
 
   // Fetch selected assessment details
-  const { data: selectedAssessment } = useAssessment(selectedAssessmentId || '') as { data: any };
+  const { data: selectedAssessment, isLoading: selectedAssessmentLoading } = useAssessment(
+    selectedAssessmentId || ''
+  ) as { data: any; isLoading: boolean };
 
   // Mutations
   const createAssessment = useCreateAssessment();
   const deleteAssessment = useDeleteAssessment();
-
-  const handleCreateAssessment = (assessmentData: any) => {
-    // Send assessment with questions directly to backend
-    createAssessment.mutate({
-      school_id: user?.school_id,
-      class_id: assessmentData.classId || undefined,
-      title: assessmentData.title,
-      description: assessmentData.description,
-      category: assessmentData.type,
-      questions: assessmentData.questions.map((q: any) => ({
-        question_id: q.id,
-        question_text: q.question,
-        question_type: q.type === 'multiple-choice' ? 'multiple_choice' : 
-                       q.type === 'yes-no' ? 'yes_no' : 
-                       q.type === 'scale' ? 'rating_scale' : 'text',
-        required: q.required,
-        answer_options: q.type === 'multiple-choice' ? 
-          q.options?.map((opt: string, idx: number) => ({
-            option_id: `opt_${idx}`,
-            text: opt,
-            value: idx + 1
-          })) : undefined,
-        min_value: q.type === 'scale' ? (q.scaleRange?.min || 1) : undefined,
-        max_value: q.type === 'scale' ? (q.scaleRange?.max || 5) : undefined,
-      })),
-      created_by: user?.id,
-      notes: assessmentData.description
-    });
-    
-    setShowCreateModal(false);
-  };
 
   const handleDeleteAssessment = (assessmentId: string) => {
     if (confirm('Are you sure you want to delete this assessment?')) {
@@ -81,7 +55,39 @@ export default function AssessmentsPage() {
     }
   };
 
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set<string>();
+    assessments.forEach((a: any) => { if (a.category) categories.add(a.category); });
+    templates.forEach((t: any) => { if (t.category) categories.add(t.category); });
+    return Array.from(categories);
+  }, [assessments, templates]);
 
+  const uniqueClasses = useMemo(() => {
+    const classNames = new Set<string>();
+    classes.forEach((c: any) => {
+      if (c.class_name) classNames.add(c.class_name);
+      else if (c.name) classNames.add(c.name);
+    });
+    assessments.forEach((a: any) => { if (a.class_name) classNames.add(a.class_name); });
+    return Array.from(classNames);
+  }, [assessments, classes]);
+
+    const filteredAssessments = useMemo(() => {
+    return assessments.filter((a: any) => {
+      const matchesCategory = selectedCategories.length === 0 || (a.category && selectedCategories.includes(a.category));
+      const matchesClass = selectedClasses.length === 0 || (a.class_name && selectedClasses.includes(a.class_name));
+      const matchesSearch = !searchQuery || (a.title && a.title.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesClass && matchesSearch;
+    });
+  }, [assessments, selectedCategories, selectedClasses, searchQuery]);
+
+  const filteredTemplates = useMemo(() => {
+    return templates.filter((t: any) => {
+      const matchesCategory = selectedCategories.length === 0 || (t.category && selectedCategories.includes(t.category));
+      const matchesSearch = !searchQuery || (t.name && t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesSearch;
+    });
+  }, [templates, selectedCategories, searchQuery]);
 
   const assessmentColumns = [
     {
@@ -146,38 +152,76 @@ export default function AssessmentsPage() {
     </div>
   );
 
-  const responseActions = (response: AssessmentResponse) => (
-    <Button
-      variant="outline"
-      size="sm"
-    >
-      <Eye className="w-3 h-3 mr-1" />
-      Review
-    </Button>
-  );
+  if (selectedAssessmentId) {
+    if (selectedAssessmentLoading) {
+      return (
+        <div className="space-y-6">
+          <Button
+            variant="ghost"
+            onClick={() => setSelectedAssessmentId(null)}
+            className="mb-4"
+          >
+            ← Back to Assessments
+          </Button>
+          <Card className="card-professional">
+            <CardContent className="py-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading assessment details...</p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
 
-  if (selectedAssessmentId && selectedAssessment) {
+    if (!selectedAssessment) {
+      return (
+        <div className="space-y-6">
+          <Button
+            variant="ghost"
+            onClick={() => setSelectedAssessmentId(null)}
+            className="mb-4"
+          >
+            ← Back to Assessments
+          </Button>
+          <Card className="card-professional">
+            <CardContent className="py-12 text-center">
+              <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Assessment not found</p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedAssessmentId(null)}
-              className="mb-2"
-            >
-              ← Back to Assessments
-            </Button>
-            <h1 className="text-3xl font-semibold text-foreground">
-              {selectedAssessment.title || 'Assessment Details'}
-            </h1>
-            <p className="text-muted-foreground">{selectedAssessment.notes || 'No description'}</p>
-          </div>
-          <div className="flex gap-2">
-            {selectedAssessment.category && (
-              <Badge variant="outline">{selectedAssessment.category}</Badge>
-            )}
+      <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
+        {/* Header with modern design */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+          <Button
+            variant="ghost"
+            onClick={() => setSelectedAssessmentId(null)}
+            className="mb-4 hover:bg-primary/10 hover:text-primary font-semibold"
+          >
+            ← Back to Assessments
+          </Button>
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                  <ClipboardList className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  {selectedAssessment.title || 'Assessment Details'}
+                </h1>
+              </div>
+              <p className="text-base text-muted-foreground ml-13">{selectedAssessment.notes || 'No description'}</p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {selectedAssessment.category && (
+                <Badge variant="outline" className="text-sm px-3 py-1 font-semibold">{selectedAssessment.category}</Badge>
+              )}
+            </div>
           </div>
         </div>
 
@@ -340,147 +384,214 @@ export default function AssessmentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-foreground">Assessments</h1>
-          <p className="text-muted-foreground">Create, manage, and review student assessments</p>
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
+      {/* Header with modern design */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <ClipboardList className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Assessments
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground ml-13">Manage and review student assessments</p>
+          </div>
         </div>
-        
-        <Button 
-          className="bg-gradient-primary hover:bg-primary-hover"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Assessment
-        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Assessments"
-          value={assessmentsLoading ? '...' : assessments.length}
-          icon={Users}
-          subtitle="Available assessments"
-        />
-        
-        <StatCard
-          title="Templates Available"
-          value={templatesLoading ? '...' : templates.length}
-          icon={Play}
-          variant="success"
-          subtitle="Assessment templates"
-        />
-        
-        <StatCard
-          title="Active Templates"
-          value={templatesLoading ? '...' : templates.filter((t: any) => t.is_active).length}
-          icon={CheckCircle}
-          variant="success"
-          subtitle="Ready to use"
-        />
-        
-        <StatCard
-          title="Categories"
-          value={templatesLoading ? '...' : new Set(templates.map((t: any) => t.category).filter(Boolean)).size}
-          icon={Clock}
-          subtitle="Template categories"
-        />
-      </div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar */}
+        <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+            <div className="flex items-center gap-2 mb-6">
+              <Filter className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+            </div>
+            
+            <FilterSection 
+              title="Categories" 
+              options={uniqueCategories} 
+              selected={selectedCategories} 
+              setSelected={setSelectedCategories} 
+            />
 
-      {/* Tabs */}
-      <Tabs defaultValue="assessments" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="assessments">Assessment Library</TabsTrigger>
-          <TabsTrigger value="responses">Student Responses</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-        </TabsList>
+            <div className="mt-6">
+              <FilterSection 
+                title="Classes" 
+                options={uniqueClasses} 
+                selected={selectedClasses} 
+                setSelected={setSelectedClasses} 
+              />
+            </div>
 
-        <TabsContent value="assessments">
-          {assessmentsLoading ? (
-            <Card className="card-professional">
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">Loading assessments...</p>
+            <Button 
+              variant="outline" 
+              className="w-full mt-6 text-gray-500 hover:text-primary border-dashed"
+              onClick={() => {
+                setSelectedCategories([]);
+                setSelectedClasses([]);
+                setSearchQuery("");
+              }}
+            >
+              Clear All Filters
+            </Button>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <Card className="relative overflow-hidden border-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Total Assessments</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground mb-1">{assessmentsLoading ? '...' : assessments.length}</div>
               </CardContent>
             </Card>
-          ) : (
-            <DataTable
-              data={assessments}
-              columns={assessmentColumns}
-              title="Assessment Library"
-              searchPlaceholder="Search assessments..."
-              onRowClick={(assessment: any) => setSelectedAssessmentId(assessment.assessment_id)}
-              actions={assessmentActions}
-            />
-          )}
-        </TabsContent>
-
-        <TabsContent value="responses">
-          <Card className="card-professional">
-            <CardHeader>
-              <CardTitle>Student Responses</CardTitle>
-              <CardDescription>View and review student assessment responses</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Student responses are available in the Cases page for each individual student.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="templates">
-          <Card className="card-professional">
-            <CardHeader>
-              <CardTitle>Assessment Templates</CardTitle>
-              <CardDescription>Pre-built assessment templates for common scenarios</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {templatesLoading ? (
-                <p className="text-muted-foreground">Loading templates...</p>
-              ) : templates.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {templates.map((template: any) => (
-                    <Card key={template.template_id} className="hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <CardTitle className="text-base">{template.name}</CardTitle>
-                          {template.is_active && (
-                            <Badge variant="default" className="ml-2">Active</Badge>
-                          )}
-                        </div>
-                        {template.category && (
-                          <Badge variant="outline" className="w-fit">{template.category}</Badge>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {template.description || 'No description available'}
-                        </p>
-                        <div className="text-sm text-muted-foreground">
-                          <span className="font-medium">{template.questions?.length || 0}</span> questions
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+            
+            <Card className="relative overflow-hidden border-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Templates</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
+                  <Play className="w-4 h-4 text-white" />
                 </div>
-              ) : (
-                <p className="text-muted-foreground">No templates available.</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground mb-1">{templatesLoading ? '...' : templates.length}</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="relative overflow-hidden border-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Active</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground mb-1">{templatesLoading ? '...' : templates.filter((t: any) => t.is_active).length}</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="relative overflow-hidden border-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Categories</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
+                  <Clock className="w-4 h-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground mb-1">{templatesLoading ? '...' : new Set(templates.map((t: any) => t.category).filter(Boolean)).size}</div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Create Assessment Modal */}
-      <CreateAssessmentModal
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
-        onSubmit={handleCreateAssessment}
-        classes={classes}
-      />
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search assessments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+            />
+          </div>
+
+          {/* Tabs */}
+          <Tabs defaultValue="assessments" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="assessments">Assessment Library</TabsTrigger>
+              <TabsTrigger value="responses">Student Responses</TabsTrigger>
+              <TabsTrigger value="templates">Templates</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="assessments">
+              {assessmentsLoading ? (
+                <Card className="card-professional">
+                  <CardContent className="py-8 text-center">
+                    <p className="text-muted-foreground">Loading assessments...</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <DataTable
+                  data={filteredAssessments}
+                  columns={assessmentColumns}
+                  title="Assessment Library"
+                  searchPlaceholder="Search assessments..."
+                  onRowClick={(assessment: any) => setSelectedAssessmentId(assessment.assessment_id)}
+                  actions={assessmentActions}
+                  searchable={false} // Hide internal search since we have a global one
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="responses">
+              <Card className="card-professional">
+                <CardHeader>
+                  <CardTitle>Student Responses</CardTitle>
+                  <CardDescription>View and review student assessment responses</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Student responses are available in the Cases page for each individual student.
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="templates">
+              <Card className="card-professional">
+                <CardHeader>
+                  <CardTitle>Assessment Templates</CardTitle>
+                  <CardDescription>Pre-built assessment templates for common scenarios</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {templatesLoading ? (
+                    <p className="text-muted-foreground">Loading templates...</p>
+                  ) : filteredTemplates.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredTemplates.map((template: any) => (
+                        <Card key={template.template_id} className="hover:shadow-md transition-shadow">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <CardTitle className="text-base">{template.name}</CardTitle>
+                              {template.is_active && (
+                                <Badge variant="default" className="ml-2">Active</Badge>
+                              )}
+                            </div>
+                            {template.category && (
+                              <Badge variant="outline" className="w-fit">{template.category}</Badge>
+                            )}
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {template.description || 'No description available'}
+                            </p>
+                            <div className="text-sm text-muted-foreground">
+                              <span className="font-medium">{template.questions?.length || 0}</span> questions
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No templates available matching your criteria.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,16 @@
-import { useState } from "react";
-import { Book, Download, Search, Filter, Star, ExternalLink, Video, Music, FileText, Trash2, Eye, X, Plus, Edit } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Book, Search, Filter, ExternalLink, Video, Music, FileText, Eye, Calendar, User, Tag, ChevronRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { StatCard } from "@/components/shared/StatCard";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ResourceModal } from "@/components/modals/ResourceModal";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+import { AnimatedBackground } from "@/components/ui/animated-background";
 import { useAuth } from "@/contexts/AuthContext";
-import { useResources, useResourceCategories, useResourceStats, useDeleteResource, useCreateResource, useUpdateResource } from "@/hooks/useResources";
+import { useResources, useResourceCategories } from "@/hooks/useResources";
+import { FilterSection } from "@/components/shared/FilterSection";
 
 // Helper function to convert YouTube/Vimeo URLs to embed format
 const getEmbedUrl = (url: string): string => {
@@ -36,18 +38,14 @@ const getEmbedUrl = (url: string): string => {
 export default function ResourcesPage() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [viewingResource, setViewingResource] = useState<any>(null);
-  const [showResourceModal, setShowResourceModal] = useState(false);
-  const [editingResource, setEditingResource] = useState<any>(null);
+  const [sortBy, setSortBy] = useState("newest");
   
   // Fetch resources
   const { data: resources = [], isLoading } = useResources({
     school_id: user?.school_id,
-    category: selectedCategory || undefined,
-    type: selectedType || undefined,
-    search: searchTerm || undefined,
     status: 'PUBLISHED',
     include_global: true
   });
@@ -58,60 +56,10 @@ export default function ResourcesPage() {
     include_global: true
   });
 
-  // Fetch stats
-  const { data: stats } = useResourceStats({
-    school_id: user?.school_id,
-    include_global: true
-  });
-
-  // Mutations
-  const createResource = useCreateResource();
-  const updateResource = useUpdateResource();
-  const deleteResource = useDeleteResource();
-
-  const handleCreateResource = (resourceData: any) => {
-    createResource.mutate({
-      ...resourceData,
-      author_id: user?.id,
-      author_name: (user as any)?.display_name || user?.email || 'Unknown',
-      school_id: user?.school_id
-    });
-    setShowResourceModal(false);
-  };
-
-  const handleUpdateResource = (resourceData: any) => {
-    if (editingResource) {
-      updateResource.mutate({
-        id: editingResource.resource_id,
-        data: resourceData
-      });
-      setEditingResource(null);
-      setShowResourceModal(false);
-    }
-  };
-
-  const handleDelete = (id: string, title: string) => {
-    if (confirm(`Are you sure you want to delete "${title}"?`)) {
-      deleteResource.mutate(id);
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video':
-        return <Video className="h-4 w-4" />;
-      case 'audio':
-        return <Music className="h-4 w-4" />;
-      case 'article':
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <Book className="h-4 w-4" />;
-    }
-  };
-
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'video':
+      case 'VIDEO':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
       case 'audio':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
@@ -122,347 +70,440 @@ export default function ResourcesPage() {
     }
   };
 
+  const uniqueCategories = useMemo(() => 
+    categoriesData.map((c: any) => c.category).filter(Boolean), 
+  [categoriesData]);
+
+  const uniqueTypes = useMemo(() => 
+    Array.from(new Set(resources.map((r: any) => r.type))).filter(Boolean) as string[], 
+  [resources]);
+
+  const filteredResources = useMemo(() => {
+    let filtered = resources.filter((resource: any) => {
+      const matchesSearch = 
+        resource.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(resource.category);
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(resource.type);
+
+      return matchesSearch && matchesCategory && matchesType;
+    });
+
+    if (sortBy === "newest") {
+      filtered.sort((a: any, b: any) => new Date(b.posted_date || b.created_at).getTime() - new Date(a.posted_date || a.created_at).getTime());
+    } else if (sortBy === "oldest") {
+      filtered.sort((a: any, b: any) => new Date(a.posted_date || a.created_at).getTime() - new Date(b.posted_date || b.created_at).getTime());
+    } else if (sortBy === "title") {
+      filtered.sort((a: any, b: any) => a.title.localeCompare(b.title));
+    }
+
+    return filtered;
+  }, [resources, searchTerm, selectedCategories, selectedTypes, sortBy]);
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Resources</h1>
-          <p className="text-muted-foreground">Access intervention guides and support materials</p>
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 relative">
+      <AnimatedBackground />
+      {/* Header with modern design */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <Book className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Resource Library
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground ml-13">
+              Discover intervention guides, videos, and support materials
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Resources"
-          value={stats?.total_resources?.toString() || '0'}
-          icon={Book}
-        />
-        <StatCard
-          title="Videos"
-          value={stats?.by_type?.videos?.toString() || '0'}
-          icon={Video}
-        />
-        <StatCard
-          title="Audio"
-          value={stats?.by_type?.audio?.toString() || '0'}
-          icon={Music}
-          variant="success"
-        />
-        <StatCard
-          title="Articles"
-          value={stats?.by_type?.articles?.toString() || '0'}
-          icon={FileText}
-          variant="warning"
-        />
-      </div>
-
-      {/* Search & Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search resources..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar */}
+        <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+            <div className="flex items-center gap-2 mb-6">
+              <Filter className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
             </div>
+            
+            <FilterSection 
+              title="Categories" 
+              options={uniqueCategories} 
+              selected={selectedCategories} 
+              setSelected={setSelectedCategories} 
+            />
+            
+            <FilterSection 
+              title="Type" 
+              options={uniqueTypes} 
+              selected={selectedTypes} 
+              setSelected={setSelectedTypes} 
+            />
+
+            <Button 
+              variant="outline" 
+              className="w-full mt-6 text-gray-500 hover:text-primary border-dashed"
+              onClick={() => {
+                setSelectedCategories([]);
+                setSelectedTypes([]);
+                setSearchTerm("");
+              }}
+            >
+              Clear All Filters
+            </Button>
           </div>
-          
-          {/* Type Filter */}
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-2">Type</p>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={selectedType === '' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedType('')}
-              >
-                All Types
-              </Button>
-              <Button
-                variant={selectedType === 'VIDEO' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedType('VIDEO')}
-              >
-                <Video className="h-4 w-4 mr-2" />
-                Videos
-              </Button>
-              <Button
-                variant={selectedType === 'audio' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedType('audio')}
-              >
-                <Music className="h-4 w-4 mr-2" />
-                Audio
-              </Button>
-              <Button
-                variant={selectedType === 'article' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedType('article')}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Articles
-              </Button>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 space-y-6">
+          {/* Search and Sort */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search resources..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+              />
+            </div>
+            <div className="w-full sm:w-[200px]">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-10 bg-white border-gray-200 rounded-xl">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="title">Title (A-Z)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Category Filter */}
-          <div>
-            <p className="text-sm font-medium mb-2">Category</p>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={selectedCategory === '' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory('')}
-              >
-                All Categories
-              </Button>
-              {categoriesData.map((cat: any) => (
-                <Button
-                  key={cat.category}
-                  variant={selectedCategory === cat.category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(cat.category)}
-                  className="capitalize"
-                >
-                  {cat.category} ({cat.count})
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Resources Grid */}
-      {isLoading ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground">Loading resources...</p>
-          </CardContent>
-        </Card>
-      ) : resources.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {resources.map((resource: any) => (
-            <Card key={resource.resource_id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg leading-tight">{resource.title}</CardTitle>
-                  <div className="flex items-center gap-1">
-                    {getTypeIcon(resource.type)}
-                  </div>
-                </div>
-                <CardDescription className="line-clamp-3">
-                  {resource.description || 'No description available'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4">
-                  <Badge className={getTypeColor(resource.type)}>
-                    {resource.type}
-                  </Badge>
-                  {resource.category && (
-                    <Badge variant="outline" className="capitalize">
-                      {resource.category}
-                    </Badge>
-                  )}
-                </div>
-                
-                {resource.tags && resource.tags.length > 0 && (
-                  <div className="flex gap-2 flex-wrap mb-4">
-                    {resource.tags.slice(0, 3).map((tag: string) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {resource.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{resource.tags.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                  <span>Posted: {new Date(resource.posted_date || resource.created_at).toLocaleDateString()}</span>
-                </div>
-
-                <div className="flex gap-2">
-                  {(resource.video_url || resource.audio_url || resource.article_url) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => setViewingResource(resource)}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View
-                    </Button>
-                  )}
-                  {user?.school_id === resource.school_id && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setEditingResource(resource);
-                          setShowResourceModal(true);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDelete(resource.resource_id, resource.title)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
+          {/* Resources Grid */}
+          {isLoading ? (
+            <Card className="border-2">
+              <CardContent className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground font-medium">Loading resources...</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Book className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No resources found matching your criteria</p>
-          </CardContent>
-        </Card>
-      )}
+          ) : filteredResources.length > 0 ? (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-foreground">
+                  Showing {filteredResources.length} Resources
+                </h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {filteredResources.map((resource: any, index: number) => (
+                  <div
+                    key={resource.resource_id}
+                    className="group cursor-pointer"
+                    onClick={() => setViewingResource(resource)}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Card Container */}
+                    <div className="relative h-96 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
+                      {/* Card */}
+                      <Card className="h-full border-2 rounded-xl shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 bg-white">
+                        {/* Card Content */}
+                        <div className="relative h-full flex flex-col p-5">
+                          {/* Type Badge - Top Right */}
+                          <div className="absolute top-3 right-3 z-10">
+                            <Badge className={`${getTypeColor(resource.type)} text-xs shadow-sm`}>
+                              {resource.type}
+                            </Badge>
+                          </div>
 
-      {/* Resource Detail View Modal */}
-      <Dialog open={!!viewingResource} onOpenChange={(open) => !open && setViewingResource(null)}>
-        <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">{viewingResource?.title}</DialogTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge className={getTypeColor(viewingResource?.type)}>
-                {viewingResource?.type}
-              </Badge>
-              {viewingResource?.category && (
-                <Badge variant="outline">{viewingResource.category}</Badge>
-              )}
-            </div>
-          </DialogHeader>
+                          {/* Title Area */}
+                          <div className="flex-1 flex flex-col justify-center mb-4 pr-16">
+                            <h3 className="text-lg font-bold leading-tight mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                              {resource.title}
+                            </h3>
+                            <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                              {resource.description || 'No description available'}
+                            </p>
+                          </div>
 
-          <div className="flex-1 overflow-hidden">
-            {viewingResource?.type === 'VIDEO' && viewingResource?.video_url && (
-              <iframe
-                src={getEmbedUrl(viewingResource.video_url)}
-                className="w-full h-full rounded-lg border"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={viewingResource.title}
-              />
-            )}
+                          {/* Category Badge */}
+                          {resource.category && (
+                            <div className="mb-3">
+                              <Badge variant="secondary" className="capitalize text-xs font-semibold">
+                                {resource.category}
+                              </Badge>
+                            </div>
+                          )}
 
-            {viewingResource?.type === 'audio' && viewingResource?.audio_url && (
-              <div className="flex flex-col items-center justify-center h-full space-y-4">
-                <Music className="h-24 w-24 text-muted-foreground" />
-                <audio
-                  controls
-                  className="w-full max-w-2xl"
-                  src={viewingResource.audio_url}
-                >
-                  Your browser does not support the audio element.
-                </audio>
-                {viewingResource.description && (
-                  <div className="max-w-2xl w-full p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">{viewingResource.description}</p>
+                          {/* Tags */}
+                          {resource.tags && resource.tags.length > 0 && (
+                            <div className="flex gap-1 flex-wrap mb-3">
+                              {resource.tags.slice(0, 3).map((tag: string) => (
+                                <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">
+                                  #{tag}
+                                </Badge>
+                              ))}
+                              {resource.tags.length > 3 && (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  +{resource.tags.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Bottom Section */}
+                          <div className="border-t pt-3 mt-auto space-y-2">
+                            {/* Author */}
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <User className="w-3 h-3" />
+                              <span className="font-medium truncate">{resource.author_name || 'WellNest'}</span>
+                            </div>
+
+                            {/* Date */}
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Calendar className="w-3 h-3" />
+                              <span>{new Date(resource.posted_date || resource.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-1.5 pt-2">
+                              {(resource.video_url || resource.audio_url || resource.article_url) && (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="flex-1 h-8 text-xs"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setViewingResource(resource);
+                                  }}
+                                >
+                                  <Eye className="mr-1 h-3 w-3" />
+                                  Open
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            )}
-
-            {viewingResource?.type === 'article' && viewingResource?.article_url && (
-              <iframe
-                src={viewingResource.article_url}
-                className="w-full h-full rounded-lg border"
-                title={viewingResource.title}
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-              />
-            )}
-          </div>
-
-          <div className="border-t pt-4 space-y-3">
-            {viewingResource?.description && (
-              <div>
-                <h4 className="font-semibold mb-1">Description</h4>
-                <p className="text-sm text-muted-foreground">{viewingResource.description}</p>
-              </div>
-            )}
-
-            {viewingResource?.tags && viewingResource.tags.length > 0 && (
-              <div>
-                <h4 className="font-semibold mb-2">Tags</h4>
-                <div className="flex gap-2 flex-wrap">
-                  {viewingResource.tags.map((tag: string) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>
-                Posted: {viewingResource?.posted_date ? new Date(viewingResource.posted_date).toLocaleDateString() : 'N/A'}
-              </span>
             </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  const url = viewingResource?.video_url || viewingResource?.audio_url || viewingResource?.article_url;
-                  if (url) window.open(url, '_blank');
-                }}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Open in New Tab
-              </Button>
-              {user?.school_id === viewingResource?.school_id && (
-                <Button
-                  variant="destructive"
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Book className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No resources found matching your criteria</p>
+                <Button 
+                  variant="link" 
+                  className="mt-2 text-primary"
                   onClick={() => {
-                    handleDelete(viewingResource.resource_id, viewingResource.title);
-                    setViewingResource(null);
+                    setSearchTerm("");
+                    setSelectedCategories([]);
+                    setSelectedTypes([]);
                   }}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  Clear all filters
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Enhanced Resource Detail View Modal - Open Book Style */}
+      <Dialog open={!!viewingResource} onOpenChange={(open) => !open && setViewingResource(null)}>
+        <DialogContent className="max-w-[95vw] h-[95vh] flex flex-col p-0 gap-0 overflow-hidden bg-background">
+          {/* Open Book Layout */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Page - Book Info */}
+            <div className="w-1/3 border-r-4 border-border flex flex-col bg-gradient-to-br from-muted/30 via-background to-muted/20 relative overflow-hidden shadow-2xl">
+              {/* Book Spine Effect in Middle */}
+              <div className="absolute right-0 top-0 bottom-0 w-3 bg-gradient-to-r from-transparent via-muted/30 to-muted/50" />
+              <div className="absolute right-0 top-0 bottom-0 w-px bg-border" />
+              
+              {/* Left Page Content */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                {/* Book Cover Recreation */}
+                <div className="space-y-4">
+                  {/* Type Icon with better colors */}
+                  <div className={`w-24 h-24 rounded-2xl flex items-center justify-center shadow-2xl mx-auto ${
+                    viewingResource?.type === 'VIDEO' || viewingResource?.type === 'video'
+                      ? 'bg-gradient-to-br from-blue-500 to-blue-700' 
+                      : viewingResource?.type === 'audio'
+                      ? 'bg-gradient-to-br from-purple-500 to-purple-700'
+                      : 'bg-gradient-to-br from-green-500 to-green-700'
+                  }`}>
+                    {(viewingResource?.type === 'VIDEO' || viewingResource?.type === 'video') && <Video className="w-12 h-12 text-white" />}
+                    {viewingResource?.type === 'audio' && <Music className="w-12 h-12 text-white" />}
+                    {viewingResource?.type === 'article' && <FileText className="w-12 h-12 text-white" />}
+                  </div>
+
+                  {/* Title */}
+                  <div className="text-center space-y-3">
+                    <h2 className="text-2xl font-bold leading-tight text-foreground">
+                      {viewingResource?.title}
+                    </h2>
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                      <Badge className={`text-sm shadow-md ${
+                        viewingResource?.type === 'VIDEO' || viewingResource?.type === 'video'
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                          : viewingResource?.type === 'audio'
+                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                          : 'bg-green-600 hover:bg-green-700 text-white'
+                      }`}>
+                        {viewingResource?.type}
+                      </Badge>
+                      {viewingResource?.category && (
+                        <Badge variant="secondary" className="text-sm capitalize font-semibold shadow-md">
+                          {viewingResource.category}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t-2 border-dashed border-border" />
+
+                {/* Description */}
+                {viewingResource?.description && (
+                  <div className="space-y-3 bg-muted/50 p-4 rounded-lg border border-border">
+                    <h3 className="font-bold text-base flex items-center gap-2 text-foreground">
+                      <Book className="w-5 h-5 text-primary" />
+                      About
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {viewingResource.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Author & Date */}
+                <div className="space-y-3 bg-muted/50 p-4 rounded-lg border border-border">
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-primary" />
+                    <span className="font-semibold text-foreground">Author:</span>
+                    <span className="text-muted-foreground">{viewingResource?.author_name || 'WellNest'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    <span className="font-semibold text-foreground">Published:</span>
+                    <span className="text-muted-foreground">
+                      {viewingResource?.posted_date 
+                        ? new Date(viewingResource.posted_date).toLocaleDateString('en-US', { 
+                            month: 'long', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })
+                        : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                {viewingResource?.tags && viewingResource.tags.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="font-bold text-sm flex items-center gap-2 text-foreground">
+                      <Tag className="w-4 h-4 text-primary" />
+                      Tags
+                    </h3>
+                    <div className="flex gap-2 flex-wrap">
+                      {viewingResource.tags.map((tag: string) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Decorative Page Number */}
+                <div className="text-center text-xs font-medium text-muted-foreground pt-4 border-t border-border">
+                  — Page 1 —
+                </div>
+              </div>
+            </div>
+
+            {/* Right Page - Content Display */}
+            <div className="flex-1 flex flex-col bg-gradient-to-br from-muted/20 via-background to-muted/30 relative shadow-2xl">
+              {/* Page texture */}
+              <div className="absolute inset-0 opacity-[0.03] bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,currentColor_2px,currentColor_3px)]" />
+              
+              {/* Content Area */}
+              <div className="flex-1 overflow-hidden p-8">
+                <div className="h-full rounded-xl overflow-hidden border-2 border-border shadow-2xl bg-background">
+              {(viewingResource?.type === 'VIDEO' || viewingResource?.type === 'video') && viewingResource?.video_url && (
+                <iframe
+                  src={getEmbedUrl(viewingResource.video_url)}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={viewingResource.title}
+                />
               )}
+
+              {viewingResource?.type === 'audio' && viewingResource?.audio_url && (
+                <div className="flex flex-col items-center justify-center h-full space-y-6 p-8 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
+                    <Music className="h-16 w-16 text-white" />
+                  </div>
+                  <audio
+                    controls
+                    className="w-full max-w-2xl h-16 rounded-xl shadow-lg"
+                    src={viewingResource.audio_url}
+                  >
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              )}
+
+              {viewingResource?.type === 'article' && viewingResource?.article_url && (
+                <iframe
+                  src={viewingResource.article_url}
+                  className="w-full h-full"
+                  title={viewingResource.title}
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                />
+              )}
+                </div>
+
+                {/* Decorative Page Number */}
+                <div className="text-center text-xs font-medium text-muted-foreground pt-4 border-t border-border">
+                  — Page 2 —
+                </div>
+              </div>
+
+              {/* Action Buttons at Bottom of Right Page */}
+              <div className="border-t-2 border-border bg-muted/30 p-6">
+                <div className="flex gap-3">
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all"
+                    onClick={() => {
+                      const url = viewingResource?.video_url || viewingResource?.audio_url || viewingResource?.article_url;
+                      if (url) window.open(url, '_blank');
+                    }}
+                  >
+                    <ExternalLink className="mr-2 h-5 w-5" />
+                    Open in New Tab
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Create/Edit Resource Modal */}
-      <ResourceModal
-        open={showResourceModal}
-        onOpenChange={(open) => {
-          setShowResourceModal(open);
-          if (!open) setEditingResource(null);
-        }}
-        onSubmit={editingResource ? handleUpdateResource : handleCreateResource}
-        initialData={editingResource}
-        isEditing={!!editingResource}
-      />
     </div>
   );
 }

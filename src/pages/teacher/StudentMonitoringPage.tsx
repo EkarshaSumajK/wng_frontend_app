@@ -1,15 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import {
   Search,
   UserPlus,
@@ -18,9 +12,10 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Filter,
-  ChevronLeft,
+  Users,
+  GraduationCap,
   ChevronRight,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeacherClassesInsights } from '@/hooks/useTeachers';
@@ -28,73 +23,63 @@ import { ViewStudentProfileModal } from '@/components/modals/ViewStudentProfileM
 import { ReferStudentModal } from '@/components/modals/ReferStudentModal';
 import { useCounsellors } from '@/hooks/useCounsellors';
 import { Student } from '@/types';
+import { AnimatedBackground } from '@/components/ui/animated-background';
+import { Separator } from '@/components/ui/separator';
 
 export default function StudentMonitoringPage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [selectedClass, setSelectedClass] = useState<any>(null);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isReferModalOpen, setIsReferModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const { data: classesInsights, isLoading } = useTeacherClassesInsights(user?.id);
   const { data: counselors = [] } = useCounsellors({ school_id: user?.school_id });
 
-  // Transform students from classes data
-  const allStudents = classesInsights?.classes?.flatMap(cls => 
-    cls.students.map(student => ({
-      student_id: student.student_id,
-      name: student.name,
-      grade: cls.grade || cls.class_name?.split(' ')[1] || 'N/A',
-      section: cls.section || cls.class_name?.split(' ')[2] || 'N/A',
-      class_name: cls.class_name,
-      gender: student.gender,
-      risk_level: student.wellbeing_status?.toUpperCase() || 'LOW',
-      has_active_case: student.has_active_case,
-      recent_assessment_score: student.recent_assessment_score,
-    }))
-  ) || [];
+  // Calculate class metrics
+  const classes = useMemo(() => {
+    return (classesInsights?.classes || []).map(cls => {
+      const students = cls.students || [];
+      const highRiskCount = students.filter((s: any) => 
+        s.wellbeing_status?.toUpperCase() === 'HIGH' || s.wellbeing_status?.toUpperCase() === 'CRITICAL'
+      ).length;
+      const mediumRiskCount = students.filter((s: any) => 
+        s.wellbeing_status?.toUpperCase() === 'MEDIUM'
+      ).length;
+      
+      const avgWellbeing = students.length > 0
+        ? students.reduce((sum: number, s: any) => sum + (s.recent_assessment_score || 0), 0) / students.length
+        : 0;
 
-  // Filter students
-  const filteredStudents = useMemo(() => {
-    return allStudents.filter((student: any) => {
-      const matchesSearch =
-        student.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.grade?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.section?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.class_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const atRiskCount = highRiskCount + mediumRiskCount;
+      const caseRatePercent = students.length > 0 ? (atRiskCount / students.length) * 100 : 0;
 
-      const matchesRisk =
-        riskFilter === 'all' ||
-        (riskFilter === 'high' && (student.risk_level === 'HIGH' || student.risk_level === 'CRITICAL')) ||
-        (riskFilter === 'medium' && student.risk_level === 'MEDIUM') ||
-        (riskFilter === 'low' && student.risk_level === 'LOW') ||
-        (riskFilter === 'healthy' && student.risk_level === 'HEALTHY');
-
-      return matchesSearch && matchesRisk;
+      return {
+        ...cls,
+        students: students.map((student: any) => ({
+          student_id: student.student_id,
+          name: student.name,
+          grade: cls.grade || cls.class_name?.split(' ')[1] || 'N/A',
+          section: cls.section || cls.class_name?.split(' ')[2] || 'N/A',
+          class_name: cls.class_name,
+          gender: student.gender,
+          risk_level: student.wellbeing_status?.toUpperCase() || 'LOW',
+          has_active_case: student.has_active_case,
+          recent_assessment_score: student.recent_assessment_score,
+        })),
+        total_students: students.length,
+        at_risk_count: atRiskCount,
+        high_risk_count: highRiskCount,
+        medium_risk_count: mediumRiskCount,
+        avg_wellbeing: avgWellbeing.toFixed(1),
+        case_rate_percent: caseRatePercent.toFixed(1),
+      };
     });
-  }, [allStudents, searchQuery, riskFilter]);
+  }, [classesInsights]);
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
-
-  // Reset to page 1 when filters change
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
-  };
-
-  const handleRiskFilterChange = (value: string) => {
-    setRiskFilter(value);
-    setCurrentPage(1);
-  };
-
-  // Calculate statistics
+  // Overall statistics
+  const allStudents = classes.flatMap(cls => cls.students);
   const totalStudents = allStudents.length;
   const highRiskCount = allStudents.filter((s: any) => 
     s.risk_level === 'HIGH' || s.risk_level === 'CRITICAL'
@@ -108,6 +93,14 @@ export default function StudentMonitoringPage() {
   const healthyCount = allStudents.filter((s: any) => 
     s.risk_level === 'HEALTHY'
   ).length;
+
+  // Filter students in selected class
+  const filteredStudents = useMemo(() => {
+    if (!selectedClass) return [];
+    return selectedClass.students.filter((student: any) => {
+      return student.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [selectedClass, searchQuery]);
 
   const getRiskBadge = (risk: string) => {
     switch (risk) {
@@ -144,7 +137,6 @@ export default function StudentMonitoringPage() {
   };
 
   const handleViewProfile = (student: any) => {
-    // Transform to Student type format for the modal
     const transformedStudent: Student = {
       id: student.student_id,
       name: student.name,
@@ -167,42 +159,259 @@ export default function StudentMonitoringPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-96 relative">
+        <AnimatedBackground />
+        <div className="text-center relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading classes...</p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-semibold text-foreground">Student Monitoring</h1>
-        <p className="text-muted-foreground">
-          Monitor student wellbeing and refer to counselors when needed
-        </p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
-        <Card className="card-professional hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold">Total Students</CardTitle>
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Eye className="w-5 h-5 text-primary" />
+  // If a class is selected, show student detail view
+  if (selectedClass) {
+    return (
+      <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 relative">
+        <AnimatedBackground />
+        
+        {/* Header */}
+        <div className="relative z-10">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setSelectedClass(null);
+              setSearchQuery('');
+            }}
+            className="mb-2 hover:bg-primary/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Classes
+          </Button>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+              <Users className="w-6 h-6 text-white" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{totalStudents}</div>
-            <p className="text-xs text-muted-foreground mt-1">Under your supervision</p>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {selectedClass.class_name}
+              </h1>
+              <p className="text-base md:text-lg text-muted-foreground mt-1">
+                {selectedClass.total_students} students • {selectedClass.at_risk_count} at risk
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Class Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+          <Card className="card-professional">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold">Total Students</CardTitle>
+              <Users className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{selectedClass.total_students}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-professional">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold">At Risk</CardTitle>
+              <AlertCircle className="w-4 h-4 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">{selectedClass.at_risk_count}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {selectedClass.case_rate_percent}% of class
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="card-professional">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold">Avg Wellbeing</CardTitle>
+              <TrendingUp className="w-4 h-4 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{selectedClass.avg_wellbeing}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-professional">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold">High Risk</CardTitle>
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">{selectedClass.high_risk_count}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search */}
+        <Card className="card-professional shadow-lg relative z-10">
+          <CardContent className="pt-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search students by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="card-professional hover:shadow-xl transition-all duration-300 border-l-4 border-l-destructive">
+        {/* Students List */}
+        <Card className="card-professional shadow-lg relative z-10">
+          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+            <CardTitle className="text-2xl font-bold">
+              Students ({filteredStudents.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {filteredStudents.map((student: any, index) => (
+                <div
+                  key={student.student_id}
+                  className="group relative p-5 border-2 border-border rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0 shadow-md">
+                        <span className="text-sm font-bold text-white">
+                          {student.name?.split(' ').map((n: string) => n[0]).join('')}
+                        </span>
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <p className="font-bold text-foreground text-lg">{student.name}</p>
+                          {getRiskIcon(student.risk_level)}
+                          {getRiskBadge(student.risk_level)}
+                        </div>
+                        
+                        <Separator className="my-2" />
+                        
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+                          {student.gender && (
+                            <>
+                              <span className="capitalize">{student.gender.toLowerCase()}</span>
+                              <span>•</span>
+                            </>
+                          )}
+                          {student.recent_assessment_score && (
+                            <>
+                              <span>Score: {student.recent_assessment_score}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewProfile(student)}
+                        className="hover:bg-primary/10 hover:border-primary transition-colors"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleRefer(student)}
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Refer
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {filteredStudents.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-10 h-10 text-muted-foreground" />
+                  </div>
+                  <p className="text-base text-muted-foreground font-semibold mb-1">
+                    No students found
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {searchQuery ? 'Try adjusting your search' : 'No students in this class'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Modals */}
+        <ViewStudentProfileModal
+          student={selectedStudent}
+          open={isProfileModalOpen}
+          onOpenChange={setIsProfileModalOpen}
+        />
+        
+        <ReferStudentModal
+          student={selectedStudent}
+          counselors={counselors}
+          open={isReferModalOpen}
+          onOpenChange={setIsReferModalOpen}
+        />
+      </div>
+    );
+  }
+
+  // Class overview - default view
+  return (
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 relative">
+      <AnimatedBackground />
+      
+      {/* Header */}
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Student Monitoring
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground mt-1">
+              Monitor student wellbeing across your classes
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 relative z-10">
+        <Card className="card-professional hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-primary">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold">Total Students</CardTitle>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md">
+              <GraduationCap className="w-5 h-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{totalStudents}</div>
+            <p className="text-xs text-muted-foreground mt-1">Across {classes.length} classes</p>
+          </CardContent>
+        </Card>
+
+        <Card className="card-professional hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-destructive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">High Risk</CardTitle>
-            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-destructive" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-md">
+              <AlertCircle className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
@@ -211,223 +420,131 @@ export default function StudentMonitoringPage() {
           </CardContent>
         </Card>
 
-        <Card className="card-professional hover:shadow-xl transition-all duration-300 border-l-4 border-l-warning">
+        <Card className="card-professional hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-yellow-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">Medium Risk</CardTitle>
-            <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-warning" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center shadow-md">
+              <Minus className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-warning">{mediumRiskCount}</div>
+            <div className="text-3xl font-bold text-yellow-600">{mediumRiskCount}</div>
             <p className="text-xs text-muted-foreground mt-1">Need monitoring</p>
           </CardContent>
         </Card>
 
-        <Card className="card-professional hover:shadow-xl transition-all duration-300 border-l-4 border-l-info">
+        <Card className="card-professional hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">Low Risk</CardTitle>
-            <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 text-info" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
+              <TrendingDown className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-info">{lowRiskCount}</div>
+            <div className="text-3xl font-bold text-blue-600">{lowRiskCount}</div>
             <p className="text-xs text-muted-foreground mt-1">Stable wellbeing</p>
           </CardContent>
         </Card>
 
-        <Card className="card-professional hover:shadow-xl transition-all duration-300 border-l-4 border-l-success">
+        <Card className="card-professional hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">Healthy</CardTitle>
-            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 text-success" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
+              <TrendingUp className="w-5 h-5 text-white rotate-180" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-success">{healthyCount}</div>
+            <div className="text-3xl font-bold text-green-600">{healthyCount}</div>
             <p className="text-xs text-muted-foreground mt-1">Thriving students</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card className="card-professional">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search by name, grade, or section..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={riskFilter} onValueChange={handleRiskFilterChange}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Filter by risk" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Risk Levels</SelectItem>
-                <SelectItem value="high">High Risk</SelectItem>
-                <SelectItem value="medium">Medium Risk</SelectItem>
-                <SelectItem value="low">Low Risk</SelectItem>
-                <SelectItem value="healthy">Healthy</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={itemsPerPage.toString()} onValueChange={(value) => {
-              setItemsPerPage(Number(value));
-              setCurrentPage(1);
-            }}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder="Per page" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10 per page</SelectItem>
-                <SelectItem value="25">25 per page</SelectItem>
-                <SelectItem value="50">50 per page</SelectItem>
-                <SelectItem value="100">100 per page</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Students List */}
-      <Card className="card-professional">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>
-            Students ({filteredStudents.length})
-            {filteredStudents.length > 0 && (
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredStudents.length)}
-              </span>
-            )}
-          </CardTitle>
+      {/* Class Cards */}
+      <Card className="card-professional shadow-lg relative z-10">
+        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+          <CardTitle className="text-2xl font-bold">Your Classes</CardTitle>
+          <CardDescription>Click on a class to view students</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {paginatedStudents.map((student: any) => (
-              <div
-                key={student.student_id}
-                className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+        <CardContent className="p-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {classes.map((cls: any) => (
+              <Card 
+                key={cls.class_id} 
+                className="card-professional cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                onClick={() => setSelectedClass(cls)}
               >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-semibold text-primary">
-                      {student.name?.split(' ').map((n: string) => n[0]).join('')}
-                    </span>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-foreground">{student.name}</p>
-                      {getRiskIcon(student.risk_level)}
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{cls.class_name}</span>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </CardTitle>
+                  <CardDescription>
+                    {cls.total_students} students
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* At Risk Progress */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-warning" />
+                        <span className="text-sm font-medium">At Risk Students</span>
+                      </div>
+                      <span className="text-sm font-bold">{cls.at_risk_count}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span>Grade {student.grade}</span>
-                      <span>•</span>
-                      <span>Section {student.section}</span>
-                      {student.gender && (
-                        <>
-                          <span>•</span>
-                          <span className="capitalize">{student.gender.toLowerCase()}</span>
-                        </>
-                      )}
-                    </div>
+                    <Progress value={parseFloat(cls.case_rate_percent)} className="h-2" />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {cls.case_rate_percent}% of class
+                    </p>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  {getRiskBadge(student.risk_level)}
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewProfile(student)}
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      View
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleRefer(student)}
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Refer
-                    </Button>
+                  {/* Average Wellbeing */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Avg Wellbeing</span>
+                      </div>
+                      <span className="text-sm font-bold">{cls.avg_wellbeing}</span>
+                    </div>
                   </div>
-                </div>
-              </div>
+
+                  {/* Risk Indicator */}
+                  <div className="pt-2 border-t">
+                    {parseFloat(cls.case_rate_percent) > 30 ? (
+                      <div className="flex items-center gap-2 text-destructive">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-xs font-medium">High risk - needs attention</span>
+                      </div>
+                    ) : parseFloat(cls.case_rate_percent) > 15 ? (
+                      <div className="flex items-center gap-2 text-warning">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-xs font-medium">Moderate risk - monitor closely</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-success">
+                        <TrendingUp className="w-4 h-4" />
+                        <span className="text-xs font-medium">Normal risk level</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
-
-            {filteredStudents.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No students found matching your criteria</p>
-              </div>
-            )}
           </div>
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-6 border-t">
-              <div className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
+          {classes.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                <Users className="w-10 h-10 text-muted-foreground" />
               </div>
-              
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
-                </Button>
-                
-                {/* Page numbers */}
-                <div className="flex gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
-                        className="w-10"
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
+              <p className="text-base text-muted-foreground font-semibold mb-1">
+                No classes assigned
+              </p>
+              <p className="text-sm text-muted-foreground">
+                You don't have any classes assigned yet
+              </p>
             </div>
           )}
         </CardContent>

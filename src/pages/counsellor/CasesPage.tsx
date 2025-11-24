@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { Plus, Eye, Clock, AlertTriangle, FileText, Target, Users, Phone, Pencil, Trash2, BookOpen, Calendar } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Eye, Clock, AlertTriangle, FileText, Target, Users, Phone, Pencil, Trash2, BookOpen, Calendar, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DataTable } from '@/components/shared/DataTable';
+import { FilterSection } from '@/components/shared/FilterSection';
+import { Input } from '@/components/ui/input';
 import { Case } from '@/types';
 import { NewCaseModal } from '@/components/modals/NewCaseModal';
 import { AddNoteModal } from '@/components/modals/AddNoteModal';
@@ -47,6 +49,9 @@ export default function CasesPage() {
   const [editingNote, setEditingNote] = useState<any>(null);
   const [showAssignAssessmentModal, setShowAssignAssessmentModal] = useState(false);
   const [showScheduleSessionModal, setShowScheduleSessionModal] = useState(false);
+  const [selectedRiskLevels, setSelectedRiskLevels] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch cases from API
   const { data: casesResponse = [], isLoading } = useCases({ 
@@ -265,37 +270,62 @@ export default function CasesPage() {
     </Button>
   );
 
+  // Filter options
+  const riskLevelOptions = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+  const statusOptions = ['intake', 'assessment', 'intervention', 'monitoring', 'closed'];
+
+  // Apply filters
+  const filteredCases = useMemo(() => {
+    return cases.filter((caseItem: any) => {
+      const matchesRisk = selectedRiskLevels.length === 0 || selectedRiskLevels.includes(caseItem.risk_level);
+      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(caseItem.status?.toLowerCase());
+      const matchesSearch = !searchQuery || 
+        caseItem.student?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        caseItem.student?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        caseItem.ai_summary?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesRisk && matchesStatus && matchesSearch;
+    });
+  }, [cases, selectedRiskLevels, selectedStatuses, searchQuery]);
+
   if (selectedCase) {
     const caseSessionNotes = sessionNotesData;
     const caseGoals = goalsData;
     const caseAssessments = assessmentsData;
 
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedCase(null)}
-              className="mb-2"
-            >
-              ← Back to Cases
-            </Button>
-            <h1 className="text-3xl font-semibold text-foreground">
-              Case: {(selectedCase as any).student?.first_name} {(selectedCase as any).student?.last_name}
-            </h1>
-            <p className="text-muted-foreground">
-              Case ID: {(selectedCase as any).case_id} • Assigned to {(selectedCase as any).counsellor?.display_name || 'Unassigned'}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Badge className={getRiskLevelColor((selectedCase as any).risk_level)}>
-              {formatRiskLevel((selectedCase as any).risk_level)} risk
-            </Badge>
-            <Badge className={getStatusColor((selectedCase as any).status)} variant="secondary">
-              {(selectedCase as any).status}
-            </Badge>
+      <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
+        {/* Header with modern design */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+          <Button
+            variant="ghost"
+            onClick={() => setSelectedCase(null)}
+            className="mb-4 hover:bg-primary/10 hover:text-primary font-semibold"
+          >
+            ← Back to Cases
+          </Button>
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  {(selectedCase as any).student?.first_name} {(selectedCase as any).student?.last_name}
+                </h1>
+              </div>
+              <p className="text-base text-muted-foreground ml-13">
+                Case ID: <span className="font-semibold">{(selectedCase as any).case_id}</span> • Assigned to <span className="font-semibold">{(selectedCase as any).counsellor?.display_name || 'Unassigned'}</span>
+              </p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Badge className={`${getRiskLevelColor((selectedCase as any).risk_level)} text-sm px-3 py-1 font-semibold`}>
+                {formatRiskLevel((selectedCase as any).risk_level)} risk
+              </Badge>
+              <Badge className={`${getStatusColor((selectedCase as any).status)} text-sm px-3 py-1 font-semibold`} variant="secondary">
+                {(selectedCase as any).status}
+              </Badge>
+            </div>
           </div>
         </div>
 
@@ -984,45 +1014,115 @@ export default function CasesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-foreground">Case Management</h1>
-          <p className="text-muted-foreground">Manage and track all active student cases</p>
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
+      {/* Header with modern design */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Case Management
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground ml-13">Manage and track all active student cases</p>
+          </div>
+          
+          <Button 
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 w-fit"
+            onClick={() => setShowNewCaseModal(true)}
+            size="lg"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Case
+          </Button>
         </div>
-        
-        <Button 
-          className="bg-gradient-primary hover:bg-primary-hover"
-          onClick={() => setShowNewCaseModal(true)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          New Case
-        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <Card className="card-professional">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cases</CardTitle>
-            <FileText className="w-4 h-4 text-muted-foreground" />
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar */}
+        <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+            <div className="flex items-center gap-2 mb-6">
+              <Filter className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+            </div>
+            
+            <FilterSection 
+              title="Risk Level" 
+              options={riskLevelOptions} 
+              selected={selectedRiskLevels} 
+              setSelected={setSelectedRiskLevels} 
+            />
+
+            <div className="mt-6">
+              <FilterSection 
+                title="Status" 
+                options={statusOptions} 
+                selected={selectedStatuses} 
+                setSelected={setSelectedStatuses} 
+              />
+            </div>
+
+            <Button 
+              variant="outline" 
+              className="w-full mt-6 text-gray-500 hover:text-primary border-dashed"
+              onClick={() => {
+                setSelectedRiskLevels([]);
+                setSelectedStatuses([]);
+                setSearchQuery('');
+              }}
+            >
+              Clear All Filters
+            </Button>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 space-y-6">
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search cases by student name or summary..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+            />
+          </div>
+
+          {/* Stats Cards with enhanced design */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <Card className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Total Cases</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{cases.length}</div>
+            <div className="text-4xl font-bold text-foreground mb-1">{cases.length}</div>
             <p className="text-xs text-muted-foreground">
               Active cases
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-professional">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critical Cases</CardTitle>
-            <AlertTriangle className="w-4 h-4 text-destructive" />
+        <Card className="relative overflow-hidden border-2 hover:border-destructive/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Critical Cases</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <AlertTriangle className="w-6 h-6 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-4xl font-bold text-foreground mb-1">
               {cases.filter(c => c.risk_level === 'CRITICAL').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -1031,13 +1131,16 @@ export default function CasesPage() {
           </CardContent>
         </Card>
 
-        <Card className="card-professional">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Clock className="w-4 h-4 text-warning" />
+        <Card className="relative overflow-hidden border-2 hover:border-warning/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">In Progress</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Clock className="w-6 h-6 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-4xl font-bold text-foreground mb-1">
               {cases.filter(c => c.status === 'intervention').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -1046,13 +1149,16 @@ export default function CasesPage() {
           </CardContent>
         </Card>
 
-        <Card className="card-professional">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Activities</CardTitle>
-            <BookOpen className="w-4 h-4 text-primary" />
+        <Card className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Activities</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <BookOpen className="w-6 h-6 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activities.length}</div>
+            <div className="text-4xl font-bold text-foreground mb-1">{activities.length}</div>
             <p className="text-xs text-muted-foreground">
               Available resources
             </p>
@@ -1060,23 +1166,26 @@ export default function CasesPage() {
         </Card>
       </div>
 
-      {/* Cases Table */}
-      {isLoading ? (
-        <Card className="card-professional">
-          <CardContent className="py-8 text-center text-muted-foreground">
-            Loading cases...
-          </CardContent>
-        </Card>
-      ) : (
-        <DataTable
-          data={cases}
-          columns={caseColumns}
-          title="All Cases"
-          searchPlaceholder="Search cases..."
-          onRowClick={setSelectedCase}
-          actions={caseActions}
-        />
-      )}
+          {/* Cases Table */}
+          {isLoading ? (
+            <Card className="card-professional">
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Loading cases...
+              </CardContent>
+            </Card>
+          ) : (
+            <DataTable
+              data={filteredCases}
+              columns={caseColumns}
+              title="All Cases"
+              searchPlaceholder="Search cases..."
+              onRowClick={setSelectedCase}
+              actions={caseActions}
+              searchable={false}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Modals */}
       <NewCaseModal

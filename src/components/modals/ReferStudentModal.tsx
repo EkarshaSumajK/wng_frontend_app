@@ -26,9 +26,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, AlertTriangle, X } from "lucide-react";
+import { CalendarIcon, AlertTriangle, X, UserPlus, Clock, FileText, Users } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
 
 interface ReferStudentModalProps {
   open: boolean;
@@ -154,16 +155,23 @@ export function ReferStudentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Refer Student for Wellness Check</DialogTitle>
-          <DialogDescription>
-            Schedule a wellness check appointment with a counselor for{" "}
-            {student?.first_name} {student?.last_name}
-          </DialogDescription>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="border-b pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <UserPlus className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-bold">Refer Student for Wellness Check</DialogTitle>
+              <DialogDescription className="mt-1">
+                Schedule a wellness check appointment with a counselor for{" "}
+                <span className="font-semibold text-foreground">{student?.first_name} {student?.last_name}</span>
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-500">
           {/* Conflict Error Alert */}
           {conflictError && (
             <Alert variant="destructive" className="border-2">
@@ -264,8 +272,11 @@ export function ReferStudentModal({
           )}
 
           {/* Counselor Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="counselor">Select Counselor *</Label>
+          <div className="space-y-3">
+            <Label htmlFor="counselor" className="text-base font-semibold flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Select Counselor *
+            </Label>
             <Select
               value={formData.counselor_id}
               onValueChange={(value) =>
@@ -273,7 +284,7 @@ export function ReferStudentModal({
               }
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-12 border-2">
                 <SelectValue placeholder="Choose a counselor" />
               </SelectTrigger>
               <SelectContent>
@@ -286,49 +297,66 @@ export function ReferStudentModal({
             </Select>
           </div>
 
-          {/* Date Selection */}
-          <div className="space-y-2">
-            <Label>Preferred Date *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(formData.date, "PPP")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.date}
-                  onSelect={(date) =>
-                    date && setFormData((prev) => ({ ...prev, date }))
-                  }
-                  disabled={(date) => date < new Date()}
-                />
-              </PopoverContent>
-            </Popover>
+          <Separator />
+
+          {/* Date & Time Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Date Selection */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4" />
+                Preferred Date *
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal h-12 border-2"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(formData.date, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={formData.date}
+                    onSelect={(date) =>
+                      date && setFormData((prev) => ({ ...prev, date }))
+                    }
+                    disabled={(date) => date < new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Time Selection */}
+            <div className="space-y-3">
+              <Label htmlFor="time" className="text-base font-semibold flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Preferred Time *
+              </Label>
+              <Input
+                id="time"
+                type="time"
+                value={formData.time}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, time: e.target.value }))
+                }
+                className="h-12 border-2"
+                required
+              />
+            </div>
           </div>
 
-          {/* Time Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="time">Preferred Time *</Label>
-            <Input
-              id="time"
-              type="time"
-              value={formData.time}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, time: e.target.value }))
-              }
-              required
-            />
-          </div>
+          <Separator />
 
           {/* Reason */}
-          <div className="space-y-2">
-            <Label htmlFor="reason">Reason for Referral *</Label>
+          <div className="space-y-3">
+            <Label htmlFor="reason" className="text-base font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Reason for Referral *
+            </Label>
             <Textarea
               id="reason"
               value={formData.reason}
@@ -336,14 +364,18 @@ export function ReferStudentModal({
                 setFormData((prev) => ({ ...prev, reason: e.target.value }))
               }
               placeholder="Brief description of concerns..."
-              rows={3}
+              rows={4}
+              className="resize-none border-2"
               required
             />
           </div>
 
           {/* Additional Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Additional Notes (Optional)</Label>
+          <div className="space-y-3">
+            <Label htmlFor="notes" className="text-base font-semibold flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Additional Notes (Optional)
+            </Label>
             <Textarea
               id="notes"
               value={formData.notes}
@@ -351,28 +383,38 @@ export function ReferStudentModal({
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
               placeholder="Any additional context or observations..."
-              rows={2}
+              rows={3}
+              className="resize-none border-2"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
+          <Separator />
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 h-12"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="flex-1"
+              className="flex-1 h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
               disabled={createEvent.isPending}
             >
-              {createEvent.isPending
-                ? "Scheduling..."
-                : "Schedule Wellness Check"}
+              {createEvent.isPending ? (
+                <>
+                  <Clock className="w-4 h-4 mr-2 animate-spin" />
+                  Scheduling...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Schedule Wellness Check
+                </>
+              )}
             </Button>
           </div>
         </form>

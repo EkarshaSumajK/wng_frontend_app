@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { Calendar, BookOpen, Users, Clock, Plus, Edit, MapPin, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, BookOpen, Users, Clock, Edit, MapPin, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { StatCard } from "@/components/shared/StatCard";
 import { EditCalendarEventModal } from "@/components/modals/EditCalendarEventModal";
 import { useMyCalendarEvents, useUpdateCalendarEvent } from "@/hooks/useCalendarEvents";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, startOfWeek } from "date-fns";
+import { AnimatedBackground } from "@/components/ui/animated-background";
 
 export default function TeacherCalendarPage() {
-  const { user } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
@@ -19,7 +18,7 @@ export default function TeacherCalendarPage() {
   const updateEvent = useUpdateCalendarEvent();
   
   // Transform API events to calendar format with IST timezone
-  const events = eventsData
+  const events = Array.isArray(eventsData) ? eventsData
     .filter((event: any) => event.start_time && event.end_time) // Filter out events with invalid dates
     .map((event: any) => {
       // Parse UTC times and convert to IST
@@ -42,7 +41,7 @@ export default function TeacherCalendarPage() {
         related_student_id: event.related_student_id,
         attendees: event.attendees || [],
       };
-    });
+    }) : [];
 
   const now = new Date();
   const todayDate = format(now, "yyyy-MM-dd");
@@ -106,28 +105,75 @@ export default function TeacherCalendarPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">My Calendar</h1>
-        <p className="text-muted-foreground">Manage your class schedule and activities</p>
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 relative">
+      <AnimatedBackground />
+      {/* Header with modern design */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                My Calendar
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground ml-13">
+              Manage your class schedule and activities
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
-        ))}
+      {/* Stats Cards with enhanced design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {stats.map((stat, index) => {
+          const gradients = [
+            { from: 'from-blue-500', to: 'to-cyan-500', bg: 'from-blue-500/10 to-cyan-500/10' },
+            { from: 'from-green-500', to: 'to-emerald-500', bg: 'from-green-500/10 to-emerald-500/10' },
+            { from: 'from-purple-500', to: 'to-pink-500', bg: 'from-purple-500/10 to-pink-500/10' },
+            { from: 'from-orange-500', to: 'to-red-500', bg: 'from-orange-500/10 to-red-500/10' },
+          ];
+          const gradient = gradients[index];
+          
+          return (
+            <Card key={index} className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300 group">
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradient.bg} opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{stat.title}</CardTitle>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient.from} ${gradient.to} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-6 h-6 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-foreground mb-1">{stat.value}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Today's Schedule
-            </CardTitle>
-            <CardDescription>
-              {todayDate} - {todaysEvents.length} events
-            </CardDescription>
+        <Card className="border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Today's Schedule</CardTitle>
+                  <CardDescription className="text-sm mt-1">
+                    {todayDate} - {todaysEvents.length} events
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-sm">
+                {todaysEvents.length} Today
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -171,13 +217,22 @@ export default function TeacherCalendarPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Upcoming Events
-            </CardTitle>
-            <CardDescription>Next 5 scheduled events</CardDescription>
+        <Card className="border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">Upcoming Events</CardTitle>
+                  <CardDescription className="text-sm mt-1">Next 5 scheduled events</CardDescription>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-sm">
+                {upcomingEvents.length} Upcoming
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -229,13 +284,22 @@ export default function TeacherCalendarPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
-            Completed Events
-          </CardTitle>
-          <CardDescription>Recently completed activities</CardDescription>
+      <Card className="border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
+        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-bold">Completed Events</CardTitle>
+                <CardDescription className="text-sm mt-1">Recently completed activities</CardDescription>
+              </div>
+            </div>
+            <Badge variant="secondary" className="text-sm">
+              {completedEvents.length} Completed
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
