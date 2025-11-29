@@ -11,51 +11,43 @@ export default function TeacherHome() {
 
   // Quick access navigation cards with modern color scheme
   const quickAccessCards = [
-    { 
-      title: "Dashboard", 
-      icon: BarChart3, 
-      url: "/teacher/dashboard", 
-      description: "Class analytics & insights", 
-      gradient: "from-cyan-500 to-blue-500",
-      badge: "Analytics"
-    },
-    { 
-      title: "Cases", 
-      icon: FileText, 
-      url: "/teacher/cases", 
-      description: "View student cases", 
-      gradient: "from-blue-500 to-indigo-500",
-      badge: "View"
-    },
-    { 
-      title: "Students", 
-      icon: Users, 
-      url: "/teacher/students", 
-      description: "Monitor student wellbeing", 
+    {
+      title: "Dashboard",
+      icon: BarChart3,
+      url: "/teacher/students",
+      description: "Monitor student wellbeing",
       gradient: "from-indigo-500 to-purple-500",
       badge: "Monitor"
     },
-    { 
-      title: "Assessments", 
-      icon: ClipboardList, 
-      url: "/teacher/assessments", 
-      description: "Review student progress", 
-      gradient: "from-purple-500 to-pink-500",
-      badge: "Review"
+    {
+      title: "Cases",
+      icon: FileText,
+      url: "/teacher/cases",
+      description: "View student cases",
+      gradient: "from-blue-500 to-indigo-500",
+      badge: "View"
     },
-    { 
-      title: "Activities", 
-      icon: UserPlus, 
-      url: "/teacher/activities", 
-      description: "Plan classroom activities", 
+    {
+      title: "Activities",
+      icon: UserPlus,
+      url: "/teacher/activities",
+      description: "Plan classroom activities",
       gradient: "from-green-500 to-emerald-500",
       badge: "Plan"
     },
-    { 
-      title: "Resources", 
-      icon: BookOpen, 
-      url: "/teacher/resources", 
-      description: "Teaching materials", 
+    {
+      title: "Activity Monitoring",
+      icon: ClipboardList,
+      url: "/teacher/activity-monitoring",
+      description: "Track activity submissions",
+      gradient: "from-purple-500 to-pink-500",
+      badge: "Track"
+    },
+    {
+      title: "Resources",
+      icon: BookOpen,
+      url: "/teacher/resources",
+      description: "Teaching materials",
       gradient: "from-pink-500 to-rose-500",
       badge: "Library"
     },

@@ -10,8 +10,11 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    let token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
+    
     if (token) {
+      // Remove quotes if they exist (in case of double stringification)
+      token = token.replace(/^"|"$/g, '');
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -33,6 +36,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized - could redirect to login
+      localStorage.removeItem('auth_token');
       localStorage.removeItem('access_token');
       // window.location.href = '/login';
     }

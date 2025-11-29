@@ -10,7 +10,7 @@ interface Class {
   teacher_id?: string;
 }
 
-export const useClasses = (params?: { school_id?: string }) => {
+export const useClasses = (params?: { school_id?: string; teacher_id?: string }) => {
   return useQuery({
     queryKey: ['classes', params],
     queryFn: () => apiClient.get<Class[]>('/classes/', params),

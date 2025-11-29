@@ -386,60 +386,7 @@ export default function TeacherAssessmentsPage() {
         </div>
       </div>
 
-      {/* Stats Cards with enhanced design */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card className="relative overflow-hidden border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Total Assessments</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-1">{assessmentsLoading ? '...' : relevantAssessments.length}</div>
-            <p className="text-xs text-muted-foreground">For your classes</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="relative overflow-hidden border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Completed</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
-              <CheckCircle className="w-6 h-6 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-1">{assessmentsLoading ? '...' : completedAssessments}</div>
-            <p className="text-xs text-muted-foreground">With student responses</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="relative overflow-hidden border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Student Responses</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-1">{assessmentsLoading ? '...' : totalResponses}</div>
-            <p className="text-xs text-muted-foreground">Total submissions</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="relative overflow-hidden border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Templates</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-1">{templatesLoading ? '...' : templates.length}</div>
-            <p className="text-xs text-muted-foreground">Available templates</p>
-          </CardContent>
-        </Card>
-      </div>
+
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
@@ -488,44 +435,10 @@ export default function TeacherAssessmentsPage() {
           {/* Tabs */}
           <Tabs defaultValue="assessments" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="assessments">My Class Assessments</TabsTrigger>
               <TabsTrigger value="templates">Available Templates</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="assessments">
-              {assessmentsLoading ? (
-                <Card className="card-professional shadow-lg">
-                  <CardContent className="py-12 text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading assessments...</p>
-                  </CardContent>
-                </Card>
-              ) : filteredAssessments.length > 0 ? (
-                <DataTable
-                  data={filteredAssessments}
-                  columns={assessmentColumns}
-                  title="Assessment Library"
-                  searchPlaceholder="Search assessments..."
-                  onRowClick={(assessment: any) => setSelectedAssessmentId(assessment.assessment_id)}
-                  actions={assessmentActions}
-                  searchable={false}
-                />
-              ) : (
-                <Card className="card-professional shadow-lg">
-                  <CardContent className="py-12 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
-                      <FileText className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                    <p className="text-base text-muted-foreground font-semibold mb-2">No assessments available yet</p>
-                    <p className="text-sm text-muted-foreground">
-                      {searchQuery || selectedCategories.length > 0
-                        ? 'Try adjusting your filters'
-                        : 'Assessments will appear here once they are created by your school counsellor'}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+
 
             <TabsContent value="templates">
               <Card className="card-professional shadow-lg border-2">

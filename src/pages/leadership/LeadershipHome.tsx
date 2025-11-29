@@ -52,14 +52,6 @@ export default function LeadershipHome() {
       badge: "Shop"
     },
     { 
-      title: "Resources", 
-      icon: BookOpen, 
-      url: "/leadership/resources", 
-      description: "Leadership materials", 
-      gradient: "from-pink-500 to-rose-500",
-      badge: "Library"
-    },
-    { 
       title: "Webinars", 
       icon: Video, 
       url: "/leadership/webinars", 

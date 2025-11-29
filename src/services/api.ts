@@ -70,7 +70,12 @@ export class ApiClient {
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
-    this.token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
+    if (token) {
+      this.token = token.replace(/^"|"$/g, '');
+    } else {
+      this.token = null;
+    }
     
     // Clean up expired cache entries every 2 minutes
     setInterval(() => {

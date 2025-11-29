@@ -41,11 +41,10 @@ const navigationItems = {
   ],
   teacher: [
     { title: "Home", url: "/teacher", icon: Home },
-    { title: "Dashboard", url: "/teacher/dashboard", icon: BarChart3 },
+    { title: "Dashboard", url: "/teacher/students", icon: BarChart3 },
     { title: "Cases", url: "/teacher/cases", icon: FileText },
-    { title: "Student Monitoring", url: "/teacher/students", icon: Users },
-    { title: "Assessments", url: "/teacher/assessments", icon: ClipboardList },
     { title: "Activities", url: "/teacher/activities", icon: UserPlus },
+    { title: "Activity Monitoring", url: "/teacher/activity-monitoring", icon: ClipboardList },
     { title: "Resources", url: "/teacher/resources", icon: BookOpen },
     { title: "Calendar", url: "/teacher/calendar", icon: Calendar },
     { title: "Webinars", url: "/teacher/webinars", icon: Video },
@@ -57,7 +56,6 @@ const navigationItems = {
     { title: "At-Risk Students", url: "/leadership/at-risk-students", icon: AlertTriangle },
     { title: "Grade Analysis", url: "/leadership/grade-analysis", icon: Users },
     { title: "Marketplace", url: "/leadership/marketplace", icon: ShoppingBag },
-    { title: "Resources", url: "/leadership/resources", icon: BookOpen },
     { title: "Webinars", url: "/leadership/webinars", icon: Video },
   ],
 };
@@ -66,6 +64,13 @@ export function AppSidebar() {
   const { user } = useAuth();
   const { open } = useSidebar();
   const location = useLocation();
+
+  // Move useEffect before early return to comply with React hooks rules
+  useEffect(() => {
+    if (user?.school_name) {
+      document.title = `WellNest Group X ${user.school_name}`;
+    }
+  }, [user?.school_name]);
 
   if (!user) return null;
 
@@ -86,12 +91,6 @@ export function AppSidebar() {
     }
     return currentPath.startsWith(path) && currentPath !== `/${userRole}`;
   };
-
-  useEffect(() => {
-    if (user.school_name) {
-      document.title = `WellNest Group X ${user.school_name}`;
-    }
-  }, [user.school_name]);
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border bg-sidebar/95 backdrop-blur-xl shadow-2xl transition-all duration-300">

@@ -43,6 +43,7 @@ const TeacherResourcesPage = lazy(() => import("./pages/teacher/ResourcesPage"))
 const TeacherCalendarPage = lazy(() => import("./pages/teacher/TeacherCalendarPage"));
 const TeacherAssessmentsPage = lazy(() => import("./pages/teacher/AssessmentsPage"));
 const TeacherActivitiesPage = lazy(() => import("./pages/teacher/ActivitiesPage"));
+const ActivityMonitoringPage = lazy(() => import("./pages/teacher/ActivityMonitoringPage"));
 const StudentMonitoringPage = lazy(() => import("./pages/teacher/StudentMonitoringPage"));
 const TeacherWebinarsPage = lazy(() => import("./pages/teacher/WebinarsPage"));
 
@@ -124,6 +125,7 @@ const App = () => (
               <Route path="/teacher/students" element={<StudentMonitoringPage />} />
               <Route path="/teacher/assessments" element={<TeacherAssessmentsPage />} />
               <Route path="/teacher/activities" element={<TeacherActivitiesPage />} />
+              <Route path="/teacher/activity-monitoring" element={<ActivityMonitoringPage />} />
               <Route path="/teacher/resources" element={<TeacherResourcesPage />} />
               <Route path="/teacher/calendar" element={<TeacherCalendarPage />} />
               <Route path="/teacher/webinars" element={<TeacherWebinarsPage />} />

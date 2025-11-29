@@ -18,7 +18,13 @@ import {
   useAssessment
 } from '@/hooks/useAssessments';
 import { useClasses } from '@/hooks/useClasses';
-import { FilterSection } from '@/components/shared/FilterSection';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AssessmentsPage() {
   const { user } = useAuth();
@@ -403,100 +409,10 @@ export default function AssessmentsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar */}
-        <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
-            <div className="flex items-center gap-2 mb-6">
-              <Filter className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
-            </div>
-            
-            <FilterSection 
-              title="Categories" 
-              options={uniqueCategories} 
-              selected={selectedCategories} 
-              setSelected={setSelectedCategories} 
-            />
-
-            <div className="mt-6">
-              <FilterSection 
-                title="Classes" 
-                options={uniqueClasses} 
-                selected={selectedClasses} 
-                setSelected={setSelectedClasses} 
-              />
-            </div>
-
-            <Button 
-              variant="outline" 
-              className="w-full mt-6 text-gray-500 hover:text-primary border-dashed"
-              onClick={() => {
-                setSelectedCategories([]);
-                setSelectedClasses([]);
-                setSearchQuery("");
-              }}
-            >
-              Clear All Filters
-            </Button>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <div className="flex-1 space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <Card className="relative overflow-hidden border-2">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Total Assessments</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
-                  <Users className="w-4 h-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">{assessmentsLoading ? '...' : assessments.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="relative overflow-hidden border-2">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Templates</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
-                  <Play className="w-4 h-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">{templatesLoading ? '...' : templates.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="relative overflow-hidden border-2">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Active</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">{templatesLoading ? '...' : templates.filter((t: any) => t.is_active).length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="relative overflow-hidden border-2">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Categories</CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
-                  <Clock className="w-4 h-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">{templatesLoading ? '...' : new Set(templates.map((t: any) => t.category).filter(Boolean)).size}</div>
-              </CardContent>
-            </Card>
-          </div>
-
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4">
           {/* Search */}
-          <div className="relative">
+          <div className="relative w-full md:w-1/3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search assessments..."
@@ -506,47 +422,68 @@ export default function AssessmentsPage() {
             />
           </div>
 
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Filters:</span>
+            </div>
+            <Select
+              value={selectedCategories.length > 0 ? selectedCategories[0] : "all"}
+              onValueChange={(value) => setSelectedCategories(value === "all" ? [] : [value])}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {uniqueCategories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={selectedClasses.length > 0 ? selectedClasses[0] : "all"}
+              onValueChange={(value) => setSelectedClasses(value === "all" ? [] : [value])}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Classes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Classes</SelectItem>
+                {uniqueClasses.map((cls) => (
+                  <SelectItem key={cls} value={cls}>
+                    {cls}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {(selectedCategories.length > 0 || selectedClasses.length > 0) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedCategories([]);
+                  setSelectedClasses([]);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+
           {/* Tabs */}
-          <Tabs defaultValue="assessments" className="space-y-6">
+          <Tabs defaultValue="templates" className="space-y-6">
             <TabsList>
+              <TabsTrigger value="templates">Templates</TabsTrigger>
               <TabsTrigger value="assessments">Assessment Library</TabsTrigger>
               <TabsTrigger value="responses">Student Responses</TabsTrigger>
-              <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="assessments">
-              {assessmentsLoading ? (
-                <Card className="card-professional">
-                  <CardContent className="py-8 text-center">
-                    <p className="text-muted-foreground">Loading assessments...</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <DataTable
-                  data={filteredAssessments}
-                  columns={assessmentColumns}
-                  title="Assessment Library"
-                  searchPlaceholder="Search assessments..."
-                  onRowClick={(assessment: any) => setSelectedAssessmentId(assessment.assessment_id)}
-                  actions={assessmentActions}
-                  searchable={false} // Hide internal search since we have a global one
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="responses">
-              <Card className="card-professional">
-                <CardHeader>
-                  <CardTitle>Student Responses</CardTitle>
-                  <CardDescription>View and review student assessment responses</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Student responses are available in the Cases page for each individual student.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="templates">
               <Card className="card-professional">
@@ -589,8 +526,41 @@ export default function AssessmentsPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="assessments">
+              {assessmentsLoading ? (
+                <Card className="card-professional">
+                  <CardContent className="py-8 text-center">
+                    <p className="text-muted-foreground">Loading assessments...</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <DataTable
+                  data={filteredAssessments}
+                  columns={assessmentColumns}
+                  title="Assessment Library"
+                  searchPlaceholder="Search assessments..."
+                  onRowClick={(assessment: any) => setSelectedAssessmentId(assessment.assessment_id)}
+                  actions={assessmentActions}
+                  searchable={false} // Hide internal search since we have a global one
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="responses">
+              <Card className="card-professional">
+                <CardHeader>
+                  <CardTitle>Student Responses</CardTitle>
+                  <CardDescription>View and review student assessment responses</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Student responses are available in the Cases page for each individual student.
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
-        </div>
       </div>
     </div>
   );

@@ -26,7 +26,7 @@ const getMockCredentials = (role: UserRole, schoolId?: string): { email: string;
   // Get school data from localStorage to get the actual domain
   const schoolData = localStorage.getItem('selected_school');
   let schoolDomain = 'greenwood.edu'; // default
-  let schoolEmail = ''; // Will be extracted from school data if available
+  const schoolEmail = ''; // Will be extracted from school data if available
   
   if (schoolData) {
     try {
