@@ -102,6 +102,8 @@ export const ProfileCard = ({ therapist, onClick, getDoctorImage }: ProfileCardP
                 
               </div>
               <p className="text-white/50 text-base">{therapist.specialty}</p>
+              <p className="text-white text-sm">{therapist.languages.join(', ')}</p>
+             
             </div>
             
 
