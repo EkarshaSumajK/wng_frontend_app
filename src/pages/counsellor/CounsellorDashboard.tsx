@@ -10,6 +10,9 @@ import { ViewCaseDetailModal } from "@/components/modals/ViewCaseDetailModal";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { useState } from "react";
 
+
+import { format } from "date-fns";
+
 export default function CounsellorDashboard() {
   const { user } = useAuth();
   const [selectedCase, setSelectedCase] = useState<any>(null);
@@ -20,7 +23,8 @@ export default function CounsellorDashboard() {
   const { data: casesResponse = [] } = useCases({ 
     assigned_counsellor: user?.id
   });
-
+  
+  // Fetch calendar events for dynamic metrics
   // Debug logging
   console.log('Dashboard Data:', dashboardData);
   console.log('Dashboard Loading:', isDashboardLoading);
@@ -78,6 +82,7 @@ export default function CounsellorDashboard() {
   };
 
   const caseload = dashboardData?.caseload;
+  const calendarMetrics = dashboardData?.calendar_metrics;
   const highPriorityCases = (caseload?.by_risk_level?.critical || 0) + (caseload?.by_risk_level?.high || 0);
   
   console.log('Caseload:', caseload);
@@ -105,7 +110,7 @@ export default function CounsellorDashboard() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                 <Activity className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Good morning, {user?.name || 'Counsellor'}
               </h1>
             </div>
@@ -165,9 +170,15 @@ export default function CounsellorDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-2">7</div>
+            <div className="text-4xl font-bold text-foreground mb-2">{calendarMetrics?.todays_sessions_count || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Next: <span className="font-semibold text-foreground">{priorityCases[0]?.student?.first_name || 'No sessions'}</span> at 10:30 AM
+              {calendarMetrics?.next_session ? (
+                <>
+                  Next: <span className="font-semibold text-foreground">{calendarMetrics.next_session.student_name || calendarMetrics.next_session.title}</span> at {format(new Date(calendarMetrics.next_session.start_time), "h:mm a")}
+                </>
+              ) : (
+                "No more sessions today"
+              )}
             </p>
           </CardContent>
         </Card>
@@ -199,7 +210,7 @@ export default function CounsellorDashboard() {
               {priorityCases.map((case_: any, index) => (
                 <div 
                   key={case_.case_id} 
-                  className="group relative p-5 border-2 border-border rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
+                  className="group relative p-5 border-2 border-border rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent dark:hover:from-primary/20 transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
                   style={{ animationDelay: `${index * 100}ms` }}
                   onClick={() => handleViewCase(case_)}
                 >

@@ -185,7 +185,7 @@ export default function StudentsOnboarding({
                       {student.class_id ? (
                         <Badge
                           variant="outline"
-                          className="bg-primary/10 text-primary"
+                          className="bg-blue-50 text-primary"
                         >
                           {classMap[student.class_id] || "Unknown Class"}
                         </Badge>
@@ -227,7 +227,7 @@ export default function StudentsOnboarding({
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className="bg-success/10 text-success"
+                        className="bg-green-50 text-green-700"
                       >
                         Active
                       </Badge>

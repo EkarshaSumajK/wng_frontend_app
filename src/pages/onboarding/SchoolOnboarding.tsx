@@ -150,7 +150,7 @@ export default function SchoolOnboarding() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/20 to-secondary/30 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-secondary/30 flex items-center justify-center p-6">
         <Card className="card-professional max-w-2xl w-full">
           <CardContent className="pt-6">
             <div className="text-center space-y-6">
@@ -170,7 +170,7 @@ export default function SchoolOnboarding() {
                 </p>
               </div>
 
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
+              <div className="bg-secondary/50 border border-primary/20 rounded-lg p-4 mb-4">
                 <h3 className="font-semibold mb-2">Next Step: Upload Your School Data</h3>
                 <p className="text-sm text-muted-foreground mb-3">
                   Save time by bulk uploading your staff, students, parents, and classes using Excel files. 
@@ -215,7 +215,7 @@ export default function SchoolOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/20 to-secondary/30 py-12 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-secondary/30 py-12 px-6">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <Card className="card-professional">
@@ -238,7 +238,7 @@ export default function SchoolOnboarding() {
                 <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
                 <span className="text-sm text-muted-foreground">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
               </div>
-              <div className="w-full bg-secondary/30 rounded-full h-2">
+              <div className="w-full bg-secondary rounded-full h-2">
                 <div 
                   className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(currentStep / totalSteps) * 100}%` }}
@@ -257,15 +257,15 @@ export default function SchoolOnboarding() {
         {/* Back Button */}
         <Button 
           variant="outline" 
-          onClick={() => navigate('/school-selection')}
+          onClick={() => navigate('/login')}
           className="gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to School Selection
+          Back to Login
         </Button>
 
         {/* Welcome Message */}
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="bg-secondary/50 border-primary/20">
           <CardContent className="pt-6">
             <p className="font-medium mb-2">Welcome! 👋</p>
             <p className="text-sm text-muted-foreground">

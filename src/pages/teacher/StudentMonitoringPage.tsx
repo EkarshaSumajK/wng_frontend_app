@@ -183,7 +183,7 @@ export default function StudentMonitoringPage() {
               setSelectedClass(null);
               setSearchQuery('');
             }}
-            className="mb-2 hover:bg-primary/10"
+            className="mb-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Classes
@@ -193,7 +193,7 @@ export default function StudentMonitoringPage() {
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 {selectedClass.class_name}
               </h1>
               <p className="text-base md:text-lg text-muted-foreground mt-1">
@@ -266,7 +266,7 @@ export default function StudentMonitoringPage() {
 
         {/* Students List */}
         <Card className="card-professional shadow-lg relative z-10">
-          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/50">
             <CardTitle className="text-2xl font-bold">
               Students ({filteredStudents.length})
             </CardTitle>
@@ -276,12 +276,12 @@ export default function StudentMonitoringPage() {
               {filteredStudents.map((student: any, index) => (
                 <div
                   key={student.student_id}
-                  className="group relative p-5 border-2 border-border rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                  className="group relative p-5 border-2 border-border rounded-xl hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent dark:hover:from-blue-900/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0 shadow-md">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-md">
                         <span className="text-sm font-bold text-white">
                           {student.name?.split(' ').map((n: string) => n[0]).join('')}
                         </span>
@@ -317,7 +317,7 @@ export default function StudentMonitoringPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewProfile(student)}
-                        className="hover:bg-primary/10 hover:border-primary transition-colors"
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View
@@ -326,7 +326,7 @@ export default function StudentMonitoringPage() {
                         variant="default"
                         size="sm"
                         onClick={() => handleRefer(student)}
-                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
+                        className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md"
                       >
                         <UserPlus className="w-4 h-4 mr-2" />
                         Refer
@@ -382,7 +382,7 @@ export default function StudentMonitoringPage() {
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               Student Monitoring
             </h1>
             <p className="text-base md:text-lg text-muted-foreground mt-1">
@@ -397,12 +397,12 @@ export default function StudentMonitoringPage() {
         <Card className="card-professional hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">Total Students</CardTitle>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-md">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{totalStudents}</div>
+            <div className="text-3xl font-bold text-primary">{totalStudents}</div>
             <p className="text-xs text-muted-foreground mt-1">Across {classes.length} classes</p>
           </CardContent>
         </Card>
@@ -462,7 +462,7 @@ export default function StudentMonitoringPage() {
 
       {/* Class Cards */}
       <Card className="card-professional shadow-lg relative z-10">
-        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/50">
           <CardTitle className="text-2xl font-bold">Your Classes</CardTitle>
           <CardDescription>Click on a class to view students</CardDescription>
         </CardHeader>

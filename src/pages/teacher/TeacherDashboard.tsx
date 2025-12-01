@@ -66,14 +66,14 @@ export default function TeacherDashboard() {
       <AnimatedBackground />
       {/* Header with modern design */}
       <div className="relative z-10">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Good morning, {user?.name || 'Teacher'}
               </h1>
             </div>
@@ -88,7 +88,7 @@ export default function TeacherDashboard() {
 
       {/* Stats Cards with enhanced design */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <Card className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300 group">
+        <Card className="relative overflow-hidden border-2 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -101,7 +101,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-2 hover:border-success/50 hover:shadow-xl transition-all duration-300 group">
+        <Card className="relative overflow-hidden border-2 hover:border-green-300 hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -114,7 +114,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-2 hover:border-warning/50 hover:shadow-xl transition-all duration-300 group">
+        <Card className="relative overflow-hidden border-2 hover:border-yellow-300 hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -127,7 +127,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300 group">
+        <Card className="relative overflow-hidden border-2 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -140,7 +140,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300 group">
+        <Card className="relative overflow-hidden border-2 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -153,7 +153,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300 group">
+        <Card className="relative overflow-hidden border-2 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-rose-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -170,8 +170,8 @@ export default function TeacherDashboard() {
       {/* My Classes Section */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
-          <Card className="border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+          <Card className="border-2 hover:border-blue-200 transition-all duration-300 shadow-lg">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
@@ -200,8 +200,8 @@ export default function TeacherDashboard() {
                         key={classData.class_id}
                         className={`group p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
                           selectedClass === classData.class_id 
-                            ? 'bg-gradient-to-r from-primary/10 to-primary/5 border-primary shadow-md' 
-                            : 'border-border hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent'
+                            ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-900/20 dark:to-blue-900/10 border-primary shadow-md' 
+                            : 'border-border hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent dark:hover:from-blue-900/20'
                         }`}
                         onClick={() => setSelectedClass(classData.class_id)}
                         style={{ animationDelay: `${index * 100}ms` }}
@@ -399,7 +399,7 @@ export default function TeacherDashboard() {
                             {formatRiskLevel(observation.severity || 'low')}
                           </Badge>
                           {!observation.processed && (
-                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
                               Pending Review
                             </Badge>
                           )}

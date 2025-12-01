@@ -133,11 +133,11 @@ export default function TeacherAssessmentsPage() {
       <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
         {/* Header with modern design */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
           <Button
             variant="ghost"
             onClick={() => setSelectedAssessmentId(null)}
-            className="mb-4 hover:bg-primary/10 hover:text-primary font-semibold"
+            className="mb-4 hover:bg-blue-50 hover:text-primary font-semibold"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Assessments
@@ -145,10 +145,10 @@ export default function TeacherAssessmentsPage() {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                   <ClipboardList className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                   {selectedAssessment.title || 'Assessment Details'}
                 </h1>
               </div>
@@ -166,7 +166,7 @@ export default function TeacherAssessmentsPage() {
         <div className="grid lg:grid-cols-3 gap-6 relative z-10">
           <div className="lg:col-span-2 space-y-6">
             <Card className="card-professional shadow-lg border-2">
-              <CardHeader className="bg-gradient-to-r from-background to-muted/20 border-b">
+              <CardHeader className="bg-gradient-to-r from-background to-muted/50 border-b">
                 <CardTitle className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                     <FileText className="w-4 h-4 text-white" />
@@ -207,7 +207,7 @@ export default function TeacherAssessmentsPage() {
 
             {selectedAssessment.template?.questions && selectedAssessment.template.questions.length > 0 && (
               <Card className="card-professional shadow-lg border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20 border-b">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
                       <ClipboardList className="w-4 h-4 text-white" />
@@ -219,7 +219,7 @@ export default function TeacherAssessmentsPage() {
                 <CardContent className="pt-6">
                   <div className="space-y-4">
                     {selectedAssessment.template.questions.map((question: any, index: number) => (
-                      <div key={question.question_id || index} className="p-4 border-2 rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-300 hover:shadow-md">
+                      <div key={question.question_id || index} className="p-4 border-2 rounded-xl hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent dark:hover:from-blue-900/20 transition-all duration-300 hover:shadow-md">
                         <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
                           <h4 className="font-semibold text-foreground">Question {index + 1}</h4>
                           <div className="flex gap-2 flex-wrap">
@@ -257,7 +257,7 @@ export default function TeacherAssessmentsPage() {
 
             {selectedAssessment.student_results && selectedAssessment.student_results.length > 0 && (
               <Card className="card-professional shadow-lg border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20 border-b">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
                       <BarChart3 className="w-4 h-4 text-white" />
@@ -271,7 +271,7 @@ export default function TeacherAssessmentsPage() {
                     {selectedAssessment.student_results.map((result: any, index: number) => (
                       <div 
                         key={result.student_id} 
-                        className="p-4 border-2 rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-300 hover:shadow-md"
+                        className="p-4 border-2 rounded-xl hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent dark:hover:from-blue-900/20 transition-all duration-300 hover:shadow-md"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -308,7 +308,7 @@ export default function TeacherAssessmentsPage() {
 
           <div className="space-y-6">
             <Card className="card-professional shadow-lg border-2">
-              <CardHeader className="bg-gradient-to-r from-background to-muted/20 border-b">
+              <CardHeader className="bg-gradient-to-r from-background to-muted/50 border-b">
                 <CardTitle className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                     <FileText className="w-4 h-4 text-white" />
@@ -370,14 +370,14 @@ export default function TeacherAssessmentsPage() {
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
       {/* Header with modern design */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <ClipboardList className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Assessments
               </h1>
             </div>
@@ -391,10 +391,10 @@ export default function TeacherAssessmentsPage() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
         <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+          <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-border sticky top-24">
             <div className="flex items-center gap-2 mb-6">
               <Filter className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white">Filters</h3>
             </div>
             
             {uniqueCategories.length > 0 && (
@@ -428,7 +428,7 @@ export default function TeacherAssessmentsPage() {
               placeholder="Search assessments by title, class, or notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
             />
           </div>
 
@@ -442,7 +442,7 @@ export default function TeacherAssessmentsPage() {
 
             <TabsContent value="templates">
               <Card className="card-professional shadow-lg border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20 border-b">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
                       <ClipboardList className="w-4 h-4 text-white" />
@@ -462,7 +462,7 @@ export default function TeacherAssessmentsPage() {
                   {templates.map((template: any, index: number) => (
                     <Card 
                       key={template.template_id} 
-                      className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/50"
+                      className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-blue-300"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <CardHeader>
@@ -482,7 +482,7 @@ export default function TeacherAssessmentsPage() {
                           {template.description || 'No description available'}
                         </p>
                         <div className="flex items-center gap-2 text-sm">
-                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                             <FileText className="w-4 h-4 text-primary" />
                           </div>
                           <span className="font-semibold text-foreground">{template.questions?.length || 0}</span>

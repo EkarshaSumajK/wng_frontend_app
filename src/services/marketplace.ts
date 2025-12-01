@@ -96,5 +96,23 @@ export const marketplaceApi = {
   },
   
   getTherapistById: (id: string) => 
-    apiClient.get<Therapist>(`/therapists/${id}`)
+    apiClient.get<Therapist>(`/therapists/${id}`),
+
+  registerCounselor: async (counselorData: any) => {
+    return apiClient.post('/counsellors', counselorData);
+  },
+
+  getRegisteredCounselors: async (schoolId: string) => {
+    return apiClient.get(`/counsellors?school_id=${schoolId}`);
+  },
+
+  bookTherapist: async (therapistId: string, bookingData: any, userId?: string) => {
+    const query = userId ? `?user_id=${userId}` : '';
+    return apiClient.post(`/therapists/${therapistId}/book${query}`, bookingData);
+  },
+
+  getMyBookings: async (userId: string, status?: string) => {
+    const query = status ? `&status=${status}` : '';
+    return apiClient.get(`/therapists/my-bookings?user_id=${userId}${query}`);
+  }
 };

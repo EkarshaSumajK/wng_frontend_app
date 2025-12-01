@@ -74,7 +74,7 @@ export default function CounsellorHome() {
       <AnimatedBackground />
       
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-secondary p-8 md:p-12 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-500 to-purple-500 p-8 md:p-12 text-white shadow-2xl">
         <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-10 bg-cover bg-center" />
         <div className="relative z-10 max-w-4xl">
           <div className="flex items-center gap-3 mb-4">
@@ -106,7 +106,7 @@ export default function CounsellorHome() {
           {quickAccessCards.map((card, index) => (
             <Card
               key={card.title}
-              className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1"
+              className="group relative overflow-hidden border-2 hover:border-blue-300 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1"
               onClick={() => navigate(card.url)}
               style={{ animationDelay: `${index * 50}ms` }}
             >

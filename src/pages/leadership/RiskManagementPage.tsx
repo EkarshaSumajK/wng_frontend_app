@@ -251,19 +251,19 @@ export default function RiskManagementPage() {
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm">Critical Alerts</span>
-                <span className="font-medium text-green-600">1.2 hrs avg</span>
+                <span className="font-medium text-green-600 dark:text-green-400">1.2 hrs avg</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">High Risk Alerts</span>
-                <span className="font-medium text-blue-600">8.5 hrs avg</span>
+                <span className="font-medium text-blue-600 dark:text-blue-400">8.5 hrs avg</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Resolution Rate</span>
-                <span className="font-medium text-purple-600">94%</span>
+                <span className="font-medium text-purple-600 dark:text-purple-400">94%</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">False Positives</span>
-                <span className="font-medium text-orange-600">6%</span>
+                <span className="font-medium text-orange-600 dark:text-orange-400">6%</span>
               </div>
             </CardContent>
           </Card>

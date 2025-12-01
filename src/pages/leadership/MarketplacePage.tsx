@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, MapPin, Star, Filter, Phone, CheckCircle, X, Users, Award, Loader2, Clock } from "lucide-react";
+import { Search, MapPin, Star, Filter, Phone, CheckCircle, X, Users, Award, Loader2, Clock, Briefcase, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -8,9 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BookTherapistModal } from "@/components/modals/BookTherapistModal";
+import { BookingDetailModal } from "@/components/modals/BookingDetailModal";
 import { marketplaceApi, Therapist } from "@/services/marketplace";
 import { ProfileCard } from "@/components/ui/profile-card";
 import { TherapistDetailModal } from "@/components/modals/TherapistDetailModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import {
   Carousel,
   CarouselContent,
@@ -20,10 +23,13 @@ import {
 } from "@/components/ui/carousel";
 
 export default function MarketplacePage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   const [bookingTherapist, setBookingTherapist] = useState<Therapist | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [therapists, setTherapists] = useState<Therapist[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -51,6 +57,10 @@ export default function MarketplacePage() {
 
     fetchTherapists();
   }, []);
+
+
+
+
 
   const filteredTherapists = useMemo(() => {
     return therapists.filter(t => {
@@ -156,8 +166,9 @@ export default function MarketplacePage() {
   const expandedSectionData =
     showcaseSections.find((section) => section.key === expandedSection)?.data ?? [];
 
-  const [viewMode, setViewMode] = useState<"sections" | "all">("sections");
+  const [viewMode, setViewMode] = useState<"sections" | "all" | "bookings">("sections");
   const [currentPage, setCurrentPage] = useState(1);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
   const pageSize = 16;
   const totalPages = Math.max(1, Math.ceil(filteredTherapists.length / pageSize));
   const paginatedTherapists = useMemo(() => {
@@ -165,7 +176,29 @@ export default function MarketplacePage() {
     return filteredTherapists.slice(start, start + pageSize);
   }, [filteredTherapists, currentPage]);
 
-  if (loading) {
+  // Effect to fetch bookings when tab is selected
+  useEffect(() => {
+    if (viewMode === "bookings") {
+      fetchMyBookings();
+    }
+  }, [viewMode]);
+
+  const fetchMyBookings = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const response = await marketplaceApi.getMyBookings(user.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setMyBookings((response as any).bookings || []);
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      toast.error("Failed to load bookings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && therapists.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -286,8 +319,88 @@ export default function MarketplacePage() {
           >
             All Therapists
           </Button>
+
+          <Button
+            variant={viewMode === "bookings" ? "default" : "outline"}
+            onClick={() => setViewMode("bookings")}
+            className="gap-2"
+          >
+            <Clock className="w-4 h-4" />
+            My Bookings
+          </Button>
         </div>
       </div>
+
+
+
+      {viewMode === "bookings" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold">My Bookings</h2>
+              <p className="text-muted-foreground text-sm">
+                Your scheduled appointments with therapists.
+              </p>
+            </div>
+          </div>
+
+          {myBookings.length === 0 ? (
+            <div className="text-center py-12 border rounded-2xl bg-muted/10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                <Clock className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium">No bookings yet</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto mt-2">
+                Book a session with a therapist to see it here.
+              </p>
+              <Button variant="outline" className="mt-4" onClick={() => setViewMode("all")}>
+                Browse Therapists
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {myBookings.map((booking) => (
+                <div 
+                  key={booking.booking_id} 
+                  className="bg-card rounded-xl border shadow-sm p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setSelectedBooking(booking)}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant={booking.status === 'Confirmed' ? 'default' : 'secondary'}>
+                        {booking.status}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(booking.appointment_date).toLocaleDateString()} at {booking.appointment_time}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-lg">
+                      {booking.therapist ? `Session with ${booking.therapist.name}` : "Therapy Session"}
+                    </h3>
+                    <p className="text-muted-foreground text-sm mt-1">
+                      {booking.notes || "No notes"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                     <Button variant="outline" size="sm" onClick={(e) => {
+                       e.stopPropagation();
+                       // TODO: Implement reschedule
+                     }}>
+                       Reschedule
+                     </Button>
+                     <Button variant="destructive" size="sm" onClick={(e) => {
+                       e.stopPropagation();
+                       // TODO: Implement cancel
+                     }}>
+                       Cancel
+                     </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {viewMode === "sections" && showcaseSections.length > 0 && (
         <div className="space-y-10">
@@ -327,8 +440,8 @@ export default function MarketplacePage() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-0 -translate-x-1/2 shadow-md bg-white/95 w-14 h-14 text-lg" />
-                <CarouselNext className="right-0 translate-x-1/2 shadow-md bg-white/95 w-14 h-14 text-lg" />
+                <CarouselPrevious className="left-0 -translate-x-1/2 shadow-md bg-white/95 dark:bg-gray-800/95 w-14 h-14 text-lg" />
+                <CarouselNext className="right-0 translate-x-1/2 shadow-md bg-white/95 dark:bg-gray-800/95 w-14 h-14 text-lg" />
               </Carousel>
             </section>
           )})}
@@ -423,6 +536,24 @@ export default function MarketplacePage() {
         open={!!bookingTherapist}
         onOpenChange={(open) => !open && setBookingTherapist(null)}
         therapist={bookingTherapist}
+        onSuccess={() => {
+          fetchMyBookings();
+          setViewMode("bookings");
+        }}
+      />
+
+      <BookingDetailModal
+        booking={selectedBooking}
+        open={!!selectedBooking}
+        onOpenChange={(open) => !open && setSelectedBooking(null)}
+        onCancel={(id) => {
+          console.log("Cancel booking", id);
+          // TODO: Implement cancel API
+        }}
+        onReschedule={(id) => {
+          console.log("Reschedule booking", id);
+          // TODO: Implement reschedule API
+        }}
       />
     </div>
   );

@@ -157,7 +157,7 @@ export default function TeachersOnboarding({ schoolId }: TeachersOnboardingProps
                             <Badge 
                               key={classItem.class_id} 
                               variant="outline" 
-                              className="bg-primary/10 text-primary text-xs"
+                              className="bg-blue-50 text-primary text-xs"
                             >
                               {classItem.name}
                             </Badge>
@@ -168,7 +168,7 @@ export default function TeachersOnboarding({ schoolId }: TeachersOnboardingProps
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="bg-success/10 text-success">
+                      <Badge variant="outline" className="bg-green-50 text-green-700">
                         Active
                       </Badge>
                     </TableCell>

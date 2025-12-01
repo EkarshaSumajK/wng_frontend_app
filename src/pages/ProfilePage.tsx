@@ -57,14 +57,14 @@ export default function ProfilePage() {
       
       {/* Header */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <User className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Profile Settings
               </h1>
             </div>
@@ -75,7 +75,7 @@ export default function ProfilePage() {
           
           {!isEditing ? (
             <Button 
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 w-fit"
+              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 w-fit"
               onClick={() => setIsEditing(true)}
               size="lg"
             >
@@ -110,8 +110,8 @@ export default function ProfilePage() {
         <Card className="lg:col-span-1 border-2 hover:shadow-lg transition-all duration-300">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-4">
-              <Avatar className="w-32 h-32 ring-4 ring-primary/20">
-                <AvatarFallback className="bg-gradient-primary text-white text-4xl font-bold">
+              <Avatar className="w-32 h-32 ring-4 ring-blue-100 dark:ring-blue-900">
+                <AvatarFallback className="bg-primary text-white text-4xl font-bold">
                   {user.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
@@ -129,7 +129,7 @@ export default function ProfilePage() {
             
             {user.school_name && (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -140,7 +140,7 @@ export default function ProfilePage() {
             )}
             
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
                 <Shield className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
@@ -150,7 +150,7 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">

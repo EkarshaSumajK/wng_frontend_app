@@ -159,14 +159,14 @@ export default function WebinarsPage() {
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <Video className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Webinars & Workshops
               </h1>
             </div>
@@ -185,7 +185,7 @@ export default function WebinarsPage() {
               placeholder="Search webinars by title, speaker..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
             />
           </div>
 
@@ -249,7 +249,7 @@ export default function WebinarsPage() {
                       <Award className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Featured Webinars</h2>
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Featured Webinars</h2>
                       <p className="text-sm text-muted-foreground mt-1">{featuredWebinars.length} handpicked sessions</p>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ export default function WebinarsPage() {
                                 )}
                               </div>
                               
-                              <Button variant="outline" size="sm" className="w-full hover:bg-purple-50 hover:border-purple-500 transition-colors text-xs h-8">
+                              <Button variant="outline" size="sm" className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-500 transition-colors text-xs h-8">
                                 <Eye className="w-3 h-3 mr-1" />
                                 View Details
                               </Button>
@@ -363,15 +363,15 @@ export default function WebinarsPage() {
             
             return (
               <section key={status} className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-3xl -z-10" />
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-primary/10 shadow-xl p-8 space-y-6">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-50/50 to-transparent rounded-3xl -z-10" />
+                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-blue-100 shadow-xl p-8 space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                         <Video className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{statusLabels[status]}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{statusLabels[status]}</h2>
                         <p className="text-sm text-muted-foreground mt-1">{statusWebinars.length} webinars available</p>
                       </div>
                     </div>
@@ -463,7 +463,7 @@ export default function WebinarsPage() {
                                 </div>
 
                                 <div className="flex items-baseline gap-2">
-                                  <span className="text-base font-bold text-gray-900">
+                                  <span className="text-base font-bold text-gray-900 dark:text-white">
                                     {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
                                   </span>
                                   {webinar.price > 0 && (
@@ -478,7 +478,7 @@ export default function WebinarsPage() {
                                   )}
                                 </div>
                                 
-                                <Button variant="outline" size="sm" className="w-full hover:bg-primary/10 hover:border-primary transition-colors text-xs h-8">
+                                <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors text-xs h-8">
                                   <Eye className="w-3 h-3 mr-1" />
                                   View Details
                                 </Button>
@@ -488,8 +488,8 @@ export default function WebinarsPage() {
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="left-0 -translate-x-1/2 shadow-lg border-2 border-primary/20 bg-white/95 w-12 h-12" />
-                    <CarouselNext className="right-0 translate-x-1/2 shadow-lg border-2 border-primary/20 bg-white/95 w-12 h-12" />
+                    <CarouselPrevious className="left-0 -translate-x-1/2 shadow-lg border-2 border-blue-200 bg-white/95 w-12 h-12" />
+                    <CarouselNext className="right-0 translate-x-1/2 shadow-lg border-2 border-blue-200 bg-white/95 w-12 h-12" />
                   </Carousel>
                 </div>
               </section>
@@ -506,13 +506,13 @@ export default function WebinarsPage() {
                 setSelectedStatus(null);
                 setSearchQuery("");
               }}
-              className="group hover:bg-primary/10"
+              className="group hover:bg-blue-50"
             >
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Overview
             </Button>
             <div className="h-8 w-px bg-gray-200" />
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {statusLabels[selectedStatus]}
             </h2>
             <Badge variant="secondary" className="ml-2">
@@ -530,7 +530,7 @@ export default function WebinarsPage() {
                   placeholder="Search webinars..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+                  className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
                 />
               </div>
 
@@ -635,7 +635,7 @@ export default function WebinarsPage() {
 
                     <div className="mt-auto pt-3 border-t">
                       <div className="flex items-baseline gap-2 mb-3">
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">
                           {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
                         </span>
                         {webinar.price > 0 && (
@@ -648,7 +648,7 @@ export default function WebinarsPage() {
                         )}
                       </div>
 
-                      <Button variant="outline" size="sm" className="w-full hover:bg-primary/10 hover:border-primary transition-colors">
+                      <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors">
                         <Eye className="w-3 h-3 mr-2" />
                         View Details
                       </Button>
@@ -688,7 +688,7 @@ export default function WebinarsPage() {
                 className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${
                   sidebarTab === 'live'
                     ? 'bg-primary text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
                 }`}
               >
                 Live
@@ -698,7 +698,7 @@ export default function WebinarsPage() {
                 className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${
                   sidebarTab === 'popular'
                     ? 'bg-primary text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
                 }`}
               >
                 Popular
@@ -708,7 +708,7 @@ export default function WebinarsPage() {
                 className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${
                   sidebarTab === 'registered'
                     ? 'bg-primary text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
                 }`}
               >
                 Registered
@@ -717,18 +717,18 @@ export default function WebinarsPage() {
 
             {/* Sidebar Content */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                 {sidebarTab === 'live' ? 'Top Live' : sidebarTab === 'popular' ? 'Most Popular' : 'My Registered'}
               </h3>
 
               {(sidebarTab === 'live' ? liveWebinars : sidebarTab === 'popular' ? popularWebinars : registeredWebinars).map((webinar: any) => (
                 <div
                   key={webinar.id}
-                  className="flex gap-3 p-3 rounded-xl border-2 border-gray-100 hover:border-primary hover:shadow-md transition-all cursor-pointer group"
+                  className="flex gap-3 p-3 rounded-xl border-2 border-gray-100 dark:border-border hover:border-primary hover:shadow-md transition-all cursor-pointer group"
                   onClick={() => setSelectedWebinar(webinar)}
                 >
                   {/* Thumbnail */}
-                  <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                  <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
                     {webinar.speakerImage ? (
                       <img
                         src={webinar.speakerImage}
@@ -758,7 +758,7 @@ export default function WebinarsPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-primary transition-colors">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">
                       {webinar.title}
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1 truncate">
@@ -797,7 +797,7 @@ export default function WebinarsPage() {
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                   <Video className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -823,7 +823,7 @@ export default function WebinarsPage() {
             <div className="space-y-6 mt-4 animate-in fade-in duration-500">
               {/* Speaker Info */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                   <CardTitle className="text-base">Speaker</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
@@ -831,7 +831,7 @@ export default function WebinarsPage() {
                     {selectedWebinar.speakerImage ? (
                       <img src={selectedWebinar.speakerImage} alt={selectedWebinar.speaker} className="w-16 h-16 rounded-full object-cover" />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
                         <Users className="w-8 h-8 text-primary" />
                       </div>
                     )}
@@ -846,7 +846,7 @@ export default function WebinarsPage() {
               {/* Description */}
               {selectedWebinar.description && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                     <CardTitle className="text-base">About this Session</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -858,7 +858,7 @@ export default function WebinarsPage() {
               {/* Topics */}
               {selectedWebinar.topics && selectedWebinar.topics.length > 0 && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                     <CardTitle className="text-base">What You'll Learn</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -876,7 +876,7 @@ export default function WebinarsPage() {
 
               {/* Session Details */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                   <CardTitle className="text-base">Session Details</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">

@@ -134,136 +134,161 @@ export default function LeadershipDashboard() {
     <div className="space-y-8 animate-in fade-in duration-700 relative pb-10">
       <AnimatedBackground />
       
-      {/* Enhanced Header */}
-      <div className="relative z-10 bg-card/40 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-lg overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+      {/* Header with modern design */}
+      <div className="relative z-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/25">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
+                <Shield className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-primary bg-300% animate-gradient">
-                  School Overview
-                </h1>
-                <p className="text-muted-foreground font-medium">Welcome back, {user?.name}</p>
-              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                Good morning, {user?.name || 'Principal'}
+              </h1>
             </div>
+            <p className="text-base md:text-lg text-muted-foreground ml-13">Here's your school's wellbeing overview</p>
           </div>
-          <div className="flex items-center gap-3 bg-background/50 backdrop-blur-md p-2 rounded-2xl border border-white/10">
-            <div className="px-4 py-2 rounded-xl bg-primary/10 text-primary font-bold flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            </div>
-            <div className="h-8 w-px bg-border/50" />
-            <div className="px-4 py-2">
+          <div className="flex items-center gap-3">
+             <div className="px-4 py-2 rounded-xl bg-white/50 border border-white/20 backdrop-blur-sm shadow-sm">
               <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">Academic Year</span>
-              <span className="font-bold">2024-2025</span>
+              <span className="font-bold text-sm">2024-2025</span>
             </div>
+            <Badge variant="secondary" className="w-fit h-full py-2 px-4 text-sm">
+              <Clock className="w-3 h-3 mr-2" />
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </Badge>
           </div>
         </div>
       </div>
 
-      {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
-          title="Wellbeing Index"
-          value={`${Math.round(wellbeingIndex)}%`}
-          icon={Activity}
-          trend={{
-            value: assessmentData.trend_analysis.change_percentage,
-            label: "vs last month",
-            isPositive: assessmentData.trend_analysis.trend === 'improving'
-          }}
-          delay={100}
-          className="bg-gradient-to-br from-emerald-50/50 to-white/50 dark:from-emerald-950/30 dark:to-background/50 border-emerald-100/50 dark:border-emerald-900/50"
-        />
-        
-        <StatsCard
-          title="Students Screened"
-          value={`${Math.round(screeningPercentage)}%`}
-          description={`${assessmentData.students_assessed} / ${overview.total_students} students`}
-          icon={Users}
-          delay={200}
-          className="bg-gradient-to-br from-blue-50/50 to-white/50 dark:from-blue-950/30 dark:to-background/50 border-blue-100/50 dark:border-blue-900/50"
-        />
-        
-        <StatsCard
-          title="At-Risk Students"
-          value={totalAtRisk}
-          description={`${riskLevels.critical} critical cases`}
-          icon={AlertTriangle}
-          trend={{
-            value: 5, // Example trend
-            label: "vs last month",
-            isPositive: false // Negative because increase in risk is bad
-          }}
-          delay={300}
-          className="bg-gradient-to-br from-rose-50/50 to-white/50 dark:from-rose-950/30 dark:to-background/50 border-rose-100/50 dark:border-rose-900/50"
-        />
-        
-        <StatsCard
-          title="Active Cases"
-          value={mentalHealth.active_cases}
-          description={`${mentalHealth.total_cases} total cases`}
-          icon={FileText}
-          delay={400}
-          className="bg-gradient-to-br from-purple-50/50 to-white/50 dark:from-purple-950/30 dark:to-background/50 border-purple-100/50 dark:border-purple-900/50"
-        />
+      {/* Stats Cards with enhanced design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <Card className="relative overflow-hidden border-2 hover:border-emerald-500/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Wellbeing Index</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Activity className="w-6 h-6 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-foreground mb-2">{Math.round(wellbeingIndex)}%</div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className={`bg-emerald-50 text-emerald-700 border-emerald-200 ${assessmentData.trend_analysis.trend === 'improving' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                <TrendingUp className={`w-3 h-3 mr-1 ${assessmentData.trend_analysis.trend !== 'improving' && 'rotate-180'}`} />
+                {Math.abs(assessmentData.trend_analysis.change_percentage)}%
+              </Badge>
+              <span className="text-xs text-muted-foreground">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-2 hover:border-blue-500/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Students Screened</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-foreground mb-2">{Math.round(screeningPercentage)}%</div>
+            <p className="text-xs text-muted-foreground">
+              {assessmentData.students_assessed} / {overview.total_students} students
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-2 hover:border-rose-500/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">At-Risk Students</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <AlertTriangle className="w-6 h-6 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-foreground mb-2">{totalAtRisk}</div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50">
+                {riskLevels.critical} Critical
+              </Badge>
+              <span className="text-xs text-muted-foreground">cases</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-2 hover:border-purple-500/50 hover:shadow-2xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Active Cases</CardTitle>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-foreground mb-2">{mentalHealth.active_cases}</div>
+            <p className="text-xs text-muted-foreground">
+              {mentalHealth.total_cases} total cases recorded
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Charts Section */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="card-premium overflow-hidden border-none shadow-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle className="text-xl font-bold flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                  Wellbeing Trends
-                </CardTitle>
-                <CardDescription>Monthly average wellbeing score analysis</CardDescription>
+          <Card className="card-premium overflow-hidden border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-4">
+              <div className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-bold flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    Wellbeing Trends
+                  </CardTitle>
+                  <CardDescription>Monthly average wellbeing score analysis</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" className="rounded-full hover:bg-primary hover:text-white transition-colors">
+                  View Report <ArrowUpRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
-              <Button variant="outline" size="sm" className="rounded-full hover:bg-primary hover:text-white transition-colors">
-                View Report <ArrowUpRight className="w-4 h-4 ml-2" />
-              </Button>
             </CardHeader>
             <CardContent>
               <div className="h-[350px] w-full mt-4">
-                <MetricChart
-                  title=""
-                  data={monthlyTrends}
-                  type="line"
-                  xKey="month"
-                  yKey="wellbeingIndex"
-                  height={350}
-                />
+                  <MetricChart
+                    title=""
+                    data={monthlyTrends}
+                    type="line"
+                    xKey="month"
+                    yKey="wellbeingIndex"
+                    height={350}
+                    colors={["#2563eb"]} // Explicit blue color
+                    bare={true}
+                  />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-premium overflow-hidden border-none shadow-xl">
-            <CardHeader>
+          <Card className="card-premium overflow-hidden border-2 hover:border-secondary/30 transition-all duration-300 shadow-lg">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-4">
               <CardTitle className="text-xl font-bold flex items-center gap-2">
                 <School className="w-5 h-5 text-secondary" />
                 Class Performance
               </CardTitle>
               <CardDescription>Top performing classes by wellbeing index</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {classMetrics.slice(0, 5).map((metric: any, index: number) => (
                   <div 
                     key={metric.id} 
-                    className="group flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-white hover:shadow-lg transition-all duration-300 border border-transparent hover:border-primary/10"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all duration-300 border border-transparent hover:border-blue-200"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center font-bold text-primary group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center font-bold text-primary group-hover:scale-110 transition-transform">
                         {metric.name.substring(0, 2)}
                       </div>
                       <div>
@@ -290,69 +315,75 @@ export default function LeadershipDashboard() {
 
         {/* Sidebar Section */}
         <div className="space-y-8">
-          <Card className="card-glass border-none shadow-xl bg-gradient-to-b from-white/80 to-white/40 dark:from-slate-900/80 dark:to-slate-900/40">
-            <CardHeader>
+          <Card className="card-glass border-2 hover:border-destructive/30 transition-all duration-300 shadow-lg bg-card">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-4">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Target className="w-5 h-5 text-destructive" />
                 Risk Distribution
               </CardTitle>
               <CardDescription>Current active cases breakdown</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="h-[200px] w-full mb-6 relative">
                 <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
                   <span className="text-3xl font-bold text-foreground">{mentalHealth.active_cases}</span>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Active</span>
                 </div>
-                <MetricChart
-                  title=""
-                  data={[
-                    { name: "Low", value: riskLevels.low },
-                    { name: "Medium", value: riskLevels.medium },
-                    { name: "High", value: riskLevels.high },
-                    { name: "Critical", value: riskLevels.critical }
-                  ]}
-                  type="pie"
-                  yKey="value"
-                  height={200}
-                  colors={["hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--destructive))", "hsl(var(--destructive))"]}
-                />
+                  <MetricChart
+                    title=""
+                    data={[
+                      { name: "Low", value: riskLevels.low },
+                      { name: "Medium", value: riskLevels.medium },
+                      { name: "High", value: riskLevels.high },
+                      { name: "Critical", value: riskLevels.critical }
+                    ]}
+                    type="pie"
+                    yKey="value"
+                    height={200}
+                    colors={["#10b981", "#f59e0b", "#f97316", "#ef4444"]}
+                    bare={true}
+                  />
               </div>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: "Critical Risk", count: riskLevels.critical, color: "bg-destructive" },
-                  { label: "High Risk", count: riskLevels.high, color: "bg-orange-500" },
-                  { label: "Medium Risk", count: riskLevels.medium, color: "bg-warning" },
-                  { label: "Low Risk", count: riskLevels.low, color: "bg-success" },
+                  { label: "Critical Risk", count: riskLevels.critical, color: "bg-red-500", total: mentalHealth.active_cases },
+                  { label: "High Risk", count: riskLevels.high, color: "bg-orange-500", total: mentalHealth.active_cases },
+                  { label: "Medium Risk", count: riskLevels.medium, color: "bg-amber-500", total: mentalHealth.active_cases },
+                  { label: "Low Risk", count: riskLevels.low, color: "bg-emerald-500", total: mentalHealth.active_cases },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
-                      <span className="text-sm font-medium">{item.label}</span>
+                  <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                      <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
                     </div>
-                    <span className="font-bold text-sm">{item.count}</span>
+                    <div className="flex items-baseline gap-2 pl-4">
+                      <span className="font-bold text-lg">{item.count}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {Math.round((item.count / (item.total || 1)) * 100)}%
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-primary to-secondary text-white border-none shadow-2xl overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          <Card className="bg-primary text-primary-foreground border shadow-lg overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
             
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-primary-foreground flex items-center gap-2">
                 <Brain className="w-5 h-5" />
                 AI Insights
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
-              <p className="text-white/90 text-sm leading-relaxed">
-                Based on recent assessments, Grade 10 shows a <span className="font-bold text-white">15% increase</span> in anxiety indicators. Consider scheduling a workshop.
+              <p className="text-primary-foreground/90 text-sm leading-relaxed">
+                Based on recent assessments, Grade 10 shows a <span className="font-bold text-primary-foreground">15% increase</span> in anxiety indicators. Consider scheduling a workshop.
               </p>
-              <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm">
+              <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 text-primary-foreground border-none backdrop-blur-sm">
                 View Recommendations
               </Button>
             </CardContent>

@@ -27,9 +27,9 @@ export function StatCard({
 }: StatCardProps) {
   const variantStyles = {
     default: '',
-    success: 'border-success/20 bg-success-light/5',
-    warning: 'border-warning/20 bg-warning-light/5',
-    destructive: 'border-destructive/20 bg-destructive-light/5'
+    success: 'border-success/20 bg-success/10',
+    warning: 'border-warning/20 bg-warning/10',
+    destructive: 'border-destructive/20 bg-destructive/10'
   };
 
   const iconStyles = {

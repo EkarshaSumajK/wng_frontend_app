@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Column<T> {
   key: keyof T | string;
@@ -112,21 +113,19 @@ export function DataTable<T extends Record<string, any>>({
             {emptyMessage}
           </div>
         ) : (
-          <div className="overflow-x-auto -mx-4 md:mx-0">
-            <table className="w-full min-w-[640px]">
-              <thead>
-                <tr className="border-b border-border">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {columns.map((column, index) => (
-                    <th
+                    <TableHead
                       key={index}
-                      className={`text-left p-3 md:p-4 font-medium text-sm md:text-base text-foreground ${
-                        column.width || ''
-                      }`}
+                      className={column.width || ''}
                     >
                       {column.sortable !== false ? (
                         <Button
                           variant="ghost"
-                          className="h-auto p-0 hover:bg-transparent"
+                          className="h-auto p-0 hover:bg-transparent font-medium"
                           onClick={() => handleSort(column.key as string)}
                         >
                           <span className="flex items-center gap-2">
@@ -137,41 +136,39 @@ export function DataTable<T extends Record<string, any>>({
                       ) : (
                         column.label
                       )}
-                    </th>
+                    </TableHead>
                   ))}
                   {actions && (
-                    <th className="text-left p-4 font-medium text-foreground w-24">
+                    <TableHead className="w-24">
                       Actions
-                    </th>
+                    </TableHead>
                   )}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {sortedData.map((item, index) => (
-                  <tr
+                  <TableRow
                     key={index}
-                    className={`border-b border-border hover:bg-muted/50 transition-colors ${
-                      onRowClick ? 'cursor-pointer' : ''
-                    }`}
+                    className={onRowClick ? 'cursor-pointer' : ''}
                     onClick={() => onRowClick?.(item)}
                   >
-                     {columns.map((column, colIndex) => (
-                      <td key={colIndex} className="p-3 md:p-4 text-sm md:text-base">
+                    {columns.map((column, colIndex) => (
+                      <TableCell key={colIndex}>
                         {column.render
                           ? column.render(item)
                           : item[column.key as keyof T]?.toString() || '-'
                         }
-                      </td>
+                      </TableCell>
                     ))}
-                     {actions && (
-                      <td className="p-3 md:p-4" onClick={e => e.stopPropagation()}>
+                    {actions && (
+                      <TableCell onClick={e => e.stopPropagation()}>
                         {actions(item)}
-                      </td>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </CardContent>

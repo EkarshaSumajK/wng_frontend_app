@@ -166,7 +166,7 @@ export default function WebinarsPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                 <Video className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                 Webinars & Workshops
               </h1>
             </div>
@@ -249,7 +249,7 @@ export default function WebinarsPage() {
                       <Award className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Featured Webinars</h2>
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Featured Webinars</h2>
                       <p className="text-sm text-muted-foreground mt-1">{featuredWebinars.length} handpicked sessions</p>
                     </div>
                   </div>
@@ -371,7 +371,7 @@ export default function WebinarsPage() {
                         <Video className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{statusLabels[status]}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{statusLabels[status]}</h2>
                         <p className="text-sm text-muted-foreground mt-1">{statusWebinars.length} webinars available</p>
                       </div>
                     </div>

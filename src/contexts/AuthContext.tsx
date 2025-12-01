@@ -5,7 +5,7 @@ import { apiClient } from '@/services/api';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<User>;
-  loginWithRole: (role: UserRole) => Promise<void>;
+
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -21,65 +21,7 @@ export const useAuth = () => {
   return context;
 };
 
-// Mock credentials for quick login - now school-specific
-const getMockCredentials = (role: UserRole, schoolId?: string): { email: string; password: string } => {
-  // Get school data from localStorage to get the actual domain
-  const schoolData = localStorage.getItem('selected_school');
-  let schoolDomain = 'greenwood.edu'; // default
-  const schoolEmail = ''; // Will be extracted from school data if available
-  
-  if (schoolData) {
-    try {
-      const school = JSON.parse(schoolData);
-      console.log('getMockCredentials: Using school:', school.name, school.school_id);
-      
-      // First, try to use the email from school data if available
-      if (school.email) {
-        const emailParts = school.email.split('@');
-        if (emailParts.length === 2) {
-          schoolDomain = emailParts[1];
-          console.log('getMockCredentials: Extracted domain from school email:', schoolDomain);
-        }
-      } else {
-        // Fallback: Extract domain from school name or use a mapping
-        const schoolDomainMap: Record<string, string> = {
-          'Greenwood High School': 'greenwood.edu',
-          'Riverside Academy': 'riverside.edu',
-          'Oakridge International School': 'oakridge.edu',
-          'Maple Valley School': 'maplevalley.edu',
-          'Lincoln High School': 'lincoln.edu',
-          'Washington Academy': 'washington.edu',
-        };
-        schoolDomain = schoolDomainMap[school.name] || schoolDomain;
-        console.log('getMockCredentials: Using mapped domain:', schoolDomain);
-      }
-    } catch (e) {
-      console.error('Failed to parse school data:', e);
-    }
-  }
-  
-  const credentials: Record<UserRole, { email: string; password: string }> = {
-    COUNSELLOR: {
-      email: `counsellor1@${schoolDomain}`,
-      password: 'password123',
-    },
-    TEACHER: {
-      email: `teacher1@${schoolDomain}`,
-      password: 'password123',
-    },
-    PRINCIPAL: {
-      email: `principal@${schoolDomain}`,
-      password: 'password123',
-    },
-    LEADERSHIP: {
-      email: `principal@${schoolDomain}`,
-      password: 'password123',
-    },
-  };
-  
-  console.log('getMockCredentials: Generated credentials for', role, ':', credentials[role].email);
-  return credentials[role];
-};
+
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -227,14 +169,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const loginWithRole = async (role: UserRole) => {
-    // Get selected school from localStorage
-    const schoolData = localStorage.getItem('selected_school');
-    const schoolId = schoolData ? JSON.parse(schoolData).school_id : undefined;
-    
-    const credentials = getMockCredentials(role, schoolId);
-    await login(credentials.email, credentials.password);
-  };
+
 
   const logout = () => {
     setUser(null);
@@ -245,7 +180,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const isAuthenticated = user !== null;
 
   return (
-    <AuthContext.Provider value={{ user, login, loginWithRole, logout, isAuthenticated, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

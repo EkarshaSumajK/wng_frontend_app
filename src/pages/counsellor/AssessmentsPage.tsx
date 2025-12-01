@@ -217,7 +217,7 @@ export default function AssessmentsPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                   <ClipboardList className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                   {selectedAssessment.title || 'Assessment Details'}
                 </h1>
               </div>
@@ -400,7 +400,7 @@ export default function AssessmentsPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                 <ClipboardList className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Assessments
               </h1>
             </div>
@@ -418,7 +418,7 @@ export default function AssessmentsPage() {
               placeholder="Search assessments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
             />
           </div>
 
@@ -497,27 +497,49 @@ export default function AssessmentsPage() {
                   ) : filteredTemplates.length > 0 ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {filteredTemplates.map((template: any) => (
-                        <Card key={template.template_id} className="hover:shadow-md transition-shadow">
-                          <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <CardTitle className="text-base">{template.name}</CardTitle>
-                              {template.is_active && (
-                                <Badge variant="default" className="ml-2">Active</Badge>
-                              )}
-                            </div>
-                            {template.category && (
-                              <Badge variant="outline" className="w-fit">{template.category}</Badge>
+                        <div 
+                          key={template.template_id} 
+                          className="group cursor-pointer space-y-3"
+                          onClick={() => {
+                            // Handle template click - maybe show details or create assessment
+                            // For now, we don't have a direct action in the original code other than viewing
+                          }}
+                        >
+                          {/* Thumbnail / App Icon Style */}
+                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                            {template.thumbnail_url ? (
+                              <img 
+                                src={template.thumbnail_url} 
+                                alt={template.name}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-secondary/20">
+                                <span className="text-4xl">📋</span>
+                              </div>
                             )}
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {template.description || 'No description available'}
-                            </p>
-                            <div className="text-sm text-muted-foreground">
-                              <span className="font-medium">{template.questions?.length || 0}</span> questions
+                            {/* Active Badge Overlay */}
+                            {template.is_active && (
+                              <div className="absolute top-2 right-2 rounded-lg bg-green-500/90 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                                Active
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Content */}
+                          <div className="space-y-1">
+                            <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
+                              {template.name}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
+                                {template.category || 'General'}
+                              </span>
+                              <span>•</span>
+                              <span>{template.questions?.length || 0} Questions</span>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (

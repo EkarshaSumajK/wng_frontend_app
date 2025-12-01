@@ -156,7 +156,7 @@ export default function DataOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/20 to-secondary/30 py-12 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-secondary/30 py-12 px-6">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <Card className="card-professional">
@@ -203,7 +203,7 @@ export default function DataOnboarding() {
         </Card>
 
         {/* Instructions */}
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="bg-secondary/50 border-primary/20">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
               Upload Excel files containing your school data. Each file should follow the provided template format.
@@ -259,7 +259,7 @@ export default function DataOnboarding() {
                     className={`flex items-center gap-3 p-4 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                       uploadStatus.staff === 'success' 
                         ? 'border-green-500 bg-green-50' 
-                        : 'border-border hover:border-primary hover:bg-primary/5'
+                        : 'border-border hover:border-primary hover:bg-secondary/50'
                     }`}
                   >
                     <FileSpreadsheet className="w-8 h-8 text-muted-foreground" />
@@ -298,7 +298,7 @@ export default function DataOnboarding() {
               </div>
 
               {errors.staff && (
-                <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-destructive rounded-lg">
                   <AlertCircle className="w-4 h-4 text-destructive" />
                   <p className="text-sm text-destructive">{errors.staff}</p>
                 </div>
@@ -368,7 +368,7 @@ export default function DataOnboarding() {
                     className={`flex items-center gap-3 p-4 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                       uploadStatus.students === 'success' 
                         ? 'border-green-500 bg-green-50' 
-                        : 'border-border hover:border-primary hover:bg-primary/5'
+                        : 'border-border hover:border-primary hover:bg-secondary/50'
                     }`}
                   >
                     <FileSpreadsheet className="w-8 h-8 text-muted-foreground" />
@@ -407,7 +407,7 @@ export default function DataOnboarding() {
               </div>
 
               {errors.students && (
-                <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-destructive rounded-lg">
                   <AlertCircle className="w-4 h-4 text-destructive" />
                   <p className="text-sm text-destructive">{errors.students}</p>
                 </div>
@@ -477,7 +477,7 @@ export default function DataOnboarding() {
                     className={`flex items-center gap-3 p-4 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                       uploadStatus.classes === 'success' 
                         ? 'border-green-500 bg-green-50' 
-                        : 'border-border hover:border-primary hover:bg-primary/5'
+                        : 'border-border hover:border-primary hover:bg-secondary/50'
                     }`}
                   >
                     <FileSpreadsheet className="w-8 h-8 text-muted-foreground" />
@@ -516,7 +516,7 @@ export default function DataOnboarding() {
               </div>
 
               {errors.classes && (
-                <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-destructive rounded-lg">
                   <AlertCircle className="w-4 h-4 text-destructive" />
                   <p className="text-sm text-destructive">{errors.classes}</p>
                 </div>

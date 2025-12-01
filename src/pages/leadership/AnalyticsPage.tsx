@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { BarChart3, TrendingUp, Download, Filter, Calendar, Users, Target, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,53 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState("6months");
   const [analysisType, setAnalysisType] = useState("trends");
   const { data: dashboardData, isLoading } = useSchoolDashboard(user?.school_id);
+
+  const { monthlyTrends, casesData, assessmentsData, classComparisonData, stats } = useMemo(() => {
+    if (!dashboardData) return { 
+      monthlyTrends: [], 
+      casesData: [], 
+      assessmentsData: [], 
+      classComparisonData: [], 
+      stats: [] 
+    };
+
+    const monthlyTrends = (dashboardData as any).monthly_trends || [];
+    const classMetrics = (dashboardData as any).class_metrics || [];
+    const assessmentData = (dashboardData as any).assessment_analytics;
+    
+    const casesData = monthlyTrends.map((trend: any) => ({
+      month: trend.month,
+      opened: trend.casesOpened,
+      closed: trend.casesClosed,
+      net: trend.casesOpened - trend.casesClosed
+    }));
+
+    const assessmentsData = monthlyTrends.map((trend: any) => ({
+      month: trend.month,
+      assessments: trend.assessmentsCompleted
+    }));
+
+    const classComparisonData = classMetrics.map((cls: any) => ({
+      name: cls.name.split(' ')[0], // Shortened class names for chart
+      wellbeing: cls.wellbeingIndex,
+      participation: 85, // Default value
+      atRisk: cls.atRiskCount
+    }));
+
+    const responseRate = Math.round(assessmentData.assessment_completion_rate || 0);
+    const trendDirection = assessmentData.trend_analysis.change_percentage || 0;
+    const dataPoints = assessmentData.total_assessments_completed || 0;
+    const activeCohorts = classMetrics.length || 0;
+
+    const stats = [
+      { title: "Avg Response Rate", value: `${responseRate}%`, icon: Target },
+      { title: "Trend Direction", value: `${trendDirection > 0 ? '+' : ''}${trendDirection.toFixed(1)}%`, icon: TrendingUp },
+      { title: "Data Points", value: dataPoints.toString(), icon: BarChart3 },
+      { title: "Active Cohorts", value: activeCohorts.toString(), icon: Users }
+    ];
+
+    return { monthlyTrends, casesData, assessmentsData, classComparisonData, stats };
+  }, [dashboardData]);
 
   if (isLoading) {
     return (
@@ -29,41 +76,6 @@ export default function AnalyticsPage() {
       </div>
     );
   }
-
-  const monthlyTrends = (dashboardData as any).monthly_trends || [];
-  const classMetrics = (dashboardData as any).class_metrics || [];
-  const assessmentData = (dashboardData as any).assessment_analytics;
-  
-  const casesData = monthlyTrends.map((trend: any) => ({
-    month: trend.month,
-    opened: trend.casesOpened,
-    closed: trend.casesClosed,
-    net: trend.casesOpened - trend.casesClosed
-  }));
-
-  const assessmentsData = monthlyTrends.map((trend: any) => ({
-    month: trend.month,
-    assessments: trend.assessmentsCompleted
-  }));
-
-  const classComparisonData = classMetrics.map((cls: any) => ({
-    name: cls.name.split(' ')[0], // Shortened class names for chart
-    wellbeing: cls.wellbeingIndex,
-    participation: 85, // Default value
-    atRisk: cls.atRiskCount
-  }));
-
-  const responseRate = Math.round(assessmentData.assessment_completion_rate || 0);
-  const trendDirection = assessmentData.trend_analysis.change_percentage || 0;
-  const dataPoints = assessmentData.total_assessments_completed || 0;
-  const activeCohorts = classMetrics.length || 0;
-
-  const stats = [
-    { title: "Avg Response Rate", value: `${responseRate}%`, icon: Target },
-    { title: "Trend Direction", value: `${trendDirection > 0 ? '+' : ''}${trendDirection.toFixed(1)}%`, icon: TrendingUp },
-    { title: "Data Points", value: dataPoints.toString(), icon: BarChart3 },
-    { title: "Active Cohorts", value: activeCohorts.toString(), icon: Users }
-  ];
 
   return (
     <div className="space-y-6">
@@ -206,19 +218,19 @@ export default function AnalyticsPage() {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm">Risk Level Stability</span>
-              <span className="font-medium text-green-600">92%</span>
+              <span className="font-medium text-green-600 dark:text-green-400">92%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">Early Intervention Success</span>
-              <span className="font-medium text-blue-600">78%</span>
+              <span className="font-medium text-blue-600 dark:text-blue-400">78%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">Assessment Accuracy</span>
-              <span className="font-medium text-purple-600">84%</span>
+              <span className="font-medium text-purple-600 dark:text-purple-400">84%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">Resource Utilization</span>
-              <span className="font-medium text-orange-600">71%</span>
+              <span className="font-medium text-orange-600 dark:text-orange-400">71%</span>
             </div>
           </CardContent>
         </Card>
@@ -230,19 +242,19 @@ export default function AnalyticsPage() {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm">vs. Last Year</span>
-              <span className="font-medium text-green-600">+15%</span>
+              <span className="font-medium text-green-600 dark:text-green-400">+15%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">vs. District Average</span>
-              <span className="font-medium text-blue-600">+8%</span>
+              <span className="font-medium text-blue-600 dark:text-blue-400">+8%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">vs. Similar Schools</span>
-              <span className="font-medium text-green-600">+12%</span>
+              <span className="font-medium text-green-600 dark:text-green-400">+12%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">Goal Achievement</span>
-              <span className="font-medium text-purple-600">94%</span>
+              <span className="font-medium text-purple-600 dark:text-purple-400">94%</span>
             </div>
           </CardContent>
         </Card>

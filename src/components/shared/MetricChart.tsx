@@ -10,15 +10,16 @@ interface MetricChartProps {
   yKey?: string;
   height?: number;
   colors?: string[];
+  bare?: boolean;
 }
 
 const DEFAULT_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--secondary))',
-  'hsl(var(--accent))',
-  'hsl(var(--success))',
-  'hsl(var(--warning))',
-  'hsl(var(--destructive))'
+  'var(--primary)',
+  'var(--secondary)',
+  'var(--accent)',
+  'var(--success)',
+  'var(--warning)',
+  'var(--destructive)'
 ];
 
 export const MetricChart = React.memo(function MetricChart({
@@ -28,7 +29,8 @@ export const MetricChart = React.memo(function MetricChart({
   xKey = 'name',
   yKey = 'value',
   height = 300,
-  colors = DEFAULT_COLORS
+  colors = DEFAULT_COLORS,
+  bare = false
 }: MetricChartProps) {
   const renderChart = () => {
     switch (type) {
@@ -110,14 +112,39 @@ export const MetricChart = React.memo(function MetricChart({
                 dataKey={yKey}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={colors[index % colors.length]} 
+                    // @ts-expect-error - total is a custom prop for tooltip percentage calculation
+                    total={data.reduce((acc, curr) => acc + curr[yKey], 0)}
+                  />
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '6px'
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0];
+                    return (
+                      <div className="bg-card border border-border p-3 rounded-xl shadow-xl">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ backgroundColor: data.payload.fill || data.color }}
+                          />
+                          <span className="font-semibold text-foreground">{data.name}</span>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold text-foreground">
+                            {data.value}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {((data.value as number / (data.payload.total || 1)) * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
             </PieChart>
@@ -128,6 +155,10 @@ export const MetricChart = React.memo(function MetricChart({
         return null;
     }
   };
+
+  if (bare) {
+    return renderChart();
+  }
 
   return (
     <Card className="card-professional">

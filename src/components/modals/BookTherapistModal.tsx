@@ -8,14 +8,19 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, CreditCard, CheckCircle2, User, Mail, Phone, Building } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { marketplaceApi } from "@/services/marketplace";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface BookTherapistModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   therapist: any;
+  onSuccess?: () => void;
 }
 
-export function BookTherapistModal({ open, onOpenChange, therapist }: BookTherapistModalProps) {
+export function BookTherapistModal({ open, onOpenChange, therapist, onSuccess }: BookTherapistModalProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState(1); // 1: Booking Details, 2: Payment, 3: Success
   const [bookingData, setBookingData] = useState({
     date: "",
@@ -40,13 +45,36 @@ export function BookTherapistModal({ open, onOpenChange, therapist }: BookTherap
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("Please login to book an appointment");
+      return;
+    }
+
     setIsProcessing(true);
     
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsProcessing(false);
-    setStep(3);
+    try {
+      // Format date and time for backend
+      // appointment_date should be YYYY-MM-DD
+      // appointment_time should be HH:MM:SS
+      
+      await marketplaceApi.bookTherapist(therapist.id, {
+        therapist_id: therapist.id,
+        appointment_date: bookingData.date, // Already YYYY-MM-DD from input type="date"
+        appointment_time: `${bookingData.time}:00`, // Add seconds
+        duration_minutes: bookingData.sessionType === 'group' ? 90 : 
+                          bookingData.sessionType === 'workshop' ? 120 : 
+                          bookingData.sessionType === 'staff' ? 45 : 60,
+        notes: `Session Type: ${bookingData.sessionType}. ${bookingData.notes}`,
+      }, user.id); // Pass user.id as second argument
+
+      setStep(3);
+      onSuccess?.(); // Trigger success callback
+    } catch (error) {
+      console.error("Booking failed:", error);
+      toast.error("Failed to book appointment. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleClose = () => {

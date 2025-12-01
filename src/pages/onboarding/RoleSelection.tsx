@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Brain, Users, Shield, Building2, ArrowLeft, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
+import { Brain, Users, Shield, Building2, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types";
 import { useNavigate, useLocation } from "react-router-dom";
+import { GridBackground } from "@/components/ui/grid-background";
+import { getDevMockCredentials } from "@/lib/dev-utils";
 
 const roles = [
   {
@@ -49,7 +51,7 @@ const roles = [
 ];
 
 export default function RoleSelection() {
-  const { loginWithRole } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -80,7 +82,22 @@ export default function RoleSelection() {
     try {
       // Add a brief delay for visual feedback
       await new Promise(resolve => setTimeout(resolve, 300));
-      await loginWithRole(role);
+      
+      // Try to determine domain from selected school, default to greenwood.edu
+      let domain = 'greenwood.edu';
+      if (selectedSchool?.email) {
+        const parts = selectedSchool.email.split('@');
+        if (parts.length === 2) {
+          domain = parts[1];
+        }
+      }
+
+      const creds = getDevMockCredentials(role, domain);
+      if (!creds.email || !creds.password) {
+        throw new Error(`No mock credentials found for role ${role}`);
+      }
+
+      await login(creds.email, creds.password);
       
       // Navigate to appropriate dashboard based on role
       const roleRoutes: Record<UserRole, string> = {
@@ -104,26 +121,14 @@ export default function RoleSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/10 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Enhanced decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-primary opacity-10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-secondary opacity-10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-accent opacity-5 rounded-full blur-3xl"></div>
-        
-        {/* Floating particles effect */}
-        <div className="absolute top-20 left-20 w-2 h-2 bg-primary/20 rounded-full animate-bounce" style={{ animationDuration: '3s' }}></div>
-        <div className="absolute top-40 right-32 w-3 h-3 bg-secondary/20 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}></div>
-        <div className="absolute bottom-32 left-40 w-2 h-2 bg-accent/20 rounded-full animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}></div>
-      </div>
-
-      <div className={`w-full max-w-7xl relative z-10 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+    <GridBackground className="p-4 sm:p-6">
+      <div className={`w-full max-w-7xl relative z-10 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} mx-auto`}>
         {/* Back Button */}
         <div className="mb-6">
           <Button 
             variant="ghost" 
             onClick={handleBackToSchools}
-            className="gap-2 hover:bg-primary/5 transition-colors"
+            className="gap-2 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             disabled={selectedRole !== null}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -134,23 +139,19 @@ export default function RoleSelection() {
         {/* Enhanced Header */}
         <div className="text-center mb-10 space-y-6">
           {selectedSchool && (
-            <div className="inline-flex items-center gap-3 mb-2 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-primary rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                <div className="relative w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-primary transform group-hover:scale-110 transition-transform duration-300">
-                  <Building2 className="w-8 h-8 text-white" />
-                </div>
+            <div className="inline-flex items-center gap-3 mb-2 px-6 py-3 bg-card rounded-2xl shadow-sm border border-border">
+              <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gradient-hero">
+              <h1 className="text-xl font-bold text-foreground">
                 {selectedSchool.name}
               </h1>
             </div>
           )}
           
           <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center justify-center gap-2">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
               Select Your Role
-              <Sparkles className="w-6 h-6 text-primary animate-pulse" />
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
               Choose your role to access tailored tools and insights for supporting student wellbeing
@@ -163,12 +164,10 @@ export default function RoleSelection() {
           {roles.map((role, index) => (
             <Card 
               key={role.id}
-              className={`card-professional cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl backdrop-blur-sm bg-card/95 border-2 group ${
+              className={`border-none shadow-lg hover:shadow-xl bg-card cursor-pointer transition-all duration-300 hover:-translate-y-1 group ${
                 selectedRole === role.id 
-                  ? 'ring-2 ring-primary border-primary/50 shadow-primary' 
-                  : hoveredRole === role.id
-                  ? 'border-primary/30'
-                  : 'hover:border-primary/20'
+                  ? 'ring-2 ring-primary' 
+                  : ''
               } ${selectedRole !== null && selectedRole !== role.id ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => selectedRole === null && handleRoleSelect(role.id)}
               onMouseEnter={() => setHoveredRole(role.id)}
@@ -176,30 +175,27 @@ export default function RoleSelection() {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <CardHeader className="text-center pb-4">
-                <div className="relative mx-auto mb-4">
-                  <div className={`absolute inset-0 rounded-2xl blur-lg opacity-30 transition-opacity ${
-                    role.id === 'COUNSELLOR' ? 'bg-gradient-primary' :
-                    role.id === 'TEACHER' ? 'bg-gradient-secondary' :
-                    'bg-gradient-accent'
-                  } ${hoveredRole === role.id || selectedRole === role.id ? 'opacity-50' : ''}`}></div>
-                  <div className={`relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${
-                    role.id === 'COUNSELLOR' ? 'bg-gradient-primary' :
-                    role.id === 'TEACHER' ? 'bg-gradient-secondary' :
-                    'bg-gradient-accent'
+                <div className="mx-auto mb-4">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
+                    hoveredRole === role.id || selectedRole === role.id
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'bg-secondary/50 text-primary'
                   }`}>
-                    <role.icon className="w-8 h-8 text-white" />
+                    <role.icon className="w-8 h-8" />
                   </div>
                 </div>
-                <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                <CardTitle className="text-xl mb-2 text-foreground group-hover:text-primary transition-colors">
                   {role.title}
                 </CardTitle>
-                <CardDescription className="text-center text-sm">
+                <CardDescription className="text-center text-sm line-clamp-2">
                   {role.description}
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="space-y-4">
-                <ul className="space-y-2.5">
+              <CardContent className="space-y-6">
+                <div className="h-px w-full bg-border" />
+                
+                <ul className="space-y-3">
                   {role.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
@@ -209,23 +205,18 @@ export default function RoleSelection() {
                 </ul>
                 
                 <Button 
-                  className="w-full group/btn relative overflow-hidden"
-                  variant={selectedRole === role.id ? "gradient" : "outline"}
+                  className="w-full h-12 rounded-xl font-medium"
+                  variant={selectedRole === role.id ? "default" : "outline"}
                   disabled={selectedRole !== null}
                 >
-                  <span className="relative z-10 flex items-center justify-center">
-                    {selectedRole === role.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Accessing...
-                      </>
-                    ) : (
-                      <>
-                        Enter as {role.title}
-                        <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover/btn:translate-x-1 transition-transform" />
-                      </>
-                    )}
-                  </span>
+                  {selectedRole === role.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Accessing...
+                    </>
+                  ) : (
+                    "Enter Portal"
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -234,32 +225,21 @@ export default function RoleSelection() {
         
         {/* Error Message */}
         {error && (
-          <div className="mt-8 p-4 bg-destructive/10 border border-destructive rounded-lg text-center animate-in slide-in-from-top duration-300">
-            <p className="text-destructive font-medium mb-2">{error}</p>
-            <p className="text-sm text-muted-foreground">
-              Make sure the backend server is running on http://localhost:8000
+          <div className="mt-8 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-center animate-in slide-in-from-top duration-300 max-w-md mx-auto">
+            <p className="text-destructive font-medium mb-1">{error}</p>
+            <p className="text-xs text-destructive/80">
+              Please try again or contact support.
             </p>
           </div>
         )}
         
-        {/* Enhanced Footer */}
-        <div className="mt-12 space-y-3">
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/login')}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              disabled={selectedRole !== null}
-            >
-              ← Back to Login
-            </Button>
-          </div>
-          
-          <p className="text-center text-sm text-muted-foreground font-medium">
-            Powered by <span className="text-gradient-hero font-semibold">WellNest Group</span>
+        {/* Footer */}
+        <div className="mt-12 text-center">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} WellNest Group. All rights reserved.
           </p>
         </div>
       </div>
-    </div>
+    </GridBackground>
   );
 }

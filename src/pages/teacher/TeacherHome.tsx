@@ -106,7 +106,7 @@ export default function TeacherHome() {
           {quickAccessCards.map((card, index) => (
             <Card
               key={card.title}
-              className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1"
+              className="group relative overflow-hidden border-2 hover:border-blue-300 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1"
               onClick={() => navigate(card.url)}
               style={{ animationDelay: `${index * 50}ms` }}
             >

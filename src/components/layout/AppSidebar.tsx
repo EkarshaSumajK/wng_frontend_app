@@ -93,20 +93,20 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border bg-sidebar/95 backdrop-blur-xl shadow-2xl transition-all duration-300">
-      <SidebarHeader className="p-4 md:p-6 border-b border-sidebar-border/50 bg-gradient-to-br from-sidebar-background to-sidebar-accent/50">
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <SidebarHeader className="p-4 border-b border-sidebar-border/50">
         <div className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 animate-pulse-glow">
-            <Brain className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 bg-sidebar-primary text-sidebar-primary-foreground rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+            <Brain className="w-5 h-5" />
           </div>
           {open && (
-            <div className="flex-1 min-w-0 animate-slide-up-fade">
-              <div className="mb-1">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">
+            <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
+              <div className="mb-0.5">
+                <span className="text-[10px] font-bold text-sidebar-primary uppercase tracking-widest">
                   WellNest Group
                 </span>
               </div>
-              <h2 className="text-sm md:text-base font-bold text-sidebar-foreground leading-tight mb-1 truncate">
+              <h2 className="text-sm font-bold text-sidebar-foreground leading-tight mb-0.5 truncate">
                 {user.school_name || 'School Portal'}
               </h2>
               <p className="text-xs text-sidebar-foreground/60 capitalize font-medium">
@@ -117,29 +117,26 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 md:px-3 py-6">
+      <SidebarContent className="px-3 py-6">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-2 md:px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-widest mb-4">
+          <SidebarGroupLabel className="px-3 text-xs font-bold text-sidebar-foreground/40 uppercase tracking-widest mb-4">
             Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {items.map((item, index) => (
-                <SidebarMenuItem key={item.title} className={`animate-slide-up-fade`} style={{ animationDelay: `${index * 50}ms` }}>
+            <SidebarMenu className="space-y-1">
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative ${
                         isActive(item.url)
-                          ? 'bg-gradient-primary text-white font-bold shadow-lg scale-[1.02]'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white hover:pl-5'
+                          ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm hover:bg-sidebar-primary hover:text-sidebar-primary-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       }`}
                     >
-                      <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${isActive(item.url) ? 'scale-110' : 'group-hover:scale-110'}`} />
-                      <span className="text-sm truncate font-medium">{item.title}</span>
-                      {isActive(item.url) && (
-                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                      )}
+                      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive(item.url) ? 'text-sidebar-primary-foreground' : 'text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground'}`} />
+                      <span className="text-sm truncate">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

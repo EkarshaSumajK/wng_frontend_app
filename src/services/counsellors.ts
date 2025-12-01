@@ -54,6 +54,14 @@ export interface CounsellorDashboard {
       has_assessments: boolean;
     }>;
   };
+  calendar_metrics: {
+    todays_sessions_count: number;
+    next_session: {
+      title: string;
+      start_time: string;
+      student_name: string;
+    } | null;
+  };
 }
 
 export interface CounsellorCaseload {

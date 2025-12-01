@@ -11,6 +11,7 @@ interface TherapistDetailModalProps {
   onOpenChange: (open: boolean) => void;
   onBook: (therapist: Therapist) => void;
   getDoctorImage: (id: string | number) => string;
+  children?: React.ReactNode;
 }
 
 export function TherapistDetailModal({ 
@@ -18,7 +19,8 @@ export function TherapistDetailModal({
   open, 
   onOpenChange, 
   onBook,
-  getDoctorImage 
+  getDoctorImage,
+  children
 }: TherapistDetailModalProps) {
   if (!therapist) return null;
   const GoldVerifiedBadge = ({ id }: { id: string | number }) => (
@@ -232,12 +234,15 @@ export function TherapistDetailModal({
                   <span className="text-sm text-muted-foreground font-normal ml-2">/ session</span>
                 </p>
               </div>
-              <Button 
-                className="min-w-[160px] h-12 font-semibold"
-                onClick={() => onBook(therapist)}
-              >
-                Book Appointment
-              </Button>
+              <div className="flex flex-col gap-2 min-w-[160px]">
+                <Button 
+                  className="w-full h-12 font-semibold"
+                  onClick={() => onBook(therapist)}
+                >
+                  Book Appointment
+                </Button>
+                {children}
+              </div>
             </div>
           </div>
         </div>

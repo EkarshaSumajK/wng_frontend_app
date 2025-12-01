@@ -101,7 +101,7 @@ export default function ReportsPage() {
               <div className="grid gap-4 md:grid-cols-3">
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <BarChart3 className="h-5 w-5 text-blue-600" />
+                    <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <h4 className="font-medium">Executive Summary</h4>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
@@ -114,7 +114,7 @@ export default function ReportsPage() {
 
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <h4 className="font-medium">Detailed Analytics</h4>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
@@ -127,7 +127,7 @@ export default function ReportsPage() {
 
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <FileText className="h-5 w-5 text-purple-600" />
+                    <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <h4 className="font-medium">Compliance Report</h4>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
@@ -236,25 +236,25 @@ export default function ReportsPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="p-4 border rounded-lg text-center">
-              <BarChart3 className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+              <BarChart3 className="h-8 w-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
               <h4 className="font-medium mb-1">Wellbeing Metrics</h4>
               <p className="text-xs text-muted-foreground">Student wellbeing scores and trends</p>
             </div>
             
             <div className="p-4 border rounded-lg text-center">
-              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-600" />
+              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-600 dark:text-green-400" />
               <h4 className="font-medium mb-1">Risk Analysis</h4>
               <p className="text-xs text-muted-foreground">Risk assessment and intervention data</p>
             </div>
             
             <div className="p-4 border rounded-lg text-center">
-              <Calendar className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+              <Calendar className="h-8 w-8 mx-auto mb-2 text-purple-600 dark:text-purple-400" />
               <h4 className="font-medium mb-1">Activity Reports</h4>
               <p className="text-xs text-muted-foreground">Program participation and outcomes</p>
             </div>
             
             <div className="p-4 border rounded-lg text-center">
-              <Filter className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+              <Filter className="h-8 w-8 mx-auto mb-2 text-orange-600 dark:text-orange-400" />
               <h4 className="font-medium mb-1">Custom Filters</h4>
               <p className="text-xs text-muted-foreground">Grade, class, and demographic filters</p>
             </div>

@@ -81,9 +81,9 @@ export default function TeacherCasesPage() {
       case 'intervention':
         return 'bg-warning text-warning-foreground';
       case 'monitoring':
-        return 'bg-yellow-500 text-white';
+        return 'bg-yellow-500 text-white dark:bg-yellow-600';
       case 'closed':
-        return 'bg-gray-500 text-white';
+        return 'bg-gray-500 text-white dark:bg-gray-600';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -107,11 +107,11 @@ export default function TeacherCasesPage() {
       {/* Header */}
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
             <FileText className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               Student Cases
             </h1>
             <p className="text-base md:text-lg text-muted-foreground mt-1">
@@ -124,10 +124,10 @@ export default function TeacherCasesPage() {
       <div className="flex flex-col lg:flex-row gap-8 relative z-10">
         {/* Sidebar */}
         <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+          <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-border sticky top-24">
             <div className="flex items-center gap-2 mb-6">
               <Filter className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white">Filters</h3>
             </div>
             
             <FilterSection 
@@ -169,13 +169,13 @@ export default function TeacherCasesPage() {
               placeholder="Search by student name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
             />
           </div>
 
           {/* Cases List */}
           <Card className="card-professional shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
@@ -213,7 +213,7 @@ export default function TeacherCasesPage() {
               {filteredCases.map((caseItem: any, index) => (
                 <div
                   key={caseItem.case_id}
-                  className="group relative p-5 border-2 border-border rounded-xl hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
+                  className="group relative p-5 border-2 border-border rounded-xl hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent dark:hover:from-blue-900/20 transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
                   style={{ animationDelay: `${index * 50}ms` }}
                   onClick={() => handleViewCase(caseItem)}
                 >

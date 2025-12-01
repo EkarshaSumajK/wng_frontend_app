@@ -1,96 +1,149 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, Building2, Loader2, Shield, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Building2, Loader2, Phone, KeyRound, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
+import { GridBackground } from "@/components/ui/grid-background";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+
+// Validation Schemas
+const emailLoginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean(),
+});
+
+const phoneLoginSchema = z.object({
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean(),
+});
+
+// Types
+type EmailLoginFormValues = z.infer<typeof emailLoginSchema>;
+type PhoneLoginFormValues = z.infer<typeof phoneLoginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  
+  // State
+  const [activeTab, setActiveTab] = useState("email");
+  const [authType, setAuthType] = useState<"password" | "otp">("password");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
   const [mounted, setMounted] = useState(false);
+  
+  // OTP State (Mock for now as backend implementation is pending)
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+
+  // Forms
+  const emailForm = useForm<EmailLoginFormValues>({
+    resolver: zodResolver(emailLoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
+
+  const phoneForm = useForm<PhoneLoginFormValues>({
+    resolver: zodResolver(phoneLoginSchema),
+    defaultValues: {
+      phone: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
 
   // Animation on mount
   useEffect(() => {
     setMounted(true);
-    
-    // Load remembered email
     const rememberedEmail = localStorage.getItem('remembered_email');
     if (rememberedEmail) {
-      setEmail(rememberedEmail);
-      setRememberMe(true);
+      emailForm.setValue('email', rememberedEmail);
+      emailForm.setValue('rememberMe', true);
     }
+  }, [emailForm]);
 
-    // Keyboard shortcut: Ctrl/Cmd + K to focus email
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('email')?.focus();
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
+  // OTP Timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [otpTimer]);
 
-  // Email validation
-  const isEmailValid = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const handleSendOtp = async () => {
+    // This would be connected to a real backend endpoint
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setOtpSent(true);
+      setOtpTimer(30);
+      setError(null);
+    }, 1000);
   };
 
-  // Password strength indicator
-  const getPasswordStrength = (password: string) => {
-    if (password.length === 0) return null;
-    if (password.length < 6) return 'weak';
-    if (password.length < 10) return 'medium';
-    return 'strong';
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onEmailSubmit = async (data: EmailLoginFormValues) => {
     setError(null);
-    setEmailTouched(true);
-    setPasswordTouched(true);
-
-    // Client-side validation
-    if (!isEmailValid(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // Remember email if checkbox is checked
-      if (rememberMe) {
-        localStorage.setItem('remembered_email', email);
+      if (data.rememberMe) {
+        localStorage.setItem('remembered_email', data.email);
       } else {
         localStorage.removeItem('remembered_email');
       }
 
-      // Call login API
-      const response = await login(email, password);
-      
-      // For principals, check if school needs data onboarding
+      if (authType === "otp") {
+        // OTP Login Logic (Placeholder)
+        throw new Error("OTP Login not yet implemented on backend");
+      } else {
+        // Password Login
+        const response = await login(data.email, data.password);
+        handleLoginSuccess(response);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onPhoneSubmit = async (data: PhoneLoginFormValues) => {
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+       // Phone login logic would go here
+       throw new Error("Phone login not yet implemented on backend");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginSuccess = async (response: any) => {
       if (response.role === 'PRINCIPAL' && response.school_id) {
         try {
-          // Fetch school data to check needs_data_onboarding flag
           const schoolResponse = await fetch(
             `${import.meta.env.VITE_API_BASE_URL}/schools/${response.school_id}`,
             {
@@ -103,30 +156,23 @@ export default function Login() {
           if (schoolResponse.ok) {
             const schoolData = await schoolResponse.json();
             const school = schoolData.data || schoolData;
-            
-            // Check if school needs data onboarding
             const needsOnboarding = school.settings?.needs_data_onboarding || false;
             
             if (needsOnboarding) {
-              // Store school data for onboarding page
               localStorage.setItem('selected_school', JSON.stringify({
                 school_id: school.school_id,
                 name: school.name,
                 needs_data_onboarding: true
               }));
-              
-              // Redirect to data onboarding
               navigate('/data-onboarding');
               return;
             }
           }
         } catch (schoolErr) {
           console.error('Failed to fetch school data:', schoolErr);
-          // Continue to normal flow if school fetch fails
         }
       }
       
-      // Navigate based on user role
       const roleRoutes: Record<string, string> = {
         COUNSELLOR: '/counsellor',
         TEACHER: '/teacher',
@@ -136,282 +182,350 @@ export default function Login() {
       
       const route = roleRoutes[response.role] || '/counsellor';
       navigate(route);
-    } catch (err) {
-      // Enhanced error messages
-      const errorMessage = err instanceof Error ? err.message : 'Login failed';
-      
-      if (errorMessage.includes('credentials') || errorMessage.includes('password')) {
-        setError('Invalid email or password. Please try again.');
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (errorMessage.includes('timeout')) {
-        setError('Request timed out. Please try again.');
-      } else {
-        setError(errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/10 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Enhanced decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-primary opacity-10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-secondary opacity-10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-accent opacity-5 rounded-full blur-3xl"></div>
+    <GridBackground className="p-4 sm:p-6">
+      <div className={`w-full max-w-3xl space-y-8 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} mx-auto`}>
         
-        {/* Floating particles effect */}
-        <div className="absolute top-20 left-20 w-2 h-2 bg-primary/20 rounded-full animate-bounce" style={{ animationDuration: '3s' }}></div>
-        <div className="absolute top-40 right-32 w-3 h-3 bg-secondary/20 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}></div>
-        <div className="absolute bottom-32 left-40 w-2 h-2 bg-accent/20 rounded-full animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}></div>
-      </div>
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary/50 text-primary mb-4">
+            <Building2 className="w-6 h-6" />
+          </div>
+          <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
+            WellNest Group <br></br>School Mental Wellness Platform
+          </h1>
+          <p className="text-muted-foreground">
+            Enter your credentials to access your account
+          </p>
+        </div>
 
-      <div className={`w-full max-w-md relative z-10 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        {/* Enhanced Header */}
-        <div className="text-center mb-8 space-y-6">
-          <div className="inline-flex items-center gap-3 mb-2 group">
+        <div className="max-w-md mx-auto space-y-8">
+          {/* Login Card */}
+          <Card className="border-none shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm ring-1 ring-gray-200/50 dark:ring-gray-700/50">
+            <CardContent className="p-8">
+              <Tabs defaultValue="email" className="w-full" onValueChange={(val) => { setActiveTab(val); setError(null); }}>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="email">Email</TabsTrigger>
+                  <TabsTrigger value="phone">Phone</TabsTrigger>
+                </TabsList>
+
+                {/* Email Login Form */}
+                <TabsContent value="email" className="space-y-6 mt-0">
+                  <Form {...emailForm}>
+                    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-6">
+                      <FormField
+                        control={emailForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Label>Email</Label>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-4 w-4 h-4 text-muted-foreground" />
+                              <FormControl>
+                                <Input 
+                                  placeholder="name@school.edu" 
+                                  className="pl-10 h-12 bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 transition-colors" 
+                                  {...field} 
+                                  disabled={isLoading}
+                                />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="space-y-3">
+                        <Label>Authentication Method</Label>
+                        <RadioGroup 
+                          defaultValue="password" 
+                          value={authType}
+                          onValueChange={(v) => setAuthType(v as "password" | "otp")}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="password" id="e-password" />
+                            <Label htmlFor="e-password" className="font-normal cursor-pointer">Password</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="otp" id="e-otp" />
+                            <Label htmlFor="e-otp" className="font-normal cursor-pointer">OTP</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      {authType === 'password' ? (
+                        <FormField
+                          control={emailForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem className="animate-in fade-in slide-in-from-top-2">
+                              <Label>Password</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-4 w-4 h-4 text-muted-foreground" />
+                                <FormControl>
+                                  <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    placeholder="••••••••" 
+                                    className="pl-10 pr-10 h-12 bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 transition-colors" 
+                                    {...field} 
+                                    disabled={isLoading}
+                                  />
+                                </FormControl>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                          <Label>One-Time Password</Label>
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <KeyRound className="absolute left-3 top-4 w-4 h-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Enter OTP"
+                                className="pl-10 h-12 bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 transition-colors"
+                                disabled={!otpSent || isLoading}
+                              />
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="outline"
+                              className="h-12 px-4 whitespace-nowrap"
+                              onClick={handleSendOtp}
+                              disabled={isLoading || (otpSent && otpTimer > 0)}
+                            >
+                              {otpTimer > 0 ? `Resend in ${otpTimer}s` : (otpSent ? "Resend OTP" : "Get OTP")}
+                            </Button>
+                          </div>
+                          {otpSent && <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> OTP Sent to your email</p>}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-2">
+                        <FormField
+                          control={emailForm.control}
+                          name="rememberMe"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <Label className="text-sm font-normal cursor-pointer">
+                                Remember me
+                              </Label>
+                            </FormItem>
+                          )}
+                        />
+                        <button
+                          type="button"
+                          className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                          onClick={() => alert('Please contact your administrator to reset your password.')}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+
+                      {error && (
+                        <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-100 flex items-center gap-2">
+                          <div className="w-1 h-1 rounded-full bg-red-500" />
+                          {error}
+                        </div>
+                      )}
+
+                      <Button
+                        type="submit"
+                        className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Signing in...
+                          </>
+                        ) : (
+                          "Sign In"
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+
+                {/* Phone Login Form */}
+                <TabsContent value="phone" className="space-y-6 mt-0">
+                   <Form {...phoneForm}>
+                    <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-6">
+                      <FormField
+                        control={phoneForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Label>Phone Number</Label>
+                            <div className="relative">
+                              <Phone className="absolute left-3 top-4 w-4 h-4 text-muted-foreground" />
+                              <FormControl>
+                                <Input 
+                                  type="tel"
+                                  placeholder="+1 (555) 000-0000" 
+                                  className="pl-10 h-12 bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 transition-colors" 
+                                  {...field} 
+                                  disabled={isLoading}
+                                />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="space-y-3">
+                        <Label>Authentication Method</Label>
+                        <RadioGroup 
+                          defaultValue="password" 
+                          value={authType}
+                          onValueChange={(v) => setAuthType(v as "password" | "otp")}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="password" id="p-password" />
+                            <Label htmlFor="p-password" className="font-normal cursor-pointer">Password</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="otp" id="p-otp" />
+                            <Label htmlFor="p-otp" className="font-normal cursor-pointer">OTP</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      {/* Password Field reused logic */}
+                      {authType === 'password' ? (
+                        <FormField
+                          control={phoneForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem className="animate-in fade-in slide-in-from-top-2">
+                              <Label>Password</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-4 w-4 h-4 text-muted-foreground" />
+                                <FormControl>
+                                  <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    placeholder="••••••••" 
+                                    className="pl-10 pr-10 h-12 bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 transition-colors" 
+                                    {...field} 
+                                    disabled={isLoading}
+                                  />
+                                </FormControl>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                          <Label>One-Time Password</Label>
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <KeyRound className="absolute left-3 top-4 w-4 h-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Enter OTP"
+                                className="pl-10 h-12 bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 transition-colors"
+                                disabled={!otpSent || isLoading}
+                              />
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="outline"
+                              className="h-12 px-4 whitespace-nowrap"
+                              onClick={handleSendOtp}
+                              disabled={isLoading || (otpSent && otpTimer > 0)}
+                            >
+                              {otpTimer > 0 ? `Resend in ${otpTimer}s` : (otpSent ? "Resend OTP" : "Get OTP")}
+                            </Button>
+                          </div>
+                          {otpSent && <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> OTP Sent to your phone</p>}
+                        </div>
+                      )}
+
+                      <Button
+                        type="submit"
+                        className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Signing in...
+                          </>
+                        ) : (
+                          "Sign In"
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Footer Links */}
+          <div className="space-y-4 text-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-primary rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-              <div className="relative w-14 h-14 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-primary transform group-hover:scale-110 transition-transform duration-300">
-                <Building2 className="w-7 h-7 text-white" />
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-gray-50/50 dark:bg-gray-900 px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gradient-hero">
-              WellNest Group
-            </h1>
-          </div>
-          
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center justify-center gap-2">
-              Welcome Back
-              <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-            </h2>
-            <p className="text-muted-foreground text-base sm:text-lg">
-              Sign in to access your dashboard
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="h-11 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border-gray-200 dark:border-gray-700"
+                onClick={() => navigate('/school-onboarding')}
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Register School
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border-gray-200 dark:border-gray-700"
+                onClick={() => navigate('/school-selection')}
+              >
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Select School
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground pt-4">
+              © {new Date().getFullYear()} WellNest Group. All rights reserved.
             </p>
           </div>
         </div>
-
-        {/* Enhanced Login Card */}
-        <Card className="card-professional shadow-xl backdrop-blur-sm bg-card/95 border-2 hover:border-primary/20 transition-all duration-300">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-            <CardDescription className="text-base">
-              Enter your credentials to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email Field with validation */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium flex items-center justify-between">
-                  <span>Email Address</span>
-                  {emailTouched && email && (
-                    <span className={`text-xs ${isEmailValid(email) ? 'text-success' : 'text-destructive'}`}>
-                      {isEmailValid(email) ? '✓ Valid' : '✗ Invalid format'}
-                    </span>
-                  )}
-                </Label>
-                <div className="relative group">
-                  <Mail className={`absolute left-3 top-3 w-4 h-4 transition-colors ${
-                    emailTouched && email && isEmailValid(email) 
-                      ? 'text-success' 
-                      : 'text-muted-foreground group-focus-within:text-primary'
-                  }`} />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your.email@school.edu"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setError(null);
-                    }}
-                    onBlur={() => setEmailTouched(true)}
-                    className={`pl-10 transition-all duration-200 ${
-                      emailTouched && email && !isEmailValid(email)
-                        ? 'border-destructive focus-visible:ring-destructive'
-                        : 'focus-visible:ring-primary'
-                    }`}
-                    required
-                    disabled={isLoading}
-                    autoComplete="email"
-                  />
-                  {emailTouched && email && isEmailValid(email) && (
-                    <CheckCircle2 className="absolute right-3 top-3 w-4 h-4 text-success" />
-                  )}
-                </div>
-              </div>
-
-              {/* Password Field with strength indicator */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium flex items-center justify-between">
-                  <span>Password</span>
-                  {passwordTouched && password && (
-                    <span className={`text-xs ${
-                      getPasswordStrength(password) === 'strong' ? 'text-success' :
-                      getPasswordStrength(password) === 'medium' ? 'text-warning' :
-                      'text-muted-foreground'
-                    }`}>
-                      {getPasswordStrength(password) === 'strong' ? '● Strong' :
-                       getPasswordStrength(password) === 'medium' ? '● Medium' :
-                       '● Weak'}
-                    </span>
-                  )}
-                </Label>
-                <div className="relative group">
-                  <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setError(null);
-                    }}
-                    onBlur={() => setPasswordTouched(true)}
-                    className="pl-10 pr-10 focus-visible:ring-primary transition-all duration-200"
-                    required
-                    disabled={isLoading}
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded p-0.5"
-                    disabled={isLoading}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    disabled={isLoading}
-                  />
-                  <Label
-                    htmlFor="remember"
-                    className="text-sm font-normal cursor-pointer select-none"
-                  >
-                    Remember me
-                  </Label>
-                </div>
-                <button
-                  type="button"
-                  className="text-sm text-primary hover:text-primary-hover hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-1"
-                  onClick={() => {
-                    // TODO: Implement forgot password
-                    alert('Forgot password functionality coming soon');
-                  }}
-                  disabled={isLoading}
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              {/* Error Message with animation */}
-              {error && (
-                <div className="p-3 bg-destructive/10 border border-destructive rounded-lg animate-in slide-in-from-top duration-300">
-                  <p className="text-sm text-destructive font-medium">{error}</p>
-                </div>
-              )}
-
-              {/* Enhanced Submit Button */}
-              <Button
-                type="submit"
-                variant="gradient"
-                size="lg"
-                className="w-full group relative overflow-hidden"
-                disabled={isLoading}
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    <>
-                      Sign In
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-hover to-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </Button>
-
-              {/* Keyboard shortcut hint */}
-              <p className="text-xs text-center text-muted-foreground">
-                Press <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">⌘K</kbd> or <kbd className="px-2 py-0.5 bg-muted rounded border border-border font-mono">Ctrl+K</kbd> to focus email
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Enhanced Register School Section */}
-        <div className="mt-8 space-y-5">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-4 text-muted-foreground font-semibold tracking-wider">
-                New to WellNest?
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate('/school-onboarding')}
-              className="group relative overflow-hidden border-2 border-primary hover:border-primary bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-300 shadow-sm hover:shadow-md"
-              disabled={isLoading}
-            >
-              <span className="relative z-10 flex items-center justify-center font-semibold">
-                <Building2 className="w-4 h-4 mr-2" />
-                Register School
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate('/school-selection')}
-              className="group relative overflow-hidden border-2 border-secondary hover:border-secondary bg-gradient-to-br from-secondary/5 to-transparent hover:from-secondary/10 hover:to-secondary/5 transition-all duration-300 shadow-sm hover:shadow-md"
-              disabled={isLoading}
-            >
-              <span className="relative z-10 flex items-center justify-center font-semibold">
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                School Selection
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Enhanced Footer with social proof */}
-        <div className="mt-8">
-          <p className="text-center text-xs text-muted-foreground">
-            Trusted by schools nationwide for student mental health support
-          </p>
-        </div>
       </div>
-    </div>
+    </GridBackground>
   );
 }

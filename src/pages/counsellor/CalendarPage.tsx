@@ -9,6 +9,7 @@ import {
   Edit,
   CheckCircle,
   FileText,
+  Coffee,
 } from "lucide-react";
 import {
   Card,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatCard } from "@/components/shared/StatCard";
 import { EditCalendarEventModal } from "@/components/modals/EditCalendarEventModal";
 import { NewCaseModal } from "@/components/modals/NewCaseModal";
@@ -184,14 +186,14 @@ export default function CalendarPage() {
       <AnimatedBackground />
       {/* Header with modern design */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Calendar
               </h1>
             </div>
@@ -214,7 +216,7 @@ export default function CalendarPage() {
           const gradient = gradients[index];
           
           return (
-            <Card key={index} className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300 group">
+            <Card key={index} className="relative overflow-hidden border-2 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 group">
               <div className={`absolute inset-0 bg-gradient-to-br ${gradient.bg} opacity-0 group-hover:opacity-100 transition-opacity`} />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{stat.title}</CardTitle>
@@ -231,7 +233,7 @@ export default function CalendarPage() {
       </div>
 
       {requestedEvents.length > 0 && (
-        <Card className="border-2 border-warning bg-gradient-to-r from-warning/10 to-warning/5 shadow-lg">
+        <Card className="border border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-50/50 shadow-sm rounded-xl">
           <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -251,39 +253,41 @@ export default function CalendarPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {requestedEvents.map((event: any) => (
-                <div
-                  key={event.id}
-                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border border-yellow-300"
-                  onClick={() => handleEditEvent(event)}
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{event.title}</span>
-                      <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-700 dark:text-yellow-400">
-                        REQUESTED
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(event.start, "PPp")}
-                    </div>
-                    {event.location && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {event.location}
+            <ScrollArea className="h-[600px] pr-4">
+              <div className="space-y-4">
+                {requestedEvents.map((event: any) => (
+                  <div
+                    key={event.id}
+                    className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border border-yellow-300"
+                    onClick={() => handleEditEvent(event)}
+                  >
+                    <div className="flex-1 w-full sm:w-auto">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="font-semibold text-base">{event.title}</span>
+                        <Badge className="text-xs border-yellow-500 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100">
+                          REQUESTED
+                        </Badge>
                       </div>
-                    )}
+                      <div className="text-sm text-muted-foreground mb-1">
+                        {format(event.start, "PPp")}
+                      </div>
+                      {event.location && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {event.location}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           </CardContent>
         </Card>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        <Card className="border border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
           <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -297,61 +301,68 @@ export default function CalendarPage() {
                   </CardDescription>
                 </div>
               </div>
-              <Badge variant="secondary" className="text-sm">
+              <Badge className="text-sm bg-purple-600 text-white hover:bg-purple-700">
                 {todaysEvents.length} Today
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {todaysEvents.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  No sessions scheduled for today
-                </p>
-              ) : (
-                todaysEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer"
-                    onClick={() => handleEditEvent(event)}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{event.title}</span>
-                        <Badge
-                          variant={
-                            event.status === "COMPLETED"
-                              ? "default"
-                              : "secondary"
-                          }
-                          className="text-xs"
-                        >
-                          {event.status}
-                        </Badge>
-                        {event.related_student_id && (
-                          <Badge variant="outline" className="text-xs">
-                            Wellness Check
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {format(event.start, "p")} - {format(event.end, "p")}
-                      </div>
-                      {event.location && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3" />
-                          {event.location}
-                        </div>
-                      )}
+            <ScrollArea className="h-[600px] pr-4">
+              <div className="space-y-4">
+                {todaysEvents.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                      <Coffee className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">No sessions today</p>
+                      <p className="text-sm text-muted-foreground">Enjoy your free time!</p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ) : (
+                  todaysEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-gray-100 dark:border-border rounded-xl hover:border-blue-100 hover:shadow-md transition-all duration-300 cursor-pointer gap-3 sm:gap-0"
+                      onClick={() => handleEditEvent(event)}
+                    >
+                      <div className="flex-1 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="font-semibold text-base">{event.title}</span>
+                          <Badge
+                            className={`text-xs ${
+                              event.status === "COMPLETED"
+                                ? "bg-blue-600 text-white hover:bg-blue-700"
+                                : "bg-purple-600 text-white hover:bg-purple-700"
+                            }`}
+                          >
+                            {event.status}
+                          </Badge>
+                          {event.related_student_id && (
+                            <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300">
+                              Wellness Check
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground mb-1">
+                          {format(event.start, "p")} - {format(event.end, "p")}
+                        </div>
+                        {event.location && (
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {event.location}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
@@ -360,30 +371,110 @@ export default function CalendarPage() {
             <CardDescription>Next 5 scheduled appointments</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {upcomingEvents.length > 0 ? (
-                upcomingEvents.map((event: any) => (
+            <ScrollArea className="h-[600px] pr-4">
+              <div className="space-y-4">
+                {upcomingEvents.length > 0 ? (
+                  upcomingEvents.map((event: any) => (
+                    <div
+                      key={event.id}
+                      className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-gray-100 dark:border-border rounded-xl hover:border-blue-100 hover:shadow-md transition-all duration-300 gap-3 sm:gap-0"
+                    >
+                      <div className="flex-1 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="font-semibold text-base">{event.title}</span>
+                          <Badge className={`text-xs ${
+                            event.status === "COMPLETED"
+                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              : "bg-purple-600 text-white hover:bg-purple-700"
+                          }`}>
+                            {event.status}
+                          </Badge>
+                          {event.related_student_id && (
+                            <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300">
+                              Wellness Check
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground mb-1">
+                          {format(event.start, "PPp")}
+                        </div>
+                        {event.location && (
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {event.location}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleMarkComplete(event)}
+                          title="Mark Complete"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditEvent(event)}
+                          title="Edit Event"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                      <Calendar className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">No upcoming sessions</p>
+                      <p className="text-sm text-muted-foreground">You're all caught up for now.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5" />
+            Completed Sessions
+          </CardTitle>
+          <CardDescription>Recently completed appointments</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[600px] pr-4">
+            <div className="space-y-4">
+              {completedEvents.length > 0 ? (
+                completedEvents.map((event: any) => (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-gray-100 dark:border-border rounded-xl hover:border-blue-100 hover:shadow-md transition-all duration-300 gap-3 sm:gap-0"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{event.title}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {event.status}
+                    <div className="flex-1 w-full sm:w-auto">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="font-semibold text-base">{event.title}</span>
+                        <Badge className="text-xs bg-blue-600 text-white hover:bg-blue-700">
+                          COMPLETED
                         </Badge>
                         {event.related_student_id && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300">
                             Wellness Check
                           </Badge>
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground mb-1">
                         {format(event.start, "PPp")}
                       </div>
                       {event.location && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
                           {event.location}
                         </div>
@@ -393,10 +484,10 @@ export default function CalendarPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleMarkComplete(event)}
-                        title="Mark Complete"
+                        onClick={() => handleOpenCaseModal(event)}
+                        title="Create Case"
                       >
-                        <CheckCircle className="w-4 h-4" />
+                        <FileText className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -410,81 +501,21 @@ export default function CalendarPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No upcoming sessions
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
-            Completed Sessions
-          </CardTitle>
-          <CardDescription>Recently completed appointments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {completedEvents.length > 0 ? (
-              completedEvents.map((event: any) => (
-                <div
-                  key={event.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{event.title}</span>
-                      <Badge variant="default" className="text-xs">
-                        COMPLETED
-                      </Badge>
-                      {event.related_student_id && (
-                        <Badge variant="outline" className="text-xs">
-                          Wellness Check
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(event.start, "PPp")}
-                    </div>
-                    {event.location && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {event.location}
-                      </div>
-                    )}
+                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-muted-foreground" />
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenCaseModal(event)}
-                      title="Create Case"
-                    >
-                      <FileText className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditEvent(event)}
-                      title="Edit Event"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                  <div>
+                    <p className="font-medium text-foreground">No completed sessions</p>
+                    <p className="text-sm text-muted-foreground">Completed sessions will appear here.</p>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-center py-4">
-                No completed sessions
-              </p>
-            )}
-          </div>
+              )}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
+      </div>
 
       <EditCalendarEventModal
         event={selectedEvent}

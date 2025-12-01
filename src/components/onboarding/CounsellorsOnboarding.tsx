@@ -54,7 +54,7 @@ export default function CounsellorsOnboarding({ schoolId }: CounsellorsOnboardin
     }
   };
 
-  const counsellorsList = counsellors || [];
+  const counsellorsList = (counsellors || []) as any[];
 
   // Filter counsellors based on search query
   const filteredCounsellors = useMemo(() => {
@@ -137,7 +137,7 @@ export default function CounsellorsOnboarding({ schoolId }: CounsellorsOnboardin
                     <TableCell>{counsellor.email}</TableCell>
                     <TableCell>{counsellor.phone || '-'}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="bg-success/10 text-success">
+                      <Badge variant="outline" className="bg-green-50 text-green-700">
                         Active
                       </Badge>
                     </TableCell>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   ArrowLeft, Send, CheckCircle, XCircle, Clock, Eye, FileText, 
-  User, Search, Calendar, BookOpen, Loader2
+  User, Search, Calendar, BookOpen, Loader2, Sparkles, GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,10 +27,10 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
 const statusConfig = {
-  VERIFIED: { label: 'Verified', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
-  SUBMITTED: { label: 'Not verified', color: 'bg-pink-100 text-pink-800 border-pink-200', icon: Clock },
-  PENDING: { label: 'Not received', color: 'bg-gray-100 text-gray-800 border-gray-200', icon: XCircle },
-  REJECTED: { label: 'Rejected', color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
+  VERIFIED: { label: 'Verified', color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800', icon: CheckCircle },
+  SUBMITTED: { label: 'Not verified', color: 'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800', icon: Clock },
+  PENDING: { label: 'Not received', color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700', icon: XCircle },
+  REJECTED: { label: 'Rejected', color: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800', icon: XCircle },
 };
 
 // Hook to fetch class details
@@ -197,12 +197,12 @@ export default function ActivityMonitoringPage() {
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
             Activity Monitoring
           </h1>
         </div>
@@ -213,15 +213,15 @@ export default function ActivityMonitoringPage() {
         /* Main View - List of Assigned Activities */
         <div className="space-y-12">
           <section className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-3xl -z-10" />
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-primary/10 shadow-xl p-8 space-y-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-50/50 to-transparent rounded-3xl -z-10" />
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-blue-100 dark:border-blue-900/50 shadow-xl p-8 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                       Assigned Activities
                     </h2>
                     <p className="text-sm text-muted-foreground mt-1">{assignments.length} activities assigned</p>
@@ -275,54 +275,67 @@ export default function ActivityMonitoringPage() {
                       const verified = assignment.submission_count || 0;
                       const notReceived = assignment.total_students - verified;
                       
+                      const classData = classDetailsMap[assignment.class_id];
+                      const classLabel = classData?.name || (classData?.grade ? `Grade ${classData.grade}${classData.section ? `-${classData.section}` : ''}` : 'Class');
+
                       return (
-                        <Card
+                        <div
                           key={assignment.assignment_id}
-                          className="cursor-pointer transition-colors duration-300 hover:border-primary border-2 group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 h-full"
+                          className="group cursor-pointer space-y-3"
                           onClick={() => setSelectedAssignment(assignment)}
                         >
-                          <CardHeader>
-                            <div className="flex items-start justify-between mb-3">
-                              <CardTitle className="text-lg font-bold line-clamp-2">
-                                {assignment.activity?.title || 'Activity'}
-                              </CardTitle>
-                            </div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="outline" className="bg-primary/10">
-                                {assignment.total_students} Students
-                              </Badge>
-                              {assignment.due_date && (
-                                <Badge variant="outline" className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  Due: {new Date(assignment.due_date).toLocaleDateString()}
-                                </Badge>
-                              )}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            <Separator />
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {assignment.activity?.description || 'No description'}
-                            </p>
-
-                            {/* Stats */}
-                            <div className="flex gap-2 flex-wrap">
-                              <div className="flex items-center gap-1 text-xs px-2 py-1 bg-green-50 rounded">
-                                <CheckCircle className="w-3 h-3 text-green-600" />
-                                <span className="font-semibold">{verified} Submitted</span>
+                          {/* Thumbnail / App Icon Style */}
+                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                            {assignment.activity?.thumbnail_url ? (
+                              <img 
+                                src={assignment.activity.thumbnail_url} 
+                                alt={assignment.activity.title}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-secondary/20">
+                                <Sparkles className="w-12 h-12 text-muted-foreground/50" />
                               </div>
-                              <div className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-50 rounded">
-                                <XCircle className="w-3 h-3 text-gray-600" />
-                                <span className="font-semibold">{notReceived} Pending</span>
+                            )}
+                            {/* Students Badge Overlay */}
+                            <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                              {assignment.total_students} Students
+                            </div>
+                            
+                            {/* Due Date Badge (Top Left) */}
+                            {assignment.due_date && (
+                              <div className="absolute top-2 left-2 rounded-lg bg-white/90 px-2 py-1 text-xs font-medium text-gray-800 backdrop-blur-sm shadow-sm flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(assignment.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                              </div>
+                            )}
+
+                            {/* Class Badge (Top Right) */}
+                            <div className="absolute top-2 right-2 rounded-lg bg-primary/90 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm shadow-sm flex items-center gap-1">
+                              <GraduationCap className="w-3 h-3" />
+                              {classLabel}
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="space-y-2">
+                            <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1 text-lg">
+                              {assignment.activity?.title || 'Activity'}
+                            </h3>
+                            
+                            {/* Stats Row */}
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className="flex items-center gap-1 text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 px-2 py-0.5 rounded-full">
+                                <CheckCircle className="w-3 h-3" />
+                                <span className="font-medium">{verified} Done</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 px-2 py-0.5 rounded-full">
+                                <Clock className="w-3 h-3" />
+                                <span className="font-medium">{notReceived} Pending</span>
                               </div>
                             </div>
-
-                            <Button variant="outline" size="sm" className="w-full hover:bg-primary/10 hover:border-primary transition-colors">
-                              <Eye className="w-3 h-3 mr-2" />
-                              View Submissions
-                            </Button>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -380,13 +393,13 @@ export default function ActivityMonitoringPage() {
                 setSelectedSubmission(null);
                 setSearchQuery('');
               }}
-              className="group hover:bg-primary/10"
+              className="group hover:bg-blue-50"
             >
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Activities
             </Button>
             <div className="h-8 w-px bg-gray-200" />
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {selectedAssignment.activity?.title || 'Activity'}
             </h2>
             <Badge variant="secondary" className="ml-2">
@@ -405,10 +418,10 @@ export default function ActivityMonitoringPage() {
             <>
               {/* Assignment Card */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                         <FileText className="w-6 h-6 text-white" />
                       </div>
                       <div>
@@ -425,16 +438,16 @@ export default function ActivityMonitoringPage() {
                 <CardContent className="pt-6">
                   {stats && (
                     <div className="flex gap-4 mb-4">
-                      <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                         <span className="text-sm font-semibold">{stats.verified} Verified</span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-pink-50 rounded-lg">
-                        <Clock className="w-5 h-5 text-pink-600" />
+                      <div className="flex items-center gap-2 px-4 py-2 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
+                        <Clock className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                         <span className="text-sm font-semibold">{stats.not_verified} Pending Review</span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
-                        <XCircle className="w-5 h-5 text-gray-600" />
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <XCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                         <span className="text-sm font-semibold">{stats.not_received} Not Received</span>
                       </div>
                     </div>
@@ -484,15 +497,15 @@ export default function ActivityMonitoringPage() {
                             key={submission.submission_id}
                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                               selectedSubmission?.submission_id === submission.submission_id
-                                ? 'border-primary bg-primary/5'
-                                : 'border-gray-100 hover:border-primary/50 hover:bg-gray-50'
+                                ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
+                                : 'border-border hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                             }`}
                             onClick={() => setSelectedSubmission(submission)}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <Avatar className="w-10 h-10">
-                                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white">
+                                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-500 text-white">
                                     {submission.student_name.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                                 </Avatar>
@@ -519,7 +532,7 @@ export default function ActivityMonitoringPage() {
 
                 {/* Submission Detail Panel */}
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-muted/50">
                     <CardTitle>
                       {selectedSubmission ? `${selectedSubmission.student_name}'s Submission` : 'Select a student'}
                     </CardTitle>
@@ -558,7 +571,7 @@ export default function ActivityMonitoringPage() {
                         {selectedSubmission.file_url && (
                           <div>
                             <h4 className="font-semibold mb-3">Submitted File</h4>
-                            <div className="p-4 rounded-lg bg-gray-50 border">
+                            <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border">
                               <Button 
                                 variant="ghost" 
                                 className="flex items-center gap-2 text-primary hover:underline p-0 h-auto hover:bg-transparent"
@@ -578,12 +591,12 @@ export default function ActivityMonitoringPage() {
                             {comments.map((comment) => (
                               <div key={comment.comment_id} className="flex gap-3">
                                 <Avatar className="w-8 h-8 flex-shrink-0">
-                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                  <AvatarFallback className="bg-blue-50 text-primary text-xs">
                                     {comment.sender_name[0]}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
-                                  <div className="bg-gray-50 rounded-lg p-3">
+                                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                                     <p className="text-sm font-semibold mb-1">{comment.sender_name}</p>
                                     <p className="text-sm text-muted-foreground">{comment.message}</p>
                                   </div>
