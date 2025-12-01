@@ -93,23 +93,23 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <SidebarHeader className="p-4 border-b border-sidebar-border/50">
+    <Sidebar collapsible="offcanvas" className="border-r border-border/40 bg-sidebar text-sidebar-foreground">
+      <SidebarHeader className="p-4 border-b border-border/30">
         <div className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-sidebar-primary text-sidebar-primary-foreground rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
             <Brain className="w-5 h-5" />
           </div>
           {open && (
             <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
               <div className="mb-0.5">
-                <span className="text-[10px] font-bold text-sidebar-primary uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
                   WellNest Group
                 </span>
               </div>
               <h2 className="text-sm font-bold text-sidebar-foreground leading-tight mb-0.5 truncate">
                 {user.school_name || 'School Portal'}
               </h2>
-              <p className="text-xs text-sidebar-foreground/60 capitalize font-medium">
+              <p className="text-xs text-muted-foreground capitalize font-medium">
                 {user.role} Portal
               </p>
             </div>
@@ -117,26 +117,29 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6">
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-xs font-bold text-sidebar-foreground/40 uppercase tracking-widest mb-4">
-            Menu
+          <SidebarGroupLabel className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-0.5">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group relative ${
                         isActive(item.url)
-                          ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm hover:bg-sidebar-primary hover:text-sidebar-primary-foreground'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                          ? 'bg-primary/10 text-primary font-semibold shadow-sm border border-primary/20'
+                          : 'text-sidebar-foreground/70 hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-500/30 hover:shadow-md border border-transparent hover:scale-[1.02]'
                       }`}
                     >
-                      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive(item.url) ? 'text-sidebar-primary-foreground' : 'text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground'}`} />
-                      <span className="text-sm truncate">{item.title}</span>
+                      <item.icon className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${isActive(item.url) ? 'text-primary' : 'text-muted-foreground group-hover:text-blue-600 group-hover:scale-110'}`} />
+                      <span className="text-sm truncate transition-all duration-300">{item.title}</span>
+                      {isActive(item.url) && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -1,5 +1,4 @@
-import { Search, HelpCircle, LogOut, Moon, Sun, Home, User, Building2, Bell } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Search, HelpCircle, LogOut, Home, User, Building2, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +15,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 export function TopBar() {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,7 +31,7 @@ export function TopBar() {
   const isOnHomePage = location.pathname === homeRoute || location.pathname === `${homeRoute}/`;
 
   return (
-    <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 transition-all duration-300">
+    <header className="h-16 border-b border-border bg-background sticky top-0 z-50 shadow-sm">
       <div className="flex items-center justify-between h-full px-4 md:px-6 max-w-[2000px] mx-auto gap-4">
         <div className="flex items-center gap-4 flex-1">
           <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground transition-colors duration-200" />
@@ -76,15 +74,7 @@ export function TopBar() {
             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-destructive rounded-full ring-1 ring-background" />
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-9 w-9 rounded-md hover:bg-accent hover:text-accent-foreground"
-          >
-            <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          </Button>
+          {/* Theme toggle removed - light mode forced */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

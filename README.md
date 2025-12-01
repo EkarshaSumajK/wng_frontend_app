@@ -1,73 +1,280 @@
-# Welcome to your Lovable project
+# WellNest Group - School Mental Wellness Platform (Frontend)
 
-## Project info
+**A modern, responsive web application for comprehensive school mental health management.**
 
-**URL**: https://lovable.dev/projects/d6f89b98-efc9-4fb0-a8c1-392e35e1e1f9
+[![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF.svg)](https://vitejs.dev/)
 
-## How can I edit this code?
+## 🎯 Overview
 
-There are several ways of editing your application.
+The WellNest Group platform provides a comprehensive solution for managing student mental health and wellbeing in educational institutions. Built with modern web technologies, it offers intuitive dashboards for Teachers, Counsellors, and School Leadership.
 
-**Use Lovable**
+## ✨ Key Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d6f89b98-efc9-4fb0-a8c1-392e35e1e1f9) and start prompting.
+### For Teachers
+- **Student Monitoring**: Track student wellbeing and behavior
+- **Quick Observations**: Report concerns with severity levels
+- **Class Overview**: View class-wide wellbeing metrics
+- **Assessment Management**: Assign and track mental health assessments
 
-Changes made via Lovable will be committed automatically to this repo.
+### For Counsellors
+- **Case Management**: Comprehensive counseling case workflows
+- **Session Scheduling**: Calendar integration for counseling sessions
+- **Journal & Notes**: Detailed case documentation
+- **Risk Assessment**: AI-powered risk level tracking
+- **Resource Library**: Access to mental health resources
 
-**Use your preferred IDE**
+### For School Leadership
+- **Analytics Dashboard**: School-wide wellbeing trends
+- **Risk Distribution**: Visual breakdown of at-risk students
+- **Class Performance**: Compare wellbeing across grades/sections
+- **AI Insights**: Data-driven recommendations
+- **Governance**: Staff management and oversight
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Additional Features
+- **Marketplace**: Book sessions with external therapists
+- **Resource Center**: Curated mental health content
+- **Webinars**: Access to mental health workshops
+- **Activity Tracking**: Monitor student participation in wellbeing programs
+- **Multi-theme Support**: Light and dark modes
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🛠️ Tech Stack
 
-Follow these steps:
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI framework with hooks |
+| **TypeScript** | Type-safe development |
+| **Vite** | Lightning-fast build tool |
+| **Shadcn/ui** | Beautiful, accessible components |
+| **Tailwind CSS** | Utility-first styling |
+| **React Query** | Server state management |
+| **React Hook Form** | Form handling with validation |
+| **Zod** | Schema validation |
+| **React Router** | Client-side routing |
+| **Recharts** | Data visualization |
+| **Lucide Icons** | Modern icon library |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🚀 Quick Start
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Prerequisites
+- Node.js 18+ and npm
+- Backend API running (see backend README)
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd calmbridge-mentalhealth-main
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Configure environment**
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+4. **Start development server**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+5. **Access the application**
+- Open http://localhost:8080 in your browser
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Build for Production
+```bash
+npm run build
+npm run preview  # Preview production build
+```
 
-**Use GitHub Codespaces**
+## 📁 Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+src/
+├── components/
+│   ├── ui/                # Shadcn UI components
+│   ├── shared/            # Reusable components
+│   ├── modals/            # Modal dialogs
+│   └── layout/            # Layout components
+├── pages/
+│   ├── teacher/           # Teacher portal
+│   ├── counsellor/        # Counsellor portal
+│   ├── leadership/        # Principal portal
+│   └── student/           # Student portal
+├── hooks/                 # Custom React hooks
+├── services/              # API service layer
+├── contexts/              # React contexts
+├── lib/                   # Utilities
+└── assets/                # Static assets
+```
 
-## What technologies are used for this project?
+## 🎨 UI Components
 
-This project is built with:
+Built with **Shadcn/ui** for:
+- Consistent design system
+- Accessibility out of the box
+- Customizable theming
+- Type-safe components
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Key Components
+- `DataTable` - Sortable, searchable tables
+- `MetricChart` - Line, bar, and pie charts
+- `StatCard` - Dashboard metrics
+- Modal system for forms and details
+- Form components with validation
 
-## How can I deploy this project?
+## 🔑 Authentication
 
-Simply open [Lovable](https://lovable.dev/projects/d6f89b98-efc9-4fb0-a8c1-392e35e1e1f9) and click on Share -> Publish.
+The app uses JWT-based authentication with role-based routing:
 
-## Can I connect a custom domain to my Lovable project?
+**Demo Credentials:**
+```
+Counsellor: counsellor@demo.school / password123
+Teacher: teacher@demo.school / password123
+Principal: principal@demo.school / password123
+```
 
-Yes, you can!
+## 🎨 Theming
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+The app supports light and dark themes using CSS variables:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```css
+/* Theme colors defined in src/index.css */
+--primary: /* Primary brand color */
+--secondary: /* Secondary color */
+--accent: /* Accent color */
+/* ... */
+```
+
+Tailwind config extends with custom colors and animations.
+
+## 📊 State Management
+
+- **React Query** for server state (caching, refetching)
+- **React Context** for auth and app-level state
+- **React Hook Form** for form state
+- Local state with `useState` hook
+
+## 🧪 Development
+
+### Code Quality
+```bash
+# Lint code
+npm run lint
+
+# Type checking
+npm run type-check
+
+# Format code (if configured)
+npm run format
+```
+
+### Development Tools
+- Hot Module Replacement (HMR) via Vite
+- React DevTools browser extension
+- TypeScript IntelliSense
+
+## 🌐 API Integration
+
+All API calls are centralized in `src/services/`:
+- `api.ts` - Base API client
+- `students.ts` - Student endpoints
+- `cases.ts` - Case management
+- `assessments.ts` - Assessment APIs
+- And more...
+
+Using React Query hooks:
+```typescript
+import { useStudents } from '@/hooks/useStudents';
+
+const { data, isLoading } = useStudents();
+```
+
+## 📱 Responsive Design
+
+Fully responsive design with breakpoints:
+- Mobile: 320px - 640px
+- Tablet: 640px - 1024px
+- Desktop: 1024px+
+
+## 🚢 Deployment
+
+### Environment Variables
+```env
+VITE_API_BASE_URL=https://api.yourschool.com/api/v1
+```
+
+### Deployment Options
+
+**Vercel (Recommended)**
+```bash
+npm run build
+vercel --prod
+```
+
+**Netlify**
+```bash
+npm run build
+netlify deploy --prod
+```
+
+**Traditional Hosting**
+```bash
+npm run build
+# Upload dist/ folder to your web server
+```
+
+## 🔒 Security
+
+- XSS protection via React's auto-escaping
+- CSRF protection via JWT tokens
+- Secure HTTP-only cookies (if enabled)
+- Input validation with Zod schemas
+- Role-based route protection
+
+## ♿ Accessibility
+
+- WCAG 2.1 AA compliant components
+- Keyboard navigation support
+- Screen reader friendly
+- ARIA labels and roles
+- Focus management
+
+## 🎯 Performance
+
+- Code splitting with React.lazy
+- Optimized bundle size with Vite
+- Image lazy loading
+- React Query caching
+- Memoization with useMemo/useCallback
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run linting and type checks
+5. Submit a pull request
+
+## 📝 License
+
+Proprietary - WellNest Group © 2024
+
+## 🆘 Support
+
+For issues or questions, contact: support@wellnestgroup.com
+
+---
+
+**Built with ❤️ for student mental health and wellbeing**
