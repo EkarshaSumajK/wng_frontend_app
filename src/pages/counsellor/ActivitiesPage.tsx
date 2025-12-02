@@ -12,6 +12,11 @@ import {
   GraduationCap,
   Star,
   Timer,
+  MapPin,
+  AlertTriangle,
+  TrendingUp,
+  Tag,
+  X,
   Users
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
@@ -43,6 +48,7 @@ const activityTypeLabels: Record<string, string> = {
   COGNITIVE_DEVELOPMENT: 'Cognitive Development',
   SOCIAL_EMOTIONAL_DEVELOPMENT: 'Social & Emotional',
   LANGUAGE_COMMUNICATION_DEVELOPMENT: 'Language & Communication',
+  TEAMWORK: 'Teamwork Activities',
 };
 
 const activityTypeColors: Record<string, string> = {
@@ -50,6 +56,7 @@ const activityTypeColors: Record<string, string> = {
   COGNITIVE_DEVELOPMENT: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
   SOCIAL_EMOTIONAL_DEVELOPMENT: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
   LANGUAGE_COMMUNICATION_DEVELOPMENT: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+  TEAMWORK: 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
 };
 
 const diagnosisLabels: Record<string, string> = {
@@ -117,7 +124,7 @@ const diagnosisImages: Record<string, string> = {
   AUTISM_SPECTRUM_DISORDER: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1000&auto=format&fit=crop',
 };
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 export default function ActivitiesPage() {
   const { user } = useAuth();
@@ -125,24 +132,42 @@ export default function ActivitiesPage() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
   const [selectedDiagnosis, setSelectedDiagnosis] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [selectedRiskLevel, setSelectedRiskLevel] = useState<string | null>(null);
+  const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [viewAllType, setViewAllType] = useState<'featured' | 'quick_relief' | 'quick_sessions' | 'grades' | 'diagnosis' | 'teamwork' | null>(null);
-  const [activeTab, setActiveTab] = useState("discover");
 
   const { data: activities = [], isLoading } = useActivities({
     school_id: user?.school_id,
   });
 
-  // Filter activities
+  // Filter activities based on all selected filters
   const filteredActivities = useMemo(() => {
     return activities.filter((activity: any) => {
-      const matchesSearch = activity.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           activity.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(activity.type);
-      const matchesGrade = !selectedGrade || (activity.target_grades && activity.target_grades.includes(selectedGrade));
-      const matchesDiagnosis = !selectedDiagnosis || (activity.diagnosis && activity.diagnosis.includes(selectedDiagnosis));
+      const matchesSearch = !searchQuery || 
+        activity.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        activity.description?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // View All Logic
+      const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => {
+        if (type === 'TEAMWORK') {
+             return activity.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
+                    activity.title?.toLowerCase().includes('team') || 
+                    activity.description?.toLowerCase().includes('team') ||
+                    activity.title?.toLowerCase().includes('group') ||
+                    activity.description?.toLowerCase().includes('group');
+        }
+        return activity.type === type;
+      });
+
+      const matchesGrade = !selectedGrade || (activity.target_grades && activity.target_grades.includes(selectedGrade));
+      const matchesDiagnosis = !selectedDiagnosis || activity.diagnosis?.includes(selectedDiagnosis);
+      const matchesLocation = !selectedLocation || activity.location === selectedLocation;
+      const matchesRisk = !selectedRiskLevel || activity.risk_level === selectedRiskLevel;
+      const matchesSkill = !selectedSkillLevel || activity.skill_level === selectedSkillLevel;
+      const matchesTheme = !selectedTheme || activity.theme?.includes(selectedTheme);
+      
       let matchesViewAll = true;
       if (viewAllType === 'quick_relief') {
         matchesViewAll = (activity.duration && parseInt(activity.duration) <= 15) || !activity.duration;
@@ -156,14 +181,11 @@ export default function ActivitiesPage() {
                          activity.title?.toLowerCase().includes('group') ||
                          activity.description?.toLowerCase().includes('group');
       }
-      // For 'featured', we might want to use the same random logic or a specific flag if available. 
-      // Since 'recommendedActivities' is random, we can't easily filter the main list to match it exactly without a stable seed or flag.
-      // For now, let's assume 'featured' just shows all for browsing, or we can filter by a 'featured' property if it existed.
-      // Let's just show all activities for 'featured' view all, effectively acting as a "Browse All".
       
-      return matchesSearch && matchesType && matchesGrade && matchesDiagnosis && matchesViewAll;
+      return matchesSearch && matchesType && matchesGrade && matchesDiagnosis && 
+             matchesLocation && matchesRisk && matchesSkill && matchesTheme && matchesViewAll;
     });
-  }, [activities, searchQuery, selectedTypes, selectedGrade, selectedDiagnosis, viewAllType]);
+  }, [activities, searchQuery, selectedTypes, selectedGrade, selectedDiagnosis, selectedLocation, selectedRiskLevel, selectedSkillLevel, selectedTheme, viewAllType]);
 
   // Recommended activities (random selection for now, could be smarter)
   const recommendedActivities = useMemo(() => {
@@ -205,465 +227,373 @@ export default function ActivitiesPage() {
 
       {/* Main Content Area */}
       {!selectedGrade && !selectedDiagnosis && !searchQuery && !viewAllType && selectedTypes.length === 0 ? (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto">
-            <TabsTrigger 
-              value="discover"
-              className="data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700 data-[state=active]:text-foreground"
-            >
-              Discover
-            </TabsTrigger>
-            <TabsTrigger 
-              value="browse"
-              className="data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700 data-[state=active]:text-foreground"
-            >
-              Browse
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="discover" className="space-y-10">
-             {/* Featured Hero Section */}
-             {recommendedActivities.length > 0 && (
-               <section className="relative overflow-hidden rounded-3xl">
-                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary mix-blend-multiply z-10" />
-                 <div 
-                   className="absolute inset-0 bg-cover bg-center opacity-40 transition-transform duration-700 hover:scale-105"
-                   style={{ 
-                     backgroundImage: `url(${(recommendedActivities[0] as any).thumbnail_url || 'https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=2070&auto=format&fit=crop'})` 
-                   }}
-                 />
-                 <div className="relative z-20 p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                   <div className="space-y-4 max-w-2xl">
-                     <Badge className="bg-white/20 text-white hover:bg-white/30 border-none backdrop-blur-sm">
-                       <Sparkles className="w-3 h-3 mr-1" />
-                       Featured Activity
-                     </Badge>
-                     <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
-                       {recommendedActivities[0].title}
-                     </h2>
-                     <p className="text-lg text-white/90 line-clamp-2">
-                       {recommendedActivities[0].description}
-                     </p>
-                     <Button 
-                       size="lg" 
-                       className="bg-white text-primary hover:bg-white/90 border-none shadow-lg"
-                       onClick={() => setSelectedActivity(recommendedActivities[0])}
-                     >
-                       <Eye className="w-5 h-5 mr-2" />
-                       View Activity
-                     </Button>
-                   </div>
-                   <div className="hidden md:block">
-                      <div className="w-32 h-32 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border-2 border-white/20">
-                        <Target className="w-16 h-16 text-white" />
-                      </div>
-                   </div>
-                 </div>
-               </section>
-             )}
-
-             {/* Featured Section */}
-             <section className="space-y-4">
-               <Carousel opts={{ align: "start" }} className="w-full">
-                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                       <h3 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                           <defs>
-                             <linearGradient id="starGradient" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
-                               <stop stopColor="#F59E0B" />
-                               <stop offset="1" stopColor="#D97706" />
-                             </linearGradient>
-                             <filter id="starShadow" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                               <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-                               <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                               <feOffset dy="1"/>
-                               <feGaussianBlur stdDeviation="1"/>
-                               <feComposite in2="hardAlpha" operator="out"/>
-                               <feColorMatrix type="matrix" values="0 0 0 0 0.96 0 0 0 0 0.62 0 0 0 0 0.04 0 0 0 0.4 0"/>
-                               <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-                               <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-                             </filter>
-                           </defs>
-                           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="url(#starGradient)" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" filter="url(#starShadow)"/>
-                         </svg>
-                         Featured
-                       </h3>
-                       <div className="flex items-center gap-2">
-                         <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                         <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                       </div>
-                    </div>
-                    <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('featured')}>View All</Button>
-                 </div>
-                 <CarouselContent className="-ml-4">
-                   {recommendedActivities.slice(1, 6).map((activity: any, index: number) => (
-                     <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                       <div 
-                         className="group cursor-pointer space-y-3"
-                         onClick={() => setSelectedActivity(activity)}
-                       >
-                         {/* Thumbnail / App Icon Style */}
-                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                           {activity.thumbnail_url ? (
-                             <img 
-                               src={activity.thumbnail_url} 
-                               alt={activity.title}
-                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                             />
-                           ) : (
-                             <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                               <span className="text-4xl">✨</span>
-                             </div>
-                           )}
-                           {/* Duration Badge Overlay */}
-                           <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                             {activity.duration ? `${activity.duration} min` : 'Flexible'}
-                           </div>
-                         </div>
-
-                         {/* Content */}
-                         <div className="space-y-1">
-                           <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
-                             {activity.title}
-                           </h3>
-                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                             <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                               {activityTypeLabels[activity.type] || activity.type}
-                             </span>
-                           </div>
-                         </div>
-                       </div>
-                     </CarouselItem>
-                   ))}
-                 </CarouselContent>
-               </Carousel>
-             </section>
-
-             
-          </TabsContent>
-          <TabsContent value="browse" className="space-y-10">
-            {/* Search and Filter Bar */}
-            <div className="relative max-w-md mx-auto mb-8">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search..."
-                    className="pl-10 h-10"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setSearchQuery((e.target as HTMLInputElement).value);
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* Activity Type Filter */}
-                <div className="w-[140px] shrink-0">
-                  <Select
-                    value={selectedTypes.length > 0 ? selectedTypes[0] : "all"}
-                    onValueChange={(value) => {
-                      if (value === "all") {
-                        setSelectedTypes([]);
-                      } else {
-                        setSelectedTypes([value]);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Activity Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      {Object.entries(activityTypeLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+        <div className="space-y-10">
+          {/* Search Bar */}
+          <div className="relative max-w-md mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search activities..."
+                className="pl-10 h-10"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchQuery((e.target as HTMLInputElement).value);
+                  }
+                }}
+              />
             </div>
+          </div>
 
-
-
-             {/* Grade Wise Activities Section */}
-             <section className="space-y-4">
-               <Carousel opts={{ align: "start" }} className="w-full">
-                 <div className="flex items-center justify-between mb-4">
-                   <div className="flex items-center gap-4">
-                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                           <path d="M22 10V16C22 16 18 19 12 19C6 19 2 16 2 16V10" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                           <path d="M22 10L12 5L2 10L12 15L22 10Z" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                           <path d="M6 12V17C6 17.5523 6.44772 18 7 18H17C17.5523 18 18 17.5523 18 17V12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 2"/>
-                         </svg>
-                       </div>
-                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Browse by Grade</h2>
-                     </div>
-                     <div className="flex items-center gap-2">
-                        <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                        <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                     </div>
-                   </div>
-                   <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('grades')}>View All</Button>
-                 </div>
-                 
-                 <CarouselContent className="-ml-4">
-                   {Array.from({ length: 12 }, (_, i) => i + 1).map((grade) => (
-                     <CarouselItem key={grade} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/3 lg:basis-1/5">
-                       <div 
-                         className="group cursor-pointer space-y-3"
-                         onClick={() => setSelectedGrade(grade.toString())}
-                       >
-                         {/* Thumbnail / App Icon Style */}
-                         <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                           <img 
-                             src={gradeImages[grade.toString()]} 
-                             alt={`Grade ${grade}`}
-                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                           />
-                           {/* Overlay for text readability if needed, but clean look is preferred. 
-                               Maybe just a subtle gradient at bottom */}
-                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-                           
-                           <div className="absolute bottom-3 left-3 text-white">
-                             <span className="text-3xl font-bold block leading-none">{grade}</span>
-                             <span className="text-[10px] font-medium uppercase tracking-wider opacity-90">Grade</span>
-                           </div>
-                         </div>
-
-                         {/* Content */}
-                         <div className="space-y-1">
-                           <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
-                             Grade {grade}
-                           </h3>
-                           <div className="text-xs text-muted-foreground">
-                             View Activities
-                           </div>
-                         </div>
-                       </div>
-                     </CarouselItem>
-                   ))}
-                 </CarouselContent>
-               </Carousel>
-             </section>
-
-             {/* Teamwork Activities Section */}
-             <section className="space-y-4">
-               <Carousel opts={{ align: "start" }} className="w-full">
-                 <div className="flex items-center justify-between mb-4">
-                   <div className="flex items-center gap-4">
-                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                         <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                       </div>
-                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Teamwork Activities</h2>
-                     </div>
-                     <div className="flex items-center gap-2">
-                        <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                        <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                     </div>
-                   </div>
-                   <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('teamwork')}>View All</Button>
-                 </div>
-                 
-                 <CarouselContent className="-ml-4">
-                   {activities
-                     .filter((a: any) => 
-                       a.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
-                       a.title?.toLowerCase().includes('team') || 
-                       a.description?.toLowerCase().includes('team') ||
-                       a.title?.toLowerCase().includes('group') ||
-                       a.description?.toLowerCase().includes('group')
-                     )
-                     .map((activity: any) => (
-                     <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                        <div 
-                          className="group cursor-pointer space-y-3"
-                          onClick={() => setSelectedActivity(activity)}
-                        >
-                          {/* Thumbnail / App Icon Style */}
-                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                            {activity.thumbnail_url ? (
-                              <img 
-                                src={activity.thumbnail_url} 
-                                alt={activity.title}
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                                <span className="text-4xl">🤝</span>
-                              </div>
-                            )}
-                            {/* Duration Badge Overlay */}
-                            <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                              {activity.duration ? `${activity.duration} min` : 'Flexible'}
-                            </div>
-                          </div>
-
-                          {/* Content */}
-                          <div className="space-y-1">
-                            <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
-                              {activity.title}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                                {activity.type?.replace(/_/g, ' ') || 'ACTIVITY'}
-                              </span>
-                              <span>•</span>
-                              <span>{activity.duration} min</span>
-                            </div>
-                          </div>
-                        </div>
-                     </CarouselItem>
-                   ))}
-                 </CarouselContent>
-               </Carousel>
-             </section>
-
-            {/* Quick Sessions (5-10 min) */}
-            <section className="space-y-4">
-              <Carousel opts={{ align: "start" }} className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="9" stroke="#16A34A" strokeWidth="2" fill="#DCFCE7"/>
-                          <path d="M12 7V12L15 15" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <circle cx="12" cy="12" r="1" fill="#16A34A"/>
-                        </svg>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Sessions (5-10 min)</h2>
-                    </div>
+          {/* Featured Section */}
+          <section className="space-y-4">
+            <Carousel opts={{ align: "start" }} className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                 <div className="flex items-center gap-4">
+                    <h3 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                          <linearGradient id="starGradient" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop stopColor="#F59E0B" />
+                            <stop offset="1" stopColor="#D97706" />
+                          </linearGradient>
+                          <filter id="starShadow" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                            <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                            <feOffset dy="1"/>
+                            <feGaussianBlur stdDeviation="1"/>
+                            <feComposite in2="hardAlpha" operator="out"/>
+                            <feColorMatrix type="matrix" values="0 0 0 0 0.96 0 0 0 0 0.62 0 0 0 0 0.04 0 0 0 0.4 0"/>
+                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+                            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+                          </filter>
+                        </defs>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="url(#starGradient)" stroke="#B45309" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" filter="url(#starShadow)"/>
+                      </svg>
+                      Featured
+                    </h3>
                     <div className="flex items-center gap-2">
-                       <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                       <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
                     </div>
-                  </div>
-                  <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('quick_sessions')}>View All</Button>
-                </div>
-                
-                <CarouselContent className="-ml-4">
-                  {activities
-                    .filter((a: any) => {
-                      const dur = a.duration ? parseInt(a.duration) : 0;
-                      return dur >= 5 && dur <= 10;
-                    })
-                    .map((activity: any) => (
-                    <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                       <div 
-                         className="group cursor-pointer space-y-3"
-                         onClick={() => setSelectedActivity(activity)}
-                       >
-                         {/* Thumbnail / App Icon Style */}
-                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                           {activity.thumbnail_url ? (
-                             <img 
-                               src={activity.thumbnail_url} 
-                               alt={activity.title}
-                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                             />
-                           ) : (
-                             <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                               <span className="text-4xl">🧘</span>
-                             </div>
-                           )}
-                           {/* Duration Badge Overlay */}
-                           <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                             {activity.duration} min
-                           </div>
-                         </div>
-
-                         {/* Content */}
-                         <div className="space-y-1">
-                           <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
-                             {activity.title}
-                           </h3>
-                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                             <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                               {activity.type?.replace(/_/g, ' ') || 'ACTIVITY'}
-                             </span>
-                             <span>•</span>
-                             <span>{activity.duration} min</span>
-                           </div>
-                           {/* Optional: Rating or other meta if available, for now just description */}
-                           {/* <p className="line-clamp-2 text-sm text-muted-foreground">
-                             {activity.description}
-                           </p> */}
-                         </div>
-                       </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </section>
-  
-            {/* Special Diagnosis Cases Section */}
-            <section className="space-y-4">
-              <Carousel opts={{ align: "start" }} className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9.5 2C9.5 2 9.5 4.5 7.5 5.5C5.5 6.5 4 6 4 6C4 6 2 8 2 11C2 14 4 16 4 16C4 16 5 20 9 21C13 22 15 20 15 20C15 20 18 21 20 19C22 17 22 14 22 14C22 14 20 11 20 9C20 7 21 4 18 3C15 2 14 4 14 4C14 4 12.5 1 9.5 2Z" fill="#F3E8FF" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M12 12C12 12 13 14 15 14" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M9 10C9 10 10 11 11 10" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M15 8C15 8 16 9 17 8" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Special Diagnosis</h2>
-                    </div>
-                    <div className="flex items-center gap-2">
-                       <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                       <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
-                    </div>
-                  </div>
-                  <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('diagnosis')}>View All</Button>
-                </div>
-                
-                <CarouselContent className="-ml-4">
-                  {Object.entries(diagnosisLabels).map(([key, label]) => (
-                    <CarouselItem key={key} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <div 
-                        className="group cursor-pointer space-y-3"
-                        onClick={() => setSelectedDiagnosis(key)}
-                      >
-                        {/* Thumbnail / App Icon Style */}
-                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                 </div>
+                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('featured')}>View All</Button>
+              </div>
+              <CarouselContent className="-ml-4">
+                {recommendedActivities.slice(1, 6).map((activity: any, index: number) => (
+                  <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                    <div 
+                      className="group cursor-pointer space-y-3"
+                      onClick={() => setSelectedActivity(activity)}
+                    >
+                      {/* Thumbnail / App Icon Style */}
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                        {activity.thumbnail_url ? (
                           <img 
-                            src={diagnosisImages[key]} 
-                            alt={label}
+                            src={activity.thumbnail_url} 
+                            alt={activity.title}
                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          {/* Badge Overlay */}
-                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                            {label}
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-secondary/20">
+                            <span className="text-4xl">✨</span>
                           </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="space-y-1">
-                          <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
-                            {label}
-                          </h3>
-                          <div className="text-xs text-muted-foreground">
-                            View Cases
-                          </div>
+                        )}
+                        {/* Duration Badge Overlay */}
+                        <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                          {activity.duration ? `${activity.duration} min` : 'Flexible'}
                         </div>
                       </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </section>
-          </TabsContent>
-        </Tabs>
+
+                      {/* Content */}
+                      <div className="space-y-1">
+                        <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
+                          {activity.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
+                            {activityTypeLabels[activity.type] || activity.type}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </section>
+
+          {/* Quick Sessions (5-10 min) */}
+          <section className="space-y-4">
+            <Carousel opts={{ align: "start" }} className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="9" stroke="#16A34A" strokeWidth="2" fill="#DCFCE7"/>
+                        <path d="M12 7V12L15 15" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="1" fill="#16A34A"/>
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Quick Sessions (5-10 min)</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                  </div>
+                </div>
+                <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('quick_sessions')}>View All</Button>
+              </div>
+              
+              <CarouselContent className="-ml-4">
+                {activities
+                  .filter((a: any) => {
+                    const dur = a.duration ? parseInt(a.duration) : 0;
+                    return dur >= 5 && dur <= 10;
+                  })
+                  .map((activity: any) => (
+                  <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                     <div 
+                       className="group cursor-pointer space-y-3"
+                       onClick={() => setSelectedActivity(activity)}
+                     >
+                       {/* Thumbnail / App Icon Style */}
+                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                         {activity.thumbnail_url ? (
+                           <img 
+                             src={activity.thumbnail_url} 
+                             alt={activity.title}
+                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                           />
+                         ) : (
+                           <div className="flex h-full w-full items-center justify-center bg-secondary/20">
+                             <span className="text-4xl">🧘</span>
+                           </div>
+                         )}
+                         {/* Duration Badge Overlay */}
+                         <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                           {activity.duration} min
+                         </div>
+                       </div>
+
+                       {/* Content */}
+                       <div className="space-y-1">
+                         <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
+                           {activity.title}
+                         </h3>
+                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                           <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
+                             {activity.type?.replace(/_/g, ' ') || 'ACTIVITY'}
+                           </span>
+                           <span>•</span>
+                           <span>{activity.duration} min</span>
+                         </div>
+                       </div>
+                     </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </section>
+
+
+
+          {/* Grade Wise Activities Section */}
+          <section className="space-y-4">
+            <Carousel opts={{ align: "start" }} className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 10V16C22 16 18 19 12 19C6 19 2 16 2 16V10" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M22 10L12 5L2 10L12 15L22 10Z" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M6 12V17C6 17.5523 6.44772 18 7 18H17C17.5523 18 18 17.5523 18 17V12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 2"/>
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Browse by Grade</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                  </div>
+                </div>
+                <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('grades')}>View All</Button>
+              </div>
+              
+              <CarouselContent className="-ml-4">
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((grade) => (
+                  <CarouselItem key={grade} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/3 lg:basis-1/5">
+                    <div 
+                      className="group cursor-pointer space-y-3"
+                      onClick={() => setSelectedGrade(grade.toString())}
+                    >
+                      {/* Thumbnail / App Icon Style */}
+                      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                        <img 
+                          src={gradeImages[grade.toString()]} 
+                          alt={`Grade ${grade}`}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        {/* Overlay for text readability if needed, but clean look is preferred. 
+                            Maybe just a subtle gradient at bottom */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                        
+                        <div className="absolute bottom-3 left-3 text-white">
+                          <span className="text-3xl font-bold block leading-none">{grade}</span>
+                          <span className="text-[10px] font-medium uppercase tracking-wider opacity-90">Grade</span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="space-y-1">
+                        <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
+                          Grade {grade}
+                        </h3>
+                        <div className="text-xs text-muted-foreground">
+                          View Activities
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </section>
+
+          {/* Teamwork Activities Section */}
+          <section className="space-y-4">
+            <Carousel opts={{ align: "start" }} className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Teamwork Activities</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                  </div>
+                </div>
+                <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('teamwork')}>View All</Button>
+              </div>
+              
+              <CarouselContent className="-ml-4">
+                {activities
+                  .filter((a: any) => 
+                    a.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
+                    a.title?.toLowerCase().includes('team') || 
+                    a.description?.toLowerCase().includes('team') ||
+                    a.title?.toLowerCase().includes('group') ||
+                    a.description?.toLowerCase().includes('group')
+                  )
+                  .map((activity: any) => (
+                  <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                     <div 
+                       className="group cursor-pointer space-y-3"
+                       onClick={() => setSelectedActivity(activity)}
+                     >
+                       {/* Thumbnail / App Icon Style */}
+                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                         {activity.thumbnail_url ? (
+                           <img 
+                             src={activity.thumbnail_url} 
+                             alt={activity.title}
+                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                           />
+                         ) : (
+                           <div className="flex h-full w-full items-center justify-center bg-secondary/20">
+                             <span className="text-4xl">🤝</span>
+                           </div>
+                         )}
+                         {/* Duration Badge Overlay */}
+                         <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                           {activity.duration ? `${activity.duration} min` : 'Flexible'}
+                         </div>
+                       </div>
+
+                       {/* Content */}
+                       <div className="space-y-1">
+                         <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
+                           {activity.title}
+                         </h3>
+                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                           <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
+                             {activity.type?.replace(/_/g, ' ') || 'ACTIVITY'}
+                           </span>
+                           <span>•</span>
+                           <span>{activity.duration} min</span>
+                         </div>
+                       </div>
+                     </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </section>
+
+          {/* Special Diagnosis Cases Section */}
+          <section className="space-y-4">
+            <Carousel opts={{ align: "start" }} className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.5 2C9.5 2 9.5 4.5 7.5 5.5C5.5 6.5 4 6 4 6C4 6 2 8 2 11C2 14 4 16 4 16C4 16 5 20 9 21C13 22 15 20 15 20C15 20 18 21 20 19C22 17 22 14 22 14C22 14 20 11 20 9C20 7 21 4 18 3C15 2 14 4 14 4C14 4 12.5 1 9.5 2Z" fill="#F3E8FF" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 12C12 12 13 14 15 14" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9 10C9 10 10 11 11 10" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M15 8C15 8 16 9 17 8" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Special Diagnosis</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                  </div>
+                </div>
+                <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('diagnosis')}>View All</Button>
+              </div>
+              
+              <CarouselContent className="-ml-4">
+                {Object.entries(diagnosisLabels).map(([key, label]) => (
+                  <CarouselItem key={key} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                    <div 
+                      className="group cursor-pointer space-y-3"
+                      onClick={() => setSelectedDiagnosis(key)}
+                    >
+                      {/* Thumbnail / App Icon Style */}
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                        <img 
+                          src={diagnosisImages[key]} 
+                          alt={label}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        {/* Badge Overlay */}
+                        <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                          {label}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="space-y-1">
+                        <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
+                          {label}
+                        </h3>
+                        <div className="text-xs text-muted-foreground">
+                          View Cases
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </section>
+        </div>
       ) : (
         /* Detailed View */
         <div className="space-y-6">
@@ -817,6 +747,82 @@ export default function ActivitiesPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              </div>
+
+              {/* All Filters */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 max-w-5xl mx-auto mb-8">
+                {/* Location Filter */}
+                <div>
+                  <Select value={selectedLocation || "all"} onValueChange={(value) => setSelectedLocation(value === "all" ? null : value)}>
+                    <SelectTrigger className="h-10 w-full">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        <SelectValue placeholder="Location" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Locations</SelectItem>
+                      <SelectItem value="IN_CLASS">In Class</SelectItem>
+                      <SelectItem value="AT_HOME">At Home</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Risk Level Filter */}
+                <div>
+                  <Select value={selectedRiskLevel || "all"} onValueChange={(value) => setSelectedRiskLevel(value === "all" ? null : value)}>
+                    <SelectTrigger className="h-10 w-full">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        <SelectValue placeholder="Risk" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Risk Levels</SelectItem>
+                      <SelectItem value="LOW">Low Risk</SelectItem>
+                      <SelectItem value="MEDIUM">Medium Risk</SelectItem>
+                      <SelectItem value="HIGH">High Risk</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Skill Level Filter */}
+                <div>
+                  <Select value={selectedSkillLevel || "all"} onValueChange={(value) => setSelectedSkillLevel(value === "all" ? null : value)}>
+                    <SelectTrigger className="h-10 w-full">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        <SelectValue placeholder="Skill" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Skill Levels</SelectItem>
+                      <SelectItem value="BEGINNER">Beginner</SelectItem>
+                      <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                      <SelectItem value="ADVANCED">Advanced</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Theme Filter */}
+                <div>
+                  <Select value={selectedTheme || "all"} onValueChange={(value) => setSelectedTheme(value === "all" ? null : value)}>
+                    <SelectTrigger className="h-10 w-full">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4" />
+                        <SelectValue placeholder="Theme" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Themes</SelectItem>
+                      <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                      <SelectItem value="physical-activity">Physical Activity</SelectItem>
+                      <SelectItem value="social-skills">Social Skills</SelectItem>
+                      <SelectItem value="creativity">Creativity</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

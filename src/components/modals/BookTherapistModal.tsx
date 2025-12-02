@@ -482,9 +482,9 @@ export function BookTherapistModal({ open, onOpenChange, therapist, onSuccess }:
                     // Create .ics file content
                     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//WellNest Group//Therapy Booking//EN
+PRODID:-//Wellnest Connect//Therapy Booking//EN
 BEGIN:VEVENT
-UID:${Date.now()}@wellnestgroup.com
+UID:${Date.now()}@wellnestconnect.com
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTSTART:${event.start.replace(/[-:]/g, '')}
 DTEND:${event.end.replace(/[-:]/g, '')}

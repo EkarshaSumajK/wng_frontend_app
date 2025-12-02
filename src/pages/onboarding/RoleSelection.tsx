@@ -236,7 +236,7 @@ export default function RoleSelection() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} WellNest Group. All rights reserved.
+            © {new Date().getFullYear()} Wellnest Connect. All rights reserved.
           </p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-# WellNest Group - School Mental Wellness Platform (Frontend)
+# Wellnest Connect - School Mental Wellness Platform (Frontend)
 
 **A modern, responsive web application for comprehensive school mental health management.**
 
@@ -8,7 +8,7 @@
 
 ## 🎯 Overview
 
-The WellNest Group platform provides a comprehensive solution for managing student mental health and wellbeing in educational institutions. Built with modern web technologies, it offers intuitive dashboards for Teachers, Counsellors, and School Leadership.
+The Wellnest Connect platform provides a comprehensive solution for managing student mental health and wellbeing in educational institutions. Built with modern web technologies, it offers intuitive dashboards for Teachers, Counsellors, and School Leadership.
 
 ## ✨ Key Features
 
@@ -269,11 +269,11 @@ npm run build
 
 ## 📝 License
 
-Proprietary - WellNest Group © 2024
+Proprietary - Wellnest Connect © 2024
 
 ## 🆘 Support
 
-For issues or questions, contact: support@wellnestgroup.com
+For issues or questions, contact: support@wellnestconnect.com
 
 ---
 

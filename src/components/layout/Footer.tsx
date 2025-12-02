@@ -8,7 +8,7 @@ interface FooterProps extends React.HTMLAttributes<HTMLElement> {
 
 export function Footer({ 
   className, 
-  appName = "WellNest Group", 
+  appName = "Wellnest Connect", 
   version = "1.0.0",
   ...props 
 }: FooterProps) {

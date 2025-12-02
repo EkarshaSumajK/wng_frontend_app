@@ -367,8 +367,8 @@ export default function MarketplacePage() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant={booking.status === 'Confirmed' ? 'default' : 'secondary'}>
-                        {booking.status}
+                      <Badge className={booking.status === 'Confirmed' || booking.status === 'Requested' ? 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200' : 'bg-secondary text-secondary-foreground'}>
+                        {booking.status === 'Confirmed' || booking.status === 'Requested' ? 'Booked' : booking.status}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
                         {new Date(booking.appointment_date).toLocaleDateString()} at {booking.appointment_time}

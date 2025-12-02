@@ -227,7 +227,7 @@ export default function SchoolOnboarding() {
               <div className="flex-1">
                 <CardTitle className="text-3xl">School Onboarding</CardTitle>
                 <CardDescription className="text-base">
-                  WellNest Group - Mental Health Support Platform
+                  Wellnest Connect - Mental Health Support Platform
                 </CardDescription>
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function SchoolOnboarding() {
           <CardContent className="pt-6">
             <p className="font-medium mb-2">Welcome! 👋</p>
             <p className="text-sm text-muted-foreground">
-              Please fill out this form to register your school with WellNest Group. 
+              Please fill out this form to register your school with Wellnest Connect. 
               All fields marked with <span className="text-destructive">*</span> are required.
             </p>
           </CardContent>
@@ -740,7 +740,7 @@ export default function SchoolOnboarding() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground">
-          For any queries, contact us at support@wellnestgroup.com
+          For any queries, contact us at support@wellnestconnect.com
         </p>
       </div>
     </div>

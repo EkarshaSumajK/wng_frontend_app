@@ -48,6 +48,7 @@ const activityTypeLabels: Record<string, string> = {
   COGNITIVE_DEVELOPMENT: 'Cognitive Development',
   SOCIAL_EMOTIONAL_DEVELOPMENT: 'Social & Emotional',
   LANGUAGE_COMMUNICATION_DEVELOPMENT: 'Language & Communication',
+  TEAMWORK: 'Teamwork Activities',
 };
 
 const activityTypeColors: Record<string, string> = {
@@ -55,6 +56,7 @@ const activityTypeColors: Record<string, string> = {
   COGNITIVE_DEVELOPMENT: 'bg-purple-100 text-purple-800 border-purple-200',
   SOCIAL_EMOTIONAL_DEVELOPMENT: 'bg-green-100 text-green-800 border-green-200',
   LANGUAGE_COMMUNICATION_DEVELOPMENT: 'bg-orange-100 text-orange-800 border-orange-200',
+  TEAMWORK: 'bg-indigo-100 text-indigo-800 border-indigo-200',
 };
 
 const diagnosisLabels: Record<string, string> = {
@@ -148,8 +150,18 @@ export default function ActivitiesPage() {
         activity.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         activity.description?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(activity.type);
-      const matchesGrade = !selectedGrade || activity.target_grades?.includes(selectedGrade);
+      const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => {
+        if (type === 'TEAMWORK') {
+             return activity.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
+                    activity.title?.toLowerCase().includes('team') || 
+                    activity.description?.toLowerCase().includes('team') ||
+                    activity.title?.toLowerCase().includes('group') ||
+                    activity.description?.toLowerCase().includes('group');
+        }
+        return activity.type === type;
+      });
+
+      const matchesGrade = !selectedGrade || (activity.target_grades && activity.target_grades.includes(selectedGrade));
       const matchesDiagnosis = !selectedDiagnosis || activity.diagnosis?.includes(selectedDiagnosis);
       const matchesLocation = !selectedLocation || activity.location === selectedLocation;
       const matchesRisk = !selectedRiskLevel || activity.risk_level === selectedRiskLevel;

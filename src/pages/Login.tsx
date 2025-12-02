@@ -194,7 +194,7 @@ export default function Login() {
             <Building2 className="w-6 h-6" />
           </div>
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
-            WellNest Group <br></br>School Mental Wellness Platform
+            Wellnest Connect <br></br>School Mental Wellness Platform
           </h1>
           <p className="text-muted-foreground">
             Enter your credentials to access your account
@@ -521,7 +521,7 @@ export default function Login() {
             </div>
 
             <p className="text-xs text-muted-foreground pt-4">
-              © {new Date().getFullYear()} WellNest Group. All rights reserved.
+              © {new Date().getFullYear()} Wellnest Connect. All rights reserved.
             </p>
           </div>
         </div>
