@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   GraduationCap,
   Star,
-  Timer
+  Timer,
+  Users
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -125,7 +126,7 @@ export default function ActivitiesPage() {
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
   const [selectedDiagnosis, setSelectedDiagnosis] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
-  const [viewAllType, setViewAllType] = useState<'featured' | 'quick_relief' | 'quick_sessions' | 'grades' | 'diagnosis' | null>(null);
+  const [viewAllType, setViewAllType] = useState<'featured' | 'quick_relief' | 'quick_sessions' | 'grades' | 'diagnosis' | 'teamwork' | null>(null);
   const [activeTab, setActiveTab] = useState("discover");
 
   const { data: activities = [], isLoading } = useActivities({
@@ -148,6 +149,12 @@ export default function ActivitiesPage() {
       } else if (viewAllType === 'quick_sessions') {
         const dur = activity.duration ? parseInt(activity.duration) : 0;
         matchesViewAll = dur >= 5 && dur <= 10;
+      } else if (viewAllType === 'teamwork') {
+        matchesViewAll = activity.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
+                         activity.title?.toLowerCase().includes('team') || 
+                         activity.description?.toLowerCase().includes('team') ||
+                         activity.title?.toLowerCase().includes('group') ||
+                         activity.description?.toLowerCase().includes('group');
       }
       // For 'featured', we might want to use the same random logic or a specific flag if available. 
       // Since 'recommendedActivities' is random, we can't easily filter the main list to match it exactly without a stable seed or flag.
@@ -380,6 +387,8 @@ export default function ActivitiesPage() {
               </div>
             </div>
 
+
+
              {/* Grade Wise Activities Section */}
              <section className="space-y-4">
                <Carousel opts={{ align: "start" }} className="w-full">
@@ -437,6 +446,79 @@ export default function ActivitiesPage() {
                            </div>
                          </div>
                        </div>
+                     </CarouselItem>
+                   ))}
+                 </CarouselContent>
+               </Carousel>
+             </section>
+
+             {/* Teamwork Activities Section */}
+             <section className="space-y-4">
+               <Carousel opts={{ align: "start" }} className="w-full">
+                 <div className="flex items-center justify-between mb-4">
+                   <div className="flex items-center gap-4">
+                     <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                         <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                       </div>
+                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Teamwork Activities</h2>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
+                        <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700" />
+                     </div>
+                   </div>
+                   <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('teamwork')}>View All</Button>
+                 </div>
+                 
+                 <CarouselContent className="-ml-4">
+                   {activities
+                     .filter((a: any) => 
+                       a.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
+                       a.title?.toLowerCase().includes('team') || 
+                       a.description?.toLowerCase().includes('team') ||
+                       a.title?.toLowerCase().includes('group') ||
+                       a.description?.toLowerCase().includes('group')
+                     )
+                     .map((activity: any) => (
+                     <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                        <div 
+                          className="group cursor-pointer space-y-3"
+                          onClick={() => setSelectedActivity(activity)}
+                        >
+                          {/* Thumbnail / App Icon Style */}
+                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                            {activity.thumbnail_url ? (
+                              <img 
+                                src={activity.thumbnail_url} 
+                                alt={activity.title}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-secondary/20">
+                                <span className="text-4xl">🤝</span>
+                              </div>
+                            )}
+                            {/* Duration Badge Overlay */}
+                            <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                              {activity.duration ? `${activity.duration} min` : 'Flexible'}
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="space-y-1">
+                            <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
+                              {activity.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
+                                {activity.type?.replace(/_/g, ' ') || 'ACTIVITY'}
+                              </span>
+                              <span>•</span>
+                              <span>{activity.duration} min</span>
+                            </div>
+                          </div>
+                        </div>
                      </CarouselItem>
                    ))}
                  </CarouselContent>
@@ -607,6 +689,7 @@ export default function ActivitiesPage() {
                viewAllType === 'featured' ? 'Featured Activities' :
                viewAllType === 'quick_relief' ? 'Quick Relief Activities' :
                viewAllType === 'quick_sessions' ? 'Quick Sessions' :
+               viewAllType === 'teamwork' ? 'Teamwork Activities' :
                viewAllType === 'grades' ? 'All Grades' :
                viewAllType === 'diagnosis' ? 'All Diagnosis Categories' :
                'Search Results'}

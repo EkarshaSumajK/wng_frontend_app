@@ -69,6 +69,11 @@ export default function ActivityMonitoringPage() {
   const [activitySearch, setActivitySearch] = useState('');
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [riskFilter, setRiskFilter] = useState('all');
+  const [skillFilter, setSkillFilter] = useState('all');
+  const [themeFilter, setThemeFilter] = useState('all');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,11 +128,16 @@ export default function ActivityMonitoringPage() {
     })
   ];
 
-  // Filter assignments by search and class
+  // Filter assignments by search and all filters
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.activity?.title.toLowerCase().includes(activitySearch.toLowerCase());
     const matchesClass = classFilter === 'all' || assignment.class_id === classFilter;
-    return matchesSearch && matchesClass;
+    const matchesType = typeFilter === 'all' || assignment.activity?.type === typeFilter;
+    const matchesLocation = locationFilter === 'all' || assignment.activity?.location === locationFilter;
+    const matchesRisk = riskFilter === 'all' || assignment.activity?.risk_level === riskFilter;
+    const matchesSkill = skillFilter === 'all' || assignment.activity?.skill_level === skillFilter;
+    const matchesTheme = themeFilter === 'all' || assignment.activity?.theme?.includes(themeFilter);
+    return matchesSearch && matchesClass && matchesType && matchesLocation && matchesRisk && matchesSkill && matchesTheme;
   });
 
   // Filter submissions by search and status
@@ -230,32 +240,138 @@ export default function ActivityMonitoringPage() {
               </div>
 
               {/* Filters */}
-              <div className="flex gap-4 flex-wrap">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search activities..."
-                    value={activitySearch}
-                    onChange={(e) => {
-                      setActivitySearch(e.target.value);
+              <div className="space-y-4">
+                <div className="flex gap-4 flex-wrap">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search activities..."
+                      value={activitySearch}
+                      onChange={(e) => {
+                        setActivitySearch(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={classFilter} onValueChange={(value) => {
+                    setClassFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="All Classes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Additional Filters Row */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <Select value={typeFilter} onValueChange={(value) => {
+                    setTypeFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Activity Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="PHYSICAL_DEVELOPMENT">Physical</SelectItem>
+                      <SelectItem value="COGNITIVE_DEVELOPMENT">Cognitive</SelectItem>
+                      <SelectItem value="SOCIAL_EMOTIONAL_DEVELOPMENT">Social & Emotional</SelectItem>
+                      <SelectItem value="LANGUAGE_COMMUNICATION_DEVELOPMENT">Language</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={locationFilter} onValueChange={(value) => {
+                    setLocationFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Locations</SelectItem>
+                      <SelectItem value="IN_CLASS">In Class</SelectItem>
+                      <SelectItem value="AT_HOME">At Home</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={riskFilter} onValueChange={(value) => {
+                    setRiskFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Risk Level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Levels</SelectItem>
+                      <SelectItem value="LOW">Low Risk</SelectItem>
+                      <SelectItem value="MEDIUM">Medium Risk</SelectItem>
+                      <SelectItem value="HIGH">High Risk</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={skillFilter} onValueChange={(value) => {
+                    setSkillFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Skill Level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Levels</SelectItem>
+                      <SelectItem value="BEGINNER">Beginner</SelectItem>
+                      <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                      <SelectItem value="ADVANCED">Advanced</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={themeFilter} onValueChange={(value) => {
+                    setThemeFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Themes</SelectItem>
+                      <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                      <SelectItem value="physical-activity">Physical Activity</SelectItem>
+                      <SelectItem value="social-skills">Social Skills</SelectItem>
+                      <SelectItem value="emotional-awareness">Emotional Awareness</SelectItem>
+                      <SelectItem value="stress-relief">Stress Relief</SelectItem>
+                      <SelectItem value="focus">Focus</SelectItem>
+                      <SelectItem value="wellness">Wellness</SelectItem>
+                      <SelectItem value="cognitive-skills">Cognitive Skills</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Clear Filters Button */}
+                {(typeFilter !== 'all' || locationFilter !== 'all' || riskFilter !== 'all' || skillFilter !== 'all' || themeFilter !== 'all' || classFilter !== 'all' || activitySearch) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTypeFilter('all');
+                      setLocationFilter('all');
+                      setRiskFilter('all');
+                      setSkillFilter('all');
+                      setThemeFilter('all');
+                      setClassFilter('all');
+                      setActivitySearch('');
                       setCurrentPage(1);
                     }}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={classFilter} onValueChange={(value) => {
-                  setClassFilter(value);
-                  setCurrentPage(1);
-                }}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="All Classes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
               </div>
 
               {filteredAssignments.length === 0 ? (
@@ -270,7 +386,7 @@ export default function ActivityMonitoringPage() {
               ) : (
                 <>
                   {/* 3x3 Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                     {paginatedAssignments.map((assignment) => {
                       const verified = assignment.submission_count || 0;
                       const notReceived = assignment.total_students - verified;

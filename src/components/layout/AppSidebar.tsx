@@ -26,7 +26,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 const navigationItems = {
   counsellor: [
@@ -65,23 +66,19 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
 
-  // Move useEffect before early return to comply with React hooks rules
   useEffect(() => {
     if (user?.school_name) {
-      document.title = `WellNest Group X ${user.school_name}`;
+      document.title = `WellNest Group | ${user.school_name}`;
     }
   }, [user?.school_name]);
 
-  if (!user) return null;
+  const userRole = useMemo(() => {
+    if (!user?.role) return 'teacher';
+    const role = user.role.toLowerCase();
+    if (role === 'principal') return 'leadership';
+    return role as keyof typeof navigationItems;
+  }, [user?.role]);
 
-  const roleMapping: Record<string, 'counsellor' | 'teacher' | 'leadership'> = {
-    'counsellor': 'counsellor',
-    'teacher': 'teacher',
-    'leadership': 'leadership',
-    'principal': 'leadership',
-  };
-  
-  const userRole = roleMapping[user.role?.toLowerCase()] || 'teacher';
   const items = navigationItems[userRole] || [];
   const currentPath = location.pathname;
 
@@ -92,11 +89,13 @@ export function AppSidebar() {
     return currentPath.startsWith(path) && currentPath !== `/${userRole}`;
   };
 
+  if (!user) return null;
+
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-border/40 bg-sidebar text-sidebar-foreground">
       <SidebarHeader className="p-4 border-b border-border/30">
         <div className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl flex items-center justify-center flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-105">
             <Brain className="w-5 h-5" />
           </div>
           {open && (
@@ -123,27 +122,36 @@ export function AppSidebar() {
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group relative ${
-                        isActive(item.url)
-                          ? 'bg-primary/10 text-primary font-semibold shadow-sm border border-primary/20'
-                          : 'text-sidebar-foreground/70 hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-500/30 hover:shadow-md border border-transparent hover:scale-[1.02]'
-                      }`}
-                    >
-                      <item.icon className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${isActive(item.url) ? 'text-primary' : 'text-muted-foreground group-hover:text-blue-600 group-hover:scale-110'}`} />
-                      <span className="text-sm truncate transition-all duration-300">{item.title}</span>
-                      {isActive(item.url) && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+            <SidebarMenu className="space-y-1">
+              {items.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <NavLink
+                        to={item.url}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative overflow-hidden",
+                          active
+                            ? "bg-primary/10 text-primary font-semibold shadow-sm ring-1 ring-primary/20"
+                            : "text-sidebar-foreground/70 hover:bg-accent hover:text-accent-foreground hover:shadow-sm"
+                        )}
+                      >
+                        <item.icon 
+                          className={cn(
+                            "w-4 h-4 flex-shrink-0 transition-colors duration-200",
+                            active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                          )} 
+                        />
+                        <span className="text-sm truncate">{item.title}</span>
+                        {active && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

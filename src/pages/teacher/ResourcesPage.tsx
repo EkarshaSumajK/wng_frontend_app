@@ -162,7 +162,7 @@ export default function ResourcesPage() {
                  </div>
                  <CarouselContent className="-ml-4">
                    {featuredResources.map((resource: any) => (
-                     <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                     <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                        <div 
                          className="group cursor-pointer space-y-3"
                          onClick={() => setViewingResource(resource)}
@@ -224,7 +224,7 @@ export default function ResourcesPage() {
                 </div>
                 <CarouselContent className="-ml-4">
                   {resources.filter((r: any) => r.is_free).slice(0, 12).map((resource: any) => (
-                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                       <div 
                         className="group cursor-pointer space-y-3"
                         onClick={() => setViewingResource(resource)}
@@ -286,7 +286,7 @@ export default function ResourcesPage() {
                 </div>
                 <CarouselContent className="-ml-4">
                   {resources.filter((r: any) => !r.is_free).slice(0, 12).map((resource: any) => (
-                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                       <div 
                         className="group cursor-pointer space-y-3"
                         onClick={() => setViewingResource(resource)}
@@ -381,7 +381,7 @@ export default function ResourcesPage() {
 
                     <CarouselContent className="-ml-4">
                       {typeResources.slice(0, 10).map((resource: any) => (
-                        <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                        <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                           <div 
                             className="group cursor-pointer space-y-3"
                             onClick={() => setViewingResource(resource)}
@@ -512,7 +512,7 @@ export default function ResourcesPage() {
             </div>
 
             {/* Resources Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {filteredResources.length > 0 ? (
                 filteredResources.map((resource: any, index: number) => (
                   <div
@@ -606,18 +606,16 @@ export default function ResourcesPage() {
                 </div>
                 <div>
                   <DialogTitle className="text-2xl font-bold">{viewingResource.title}</DialogTitle>
-                  <DialogDescription className="mt-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={`${resourceTypeColors[viewingResource.type]} font-semibold`}>
-                        {resourceTypeLabels[viewingResource.type]}
+                  <div className="flex items-center gap-2 flex-wrap mt-2">
+                    <Badge className={`${resourceTypeColors[viewingResource.type]} font-semibold`}>
+                      {resourceTypeLabels[viewingResource.type]}
+                    </Badge>
+                    {viewingResource.category && (
+                      <Badge variant="secondary" className="capitalize">
+                        {viewingResource.category}
                       </Badge>
-                      {viewingResource.category && (
-                        <Badge variant="secondary" className="capitalize">
-                          {viewingResource.category}
-                        </Badge>
-                      )}
-                    </div>
-                  </DialogDescription>
+                    )}
+                  </div>
                 </div>
               </div>
             </DialogHeader>
@@ -707,12 +705,42 @@ export default function ResourcesPage() {
                     )}
 
                     {(viewingResource.type === 'ARTICLE' || viewingResource.type === 'article' || viewingResource.type === 'RESEARCH_PAPER' || viewingResource.type === 'SPECIAL') && viewingResource.article_url && (
-                      <iframe
-                        src={viewingResource.article_url}
-                        className="w-full h-[500px]"
-                        title={viewingResource.title}
-                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                      />
+                      <div className="flex flex-col items-center justify-center h-[500px] p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                        <div className="max-w-2xl text-center space-y-6">
+                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center mx-auto shadow-2xl">
+                            {viewingResource.type === 'RESEARCH_PAPER' ? (
+                              <GraduationCap className="w-12 h-12 text-white" />
+                            ) : (
+                              <FileText className="w-12 h-12 text-white" />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-bold text-foreground mb-2">{viewingResource.title}</h3>
+                            {viewingResource.description && (
+                              <p className="text-muted-foreground mb-4">{viewingResource.description}</p>
+                            )}
+                            {viewingResource.category && (
+                              <Badge className="mb-4">{viewingResource.category}</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Click the button below to read the full {viewingResource.type === 'RESEARCH_PAPER' ? 'research paper' : 'article'} in a new tab.
+                          </p>
+                          <Button
+                            size="lg"
+                            onClick={() => window.open(viewingResource.article_url, '_blank')}
+                            className="shadow-lg"
+                          >
+                            <ExternalLink className="mr-2 h-5 w-5" />
+                            Open {viewingResource.type === 'RESEARCH_PAPER' ? 'Research Paper' : 'Article'}
+                          </Button>
+                          <div className="pt-4 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground">
+                              Source: {new URL(viewingResource.article_url).hostname}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </CardContent>

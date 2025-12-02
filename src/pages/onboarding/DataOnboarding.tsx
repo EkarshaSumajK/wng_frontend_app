@@ -149,11 +149,7 @@ export default function DataOnboarding() {
     }
   };
 
-  const handleSkip = () => {
-    // Clear school selection and go to principal portal
-    localStorage.removeItem('selected_school');
-    navigate('/principal');
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-secondary/30 py-12 px-6">
@@ -543,11 +539,7 @@ export default function DataOnboarding() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          <Button variant="outline" onClick={handleSkip}>
-            Skip for Now
-          </Button>
-          
+        <div className="flex justify-end items-center">
           <Button
             onClick={handleContinue}
             disabled={!allUploadsComplete()}

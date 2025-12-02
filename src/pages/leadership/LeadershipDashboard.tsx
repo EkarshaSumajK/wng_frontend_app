@@ -131,7 +131,7 @@ export default function LeadershipDashboard() {
   const totalAtRisk = riskLevels.critical + riskLevels.high + riskLevels.medium;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 relative pb-10">
+    <div className="space-y-6 animate-in fade-in duration-700 relative pb-8">
       <AnimatedBackground />
       
       {/* Header with modern design */}
@@ -163,17 +163,17 @@ export default function LeadershipDashboard() {
       </div>
 
       {/* Stats Cards with enhanced design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card className="relative overflow-hidden border-2 hover:border-emerald-500/50 hover:shadow-2xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Wellbeing Index</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <Activity className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Activity className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-2">{Math.round(wellbeingIndex)}%</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{Math.round(wellbeingIndex)}%</div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className={`bg-emerald-50 text-emerald-700 border-emerald-200 ${assessmentData.trend_analysis.trend === 'improving' ? 'text-emerald-700' : 'text-rose-700'}`}>
                 <TrendingUp className={`w-3 h-3 mr-1 ${assessmentData.trend_analysis.trend !== 'improving' && 'rotate-180'}`} />
@@ -186,14 +186,14 @@ export default function LeadershipDashboard() {
 
         <Card className="relative overflow-hidden border-2 hover:border-blue-500/50 hover:shadow-2xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Students Screened</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <Users className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Users className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-2">{Math.round(screeningPercentage)}%</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{Math.round(screeningPercentage)}%</div>
             <p className="text-xs text-muted-foreground">
               {assessmentData.students_assessed} / {overview.total_students} students
             </p>
@@ -202,14 +202,14 @@ export default function LeadershipDashboard() {
 
         <Card className="relative overflow-hidden border-2 hover:border-rose-500/50 hover:shadow-2xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">At-Risk Students</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <AlertTriangle className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <AlertTriangle className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-2">{totalAtRisk}</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{totalAtRisk}</div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50">
                 {riskLevels.critical} Critical
@@ -221,14 +221,14 @@ export default function LeadershipDashboard() {
 
         <Card className="relative overflow-hidden border-2 hover:border-purple-500/50 hover:shadow-2xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Active Cases</CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <FileText className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <FileText className="w-5 h-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-2">{mentalHealth.active_cases}</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{mentalHealth.active_cases}</div>
             <p className="text-xs text-muted-foreground">
               {mentalHealth.total_cases} total cases recorded
             </p>
@@ -237,14 +237,14 @@ export default function LeadershipDashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Charts Section */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6">
           <Card className="card-premium overflow-hidden border-2 hover:border-primary/30 transition-all duration-300 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-4">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-3">
               <div className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-primary" />
                     Wellbeing Trends
                   </CardTitle>
@@ -256,14 +256,14 @@ export default function LeadershipDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[350px] w-full mt-4">
+              <div className="h-[300px] w-full mt-4">
                   <MetricChart
                     title=""
                     data={monthlyTrends}
                     type="line"
                     xKey="month"
                     yKey="wellbeingIndex"
-                    height={350}
+                    height={300}
                     colors={["#2563eb"]} // Explicit blue color
                     bare={true}
                   />
@@ -272,38 +272,38 @@ export default function LeadershipDashboard() {
           </Card>
 
           <Card className="card-premium overflow-hidden border-2 hover:border-secondary/30 transition-all duration-300 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-4">
-              <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-3">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <School className="w-5 h-5 text-secondary" />
                 Class Performance
               </CardTitle>
               <CardDescription>Top performing classes by wellbeing index</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
+            <CardContent className="pt-4">
+              <div className="space-y-3">
                 {classMetrics.slice(0, 5).map((metric: any, index: number) => (
                   <div 
                     key={metric.id} 
-                    className="group flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all duration-300 border border-transparent hover:border-blue-200"
+                    className="group flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all duration-300 border border-transparent hover:border-blue-200"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center font-bold text-primary group-hover:scale-110 transition-transform">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary group-hover:scale-110 transition-transform">
                         {metric.name.substring(0, 2)}
                       </div>
                       <div>
-                        <h4 className="font-bold text-foreground">{metric.name}</h4>
+                        <h4 className="font-bold text-foreground text-sm">{metric.name}</h4>
                         <p className="text-xs text-muted-foreground font-medium">{metric.teacher}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <div className="text-sm font-medium text-muted-foreground">Score</div>
-                        <div className="font-bold text-lg text-primary">{metric.wellbeingIndex}</div>
+                        <div className="text-xs font-medium text-muted-foreground">Score</div>
+                        <div className="font-bold text-base text-primary">{metric.wellbeingIndex}</div>
                       </div>
-                      <div className="w-24">
-                        <Progress value={metric.wellbeingIndex} className="h-2" />
+                      <div className="w-20">
+                        <Progress value={metric.wellbeingIndex} className="h-1.5" />
                       </div>
                     </div>
                   </div>
@@ -314,19 +314,19 @@ export default function LeadershipDashboard() {
         </div>
 
         {/* Sidebar Section */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Card className="card-glass border-2 hover:border-destructive/30 transition-all duration-300 shadow-lg bg-card">
-            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-4">
+            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20 pb-3">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Target className="w-5 h-5 text-destructive" />
                 Risk Distribution
               </CardTitle>
               <CardDescription>Current active cases breakdown</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="h-[200px] w-full mb-6 relative">
+            <CardContent className="pt-4">
+              <div className="h-[180px] w-full mb-4 relative">
                 <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                  <span className="text-3xl font-bold text-foreground">{mentalHealth.active_cases}</span>
+                  <span className="text-2xl font-bold text-foreground">{mentalHealth.active_cases}</span>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Active</span>
                 </div>
                   <MetricChart
@@ -339,27 +339,27 @@ export default function LeadershipDashboard() {
                     ]}
                     type="pie"
                     yKey="value"
-                    height={200}
+                    height={180}
                     colors={["#10b981", "#f59e0b", "#f97316", "#ef4444"]}
                     bare={true}
                   />
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 {[
                   { label: "Critical Risk", count: riskLevels.critical, color: "bg-red-500", total: mentalHealth.active_cases },
                   { label: "High Risk", count: riskLevels.high, color: "bg-orange-500", total: mentalHealth.active_cases },
                   { label: "Medium Risk", count: riskLevels.medium, color: "bg-amber-500", total: mentalHealth.active_cases },
                   { label: "Low Risk", count: riskLevels.low, color: "bg-emerald-500", total: mentalHealth.active_cases },
                 ].map((item) => (
-                  <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
+                  <div key={item.label} className="flex flex-col p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                      <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
+                      <div className={`w-1.5 h-1.5 rounded-full ${item.color}`} />
+                      <span className="text-[10px] font-medium text-muted-foreground">{item.label}</span>
                     </div>
-                    <div className="flex items-baseline gap-2 pl-4">
-                      <span className="font-bold text-lg">{item.count}</span>
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex items-baseline gap-2 pl-3">
+                      <span className="font-bold text-base">{item.count}</span>
+                      <span className="text-[10px] text-muted-foreground">
                         {Math.round((item.count / (item.total || 1)) * 100)}%
                       </span>
                     </div>
@@ -373,17 +373,17 @@ export default function LeadershipDashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
             
-            <CardHeader>
-              <CardTitle className="text-primary-foreground flex items-center gap-2">
-                <Brain className="w-5 h-5" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-primary-foreground flex items-center gap-2 text-base">
+                <Brain className="w-4 h-4" />
                 AI Insights
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 relative z-10">
+            <CardContent className="space-y-3 relative z-10">
               <p className="text-primary-foreground/90 text-sm leading-relaxed">
                 Based on recent assessments, Grade 10 shows a <span className="font-bold text-primary-foreground">15% increase</span> in anxiety indicators. Consider scheduling a workshop.
               </p>
-              <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 text-primary-foreground border-none backdrop-blur-sm">
+              <Button variant="secondary" size="sm" className="w-full bg-white/20 hover:bg-white/30 text-primary-foreground border-none backdrop-blur-sm h-8">
                 View Recommendations
               </Button>
             </CardContent>
