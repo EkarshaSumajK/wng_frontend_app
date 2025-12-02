@@ -102,7 +102,7 @@ export function BookTherapistModal({ open, onOpenChange, therapist, onSuccess }:
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4">
         {step === 1 && (
           <>
             <DialogHeader>
@@ -115,7 +115,7 @@ export function BookTherapistModal({ open, onOpenChange, therapist, onSuccess }:
             <Separator />
 
             {/* Therapist Info */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white text-xl font-bold">
                   {therapist?.image}
@@ -138,7 +138,7 @@ export function BookTherapistModal({ open, onOpenChange, therapist, onSuccess }:
               </div>
             </div>
 
-            <form onSubmit={handleBookingSubmit} className="space-y-4">
+            <form onSubmit={handleBookingSubmit} className="space-y-3">
               {/* Date and Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

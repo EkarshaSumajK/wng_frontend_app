@@ -9,10 +9,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
+import { UpdateLogoModal } from "@/components/modals/UpdateLogoModal";
+import { UpdateProfilePictureModal } from "@/components/modals/UpdateProfilePictureModal";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+  const [isProfilePicModalOpen, setIsProfilePicModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -109,12 +113,32 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <Card className="lg:col-span-1 border-2 hover:shadow-lg transition-all duration-300">
           <CardHeader className="text-center pb-4">
-            <div className="flex justify-center mb-4">
-              <Avatar className="w-32 h-32 ring-4 ring-blue-100 dark:ring-blue-900">
-                <AvatarFallback className="bg-primary text-white text-4xl font-bold">
-                  {user.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
+            <div className="flex justify-center mb-4 relative group">
+              <div 
+                className="relative cursor-pointer"
+                onClick={() => setIsProfilePicModalOpen(true)}
+              >
+                <Avatar className="w-32 h-32 ring-4 ring-blue-100 dark:ring-blue-900">
+                  {user.profile_picture_url ? (
+                    <img src={user.profile_picture_url} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-primary text-white text-4xl font-bold">
+                      {user.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Edit className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute bottom-0 right-1/3 translate-x-4 bg-white dark:bg-gray-800 shadow-md rounded-full h-8 w-8 border hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setIsProfilePicModalOpen(true)}
+              >
+                <Edit className="w-4 h-4 text-primary" />
+              </Button>
             </div>
             <CardTitle className="text-2xl">{user.name}</CardTitle>
             <CardDescription className="text-base">{user.email}</CardDescription>
@@ -129,10 +153,26 @@ export default function ProfilePage() {
             
             {user.school_name && (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center overflow-hidden relative">
+                  {user.school_logo_url ? (
+                    <img src={user.school_logo_url} alt="School Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <Building2 className="w-5 h-5 text-primary" />
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
+                
+                {['PRINCIPAL', 'LEADERSHIP'].includes(user.role) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full -ml-1 text-muted-foreground hover:text-primary"
+                    onClick={() => setIsLogoModalOpen(true)}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                )}
+
+                <div className="flex-1 min-w-0 ml-1">
                   <p className="text-xs text-muted-foreground">School</p>
                   <p className="font-semibold truncate">{user.school_name}</p>
                 </div>
@@ -296,6 +336,22 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+
+      <UpdateLogoModal 
+        isOpen={isLogoModalOpen}
+        onClose={() => setIsLogoModalOpen(false)}
+        schoolId={user?.school_id || ''}
+        currentLogoUrl={user?.school_logo_url}
+        onSuccess={(newLogoUrl) => updateUser({ school_logo_url: newLogoUrl })}
+      />
+
+      <UpdateProfilePictureModal
+        isOpen={isProfilePicModalOpen}
+        onClose={() => setIsProfilePicModalOpen(false)}
+        currentPictureUrl={user?.profile_picture_url}
+        onSuccess={(newPictureUrl) => updateUser({ profile_picture_url: newPictureUrl })}
+      />
     </div>
   );
 }

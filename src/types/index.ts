@@ -8,6 +8,8 @@ export interface User {
   avatar?: string;
   school_id?: string;
   school_name?: string;
+  school_logo_url?: string;
+  profile_picture_url?: string;
 }
 
 export interface Student {

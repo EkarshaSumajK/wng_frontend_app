@@ -71,7 +71,7 @@ export function TherapistDetailModal({
       <DialogContent className="max-w-7xl min-h-[80vh] p-0 overflow-hidden grid grid-cols-1 md:grid-cols-2 h-auto max-h-[90vh] gap-0 rounded-3xl bg-transparent">
         
         {/* Left Side - Profile summary */}
-        <div className="bg-[#101322] text-white p-8 md:p-10 flex flex-col justify-between gap-8 min-h-[520px]">
+        <div className="bg-[#101322] text-white p-6 md:p-8 flex flex-col justify-between gap-6 min-h-[520px]">
           <div className="flex items-center justify-between">
             {therapist.isRecommended && (
               <Badge className="bg-white/15 text-white border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.25em]">

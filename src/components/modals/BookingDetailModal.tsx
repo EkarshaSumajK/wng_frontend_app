@@ -18,7 +18,7 @@ export function BookingDetailModal({ booking, open, onOpenChange, onCancel, onRe
 
   const therapist = booking.therapist;
   const statusColor = 
-    booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+    (booking.status === 'Confirmed' || booking.status === 'Requested') ? 'bg-green-100 text-green-800' :
     booking.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
     booking.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
     'bg-yellow-100 text-yellow-800';
@@ -30,7 +30,7 @@ export function BookingDetailModal({ booking, open, onOpenChange, onCancel, onRe
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl">Booking Details</DialogTitle>
             <Badge variant="outline" className={statusColor}>
-              {booking.status}
+              {(booking.status === 'Confirmed' || booking.status === 'Requested') ? 'Booked' : booking.status}
             </Badge>
           </div>
           <DialogDescription>

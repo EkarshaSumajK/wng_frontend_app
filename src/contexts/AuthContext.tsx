@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,9 +44,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (response.ok) {
             const userData = await response.json();
             
-            // Fetch school name if not provided
+            // Fetch school details if not provided
             let schoolName = userData.school_name;
-            if (userData.school_id && !schoolName) {
+            let schoolLogoUrl = userData.school_logo_url;
+
+            if (userData.school_id && (!schoolName || !schoolLogoUrl)) {
               try {
                 const schoolResponse = await fetch(
                   `${import.meta.env.VITE_API_BASE_URL}/schools/${userData.school_id}`,
@@ -57,10 +60,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 );
                 if (schoolResponse.ok) {
                   const schoolData = await schoolResponse.json();
-                  schoolName = schoolData.data?.name || schoolData.name;
+                  const school = schoolData.data || schoolData;
+                  schoolName = school.name;
+                  schoolLogoUrl = school.logo_url;
                 }
               } catch (error) {
-                console.error('Failed to fetch school name:', error);
+                console.error('Failed to fetch school details:', error);
               }
             }
             
@@ -81,6 +86,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               role: userData.role as UserRole,
               school_id: userData.school_id,
               school_name: schoolName,
+              school_logo_url: schoolLogoUrl,
+              profile_picture_url: userData.profile_picture_url,
             });
           } else {
             // Token invalid, clear it
@@ -120,9 +127,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       apiClient.setToken(data.access_token);
       localStorage.setItem('auth_token', data.access_token);
       
-      // Fetch school name if not provided
+      // Fetch school details if not provided
       let schoolName = data.user.school_name;
-      if (data.user.school_id && !schoolName) {
+      let schoolLogoUrl = data.user.school_logo_url;
+
+      if (data.user.school_id && (!schoolName || !schoolLogoUrl)) {
         try {
           const schoolResponse = await fetch(
             `${import.meta.env.VITE_API_BASE_URL}/schools/${data.user.school_id}`,
@@ -134,10 +143,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           );
           if (schoolResponse.ok) {
             const schoolData = await schoolResponse.json();
-            schoolName = schoolData.data?.name || schoolData.name;
+            const school = schoolData.data || schoolData;
+            schoolName = school.name;
+            schoolLogoUrl = school.logo_url;
           }
         } catch (error) {
-          console.error('Failed to fetch school name:', error);
+          console.error('Failed to fetch school details:', error);
         }
       }
       
@@ -159,6 +170,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         role: data.user.role as UserRole,
         school_id: data.user.school_id,
         school_name: schoolName,
+        school_logo_url: schoolLogoUrl,
+        profile_picture_url: data.user.profile_picture_url,
       };
       
       setUser(userData);
@@ -177,10 +190,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('auth_token');
   };
 
+  const updateUser = (updates: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   const isAuthenticated = user !== null;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, isLoading, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

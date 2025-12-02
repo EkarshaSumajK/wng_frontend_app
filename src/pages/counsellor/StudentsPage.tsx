@@ -1,25 +1,26 @@
 import { useState } from 'react';
-import { Plus, Eye, AlertTriangle, User, FileText, Calendar, Phone } from 'lucide-react';
+import { Plus, Eye, AlertTriangle, User, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/shared/DataTable';
 import { StatCard } from '@/components/shared/StatCard';
-import { mockStudents } from '@/data/mockData';
 import { Student } from '@/types';
 import { getRiskLevelColor, formatRiskLevel } from '@/lib/utils';
+import { useStudents } from '@/hooks/useStudents';
+import { StudentDetailView } from '@/components/counsellor/StudentDetailView';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
 
 export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-
+  const { data: students, isLoading, error } = useStudents();
 
   const getConsentColor = (status: string) => {
     switch (status) {
-      case 'granted':
+      case 'GRANTED':
         return 'bg-success text-success-foreground';
-      case 'pending':
+      case 'PENDING':
         return 'bg-warning text-warning-foreground';
-      case 'denied':
+      case 'DENIED':
         return 'bg-destructive text-destructive-foreground';
       default:
         return 'bg-muted text-muted-foreground';
@@ -97,145 +98,33 @@ export default function StudentsPage() {
 
   if (selectedStudent) {
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedStudent(null)}
-              className="mb-2"
-            >
-              ← Back to Students
-            </Button>
-            <h1 className="text-3xl font-semibold text-foreground">
-              {selectedStudent.name}
-            </h1>
-            <p className="text-muted-foreground">
-              Grade {selectedStudent.grade} • {selectedStudent.class}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Badge className={getRiskLevelColor(selectedStudent.riskLevel)}>
-              {formatRiskLevel(selectedStudent.riskLevel)} risk
-            </Badge>
-            <Badge className={getConsentColor(selectedStudent.consentStatus)} variant="secondary">
-              {selectedStudent.consentStatus}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Student Details */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="card-professional">
-              <CardHeader>
-                <CardTitle>Student Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="font-medium">Student ID:</span>
-                    <p className="text-muted-foreground">{selectedStudent.id}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Date of Birth:</span>
-                    <p className="text-muted-foreground">
-                      {selectedStudent.dateOfBirth ? new Date(selectedStudent.dateOfBirth).toLocaleDateString() : 'Not provided'}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Parent Contact:</span>
-                    <p className="text-muted-foreground">{selectedStudent.parentContact || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Wellbeing Score:</span>
-                    <p className={`font-medium ${
-                      selectedStudent.wellbeingScore && selectedStudent.wellbeingScore >= 80 ? 'text-success' :
-                      selectedStudent.wellbeingScore && selectedStudent.wellbeingScore >= 60 ? 'text-warning' :
-                      'text-destructive'
-                    }`}>
-                      {selectedStudent.wellbeingScore || 'Not assessed'}%
-                    </p>
-                  </div>
-                </div>
-                
-                {selectedStudent.notes && (
-                  <div>
-                    <span className="font-medium">Notes:</span>
-                    <p className="text-muted-foreground mt-1">{selectedStudent.notes}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="card-professional">
-              <CardHeader>
-                <CardTitle>Assessment History</CardTitle>
-                <CardDescription>Recent assessments and wellbeing checks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Assessment history will be displayed here.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="card-professional">
-              <CardHeader>
-                <CardTitle>Case History</CardTitle>
-                <CardDescription>Related cases and interventions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Case history will be displayed here.</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card className="card-professional">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Case
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Assign Assessment
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Session
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Contact Parent
-                </Button>
-                {/* <Button variant="outline" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Generate Report
-                </Button> */}
-              </CardContent>
-            </Card>
-
-            <Card className="card-professional">
-              <CardHeader>
-                <CardTitle>Risk Factors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Badge variant="outline" className="mr-2">Social Anxiety</Badge>
-                  <Badge variant="outline" className="mr-2">Academic Stress</Badge>
-                  <Badge variant="outline" className="mr-2">Peer Issues</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      <StudentDetailView 
+        student={selectedStudent} 
+        onBack={() => setSelectedStudent(null)} 
+      />
     );
   }
+
+  if (isLoading) {
+    return <div className="space-y-6">
+      <div className="flex justify-between">
+        <SkeletonLoader className="h-10 w-48" />
+        <SkeletonLoader className="h-10 w-32" />
+      </div>
+      <div className="grid md:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map(i => <SkeletonLoader key={i} className="h-32" />)}
+      </div>
+      <SkeletonLoader className="h-96" />
+    </div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-destructive">
+      Error loading students. Please try again later.
+    </div>;
+  }
+
+  const studentList = students || [];
 
   return (
     <div className="space-y-6">
@@ -256,14 +145,14 @@ export default function StudentsPage() {
       <div className="grid md:grid-cols-4 gap-6">
         <StatCard
           title="Total Students"
-          value={mockStudents.length}
+          value={studentList.length}
           icon={User}
           subtitle="In your care"
         />
         
         <StatCard
           title="High Risk"
-          value={mockStudents.filter(s => s.riskLevel === 'high').length}
+          value={studentList.filter(s => s.riskLevel === 'HIGH').length}
           icon={AlertTriangle}
           variant="destructive"
           subtitle="Require attention"
@@ -271,7 +160,7 @@ export default function StudentsPage() {
         
         <StatCard
           title="Pending Consent"
-          value={mockStudents.filter(s => s.consentStatus === 'pending').length}
+          value={studentList.filter(s => s.consentStatus === 'PENDING').length}
           icon={FileText}
           variant="warning"
           subtitle="Awaiting approval"
@@ -280,10 +169,10 @@ export default function StudentsPage() {
         <StatCard
           title="Avg Wellbeing"
           value={`${Math.round(
-            mockStudents
+            studentList
               .filter(s => s.wellbeingScore)
               .reduce((acc, s) => acc + (s.wellbeingScore || 0), 0) /
-            mockStudents.filter(s => s.wellbeingScore).length
+            (studentList.filter(s => s.wellbeingScore).length || 1)
           )}%`}
           icon={User}
           variant="success"
@@ -293,7 +182,7 @@ export default function StudentsPage() {
 
       {/* Students Table */}
       <DataTable
-        data={mockStudents}
+        data={studentList}
         columns={studentColumns}
         title="All Students"
         searchPlaceholder="Search students..."

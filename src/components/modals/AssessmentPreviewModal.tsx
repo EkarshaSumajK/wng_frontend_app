@@ -16,7 +16,7 @@ export function AssessmentPreviewModal({ open, onOpenChange, assessment }: Asses
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle>{assessment.title}</DialogTitle>
           <DialogDescription>{assessment.description}</DialogDescription>

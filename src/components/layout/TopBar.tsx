@@ -39,8 +39,12 @@ export function TopBar() {
           
           {user.school_name && (
             <div className="hidden lg:flex items-center gap-3 px-2 border-l border-border/50 ml-2 pl-4">
-              <div className="p-1.5 rounded-md bg-primary/10 text-primary">
-                <Building2 className="w-4 h-4" />
+              <div className="p-1.5 rounded-md bg-primary/10 text-primary overflow-hidden">
+                {user.school_logo_url ? (
+                  <img src={user.school_logo_url} alt={user.school_name} className="w-4 h-4 object-contain" />
+                ) : (
+                  <Building2 className="w-4 h-4" />
+                )}
               </div>
               <span className="text-sm font-semibold text-foreground tracking-tight">
                 {user.school_name}
@@ -86,9 +90,13 @@ export function TopBar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 pl-1 pr-2 h-9 rounded-full hover:bg-accent hover:text-accent-foreground transition-all duration-200 ml-1">
                 <Avatar className="w-7 h-7 border border-border transition-transform hover:scale-105">
-                  <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
-                    {user.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
+                  {user.profile_picture_url ? (
+                    <img src={user.profile_picture_url} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                      {user.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start text-left">
                   <span className="text-xs font-semibold leading-none text-foreground">{user.name}</span>

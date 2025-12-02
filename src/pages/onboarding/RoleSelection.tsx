@@ -140,8 +140,12 @@ export default function RoleSelection() {
         <div className="text-center mb-10 space-y-6">
           {selectedSchool && (
             <div className="inline-flex items-center gap-3 mb-2 px-6 py-3 bg-card rounded-2xl shadow-sm border border-border">
-              <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center overflow-hidden">
+                {selectedSchool.logo_url ? (
+                  <img src={selectedSchool.logo_url} alt={selectedSchool.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Building2 className="w-5 h-5 text-primary" />
+                )}
               </div>
               <h1 className="text-xl font-bold text-foreground">
                 {selectedSchool.name}
@@ -174,7 +178,7 @@ export default function RoleSelection() {
               onMouseLeave={() => setHoveredRole(null)}
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <CardHeader className="text-center pb-4">
+              <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4">
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
                     hoveredRole === role.id || selectedRole === role.id
@@ -192,7 +196,7 @@ export default function RoleSelection() {
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 <div className="h-px w-full bg-border" />
                 
                 <ul className="space-y-3">

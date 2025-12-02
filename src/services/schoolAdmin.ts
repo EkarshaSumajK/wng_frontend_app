@@ -32,6 +32,12 @@ export const schoolAdminApi = {
 
   deleteAdmin: (adminId: string) =>
     apiClient.delete(`/school-admin/${adminId}`),
+
+  uploadLogo: (schoolId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.uploadFile<any>(`/schools/${schoolId}/logo`, formData);
+  },
 };
 
 // Risk Alerts API

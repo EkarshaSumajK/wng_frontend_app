@@ -897,7 +897,7 @@ export default function ActivitiesPage() {
       {/* Activity Detail Modal */}
       {selectedActivity && (
         <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-4">
             <DialogHeader className="border-b pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
@@ -997,18 +997,22 @@ export default function ActivitiesPage() {
               {/* Right Column - Instructions Flashcards */}
               <div className="space-y-6">
                 {selectedActivity.instructions && selectedActivity.instructions.length > 0 && (
-                  <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20">
-                      <CardTitle className="text-base">Step-by-Step Instructions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <Carousel
-                        opts={{
-                          align: "start",
-                          loop: true,
-                        }}
-                        className="w-full"
-                      >
+                  <Carousel
+                    opts={{
+                      align: "start",
+                      loop: true,
+                    }}
+                    className="w-full"
+                  >
+                    <Card className="border-2">
+                      <CardHeader className="bg-gradient-to-r from-background to-muted/20 flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-base">Step-by-Step Instructions</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <CarouselPrevious className="static translate-y-0 translate-x-0 h-8 w-8" />
+                          <CarouselNext className="static translate-y-0 translate-x-0 h-8 w-8" />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-4">
                         <CarouselContent>
                           {selectedActivity.instructions.map((instruction: string, idx: number) => (
                             <CarouselItem key={idx}>
@@ -1032,11 +1036,9 @@ export default function ActivitiesPage() {
                             </CarouselItem>
                           ))}
                         </CarouselContent>
-                        <CarouselPrevious className="left-0 -translate-x-12" />
-                        <CarouselNext className="right-0 translate-x-12" />
-                      </Carousel>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Carousel>
                 )}
             </div>
           </DialogContent>

@@ -204,7 +204,7 @@ export default function Login() {
         <div className="max-w-md mx-auto space-y-8">
           {/* Login Card */}
           <Card className="border-none shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm ring-1 ring-gray-200/50 dark:ring-gray-700/50">
-            <CardContent className="p-8">
+            <CardContent className="p-6">
               <Tabs defaultValue="email" className="w-full" onValueChange={(val) => { setActiveTab(val); setError(null); }}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="email">Email</TabsTrigger>
@@ -212,9 +212,9 @@ export default function Login() {
                 </TabsList>
 
                 {/* Email Login Form */}
-                <TabsContent value="email" className="space-y-6 mt-0">
+                <TabsContent value="email" className="space-y-4 mt-0">
                   <Form {...emailForm}>
-                    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-6">
+                    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
                       <FormField
                         control={emailForm.control}
                         name="email"

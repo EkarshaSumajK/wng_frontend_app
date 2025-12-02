@@ -165,7 +165,7 @@ export default function ResourcesPage() {
                   >
                     <CarouselContent className="-ml-2 md:-ml-4">
                       {categoryResources.slice(0, 12).map((resource: any) => (
-                        <CarouselItem key={resource.resource_id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                        <CarouselItem key={resource.resource_id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                           <Card 
                             className="cursor-pointer transition-colors duration-300 hover:border-primary border-2 group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 h-full"
                             onClick={() => setViewingResource(resource)}
@@ -289,7 +289,7 @@ export default function ResourcesPage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredResources.length > 0 ? (
               filteredResources.map((resource: any, index: number) => (
                 <Card
@@ -360,8 +360,8 @@ export default function ResourcesPage() {
       {/* Resource Detail Modal - Enhanced */}
       {viewingResource && (
         <Dialog open={!!viewingResource} onOpenChange={() => setViewingResource(null)}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="border-b pb-4">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-4">
+            <DialogHeader className="border-b pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                   <Book className="w-6 h-6 text-white" />
@@ -384,14 +384,14 @@ export default function ResourcesPage() {
               </div>
             </DialogHeader>
 
-            <div className="space-y-6 mt-4 animate-in fade-in duration-500">
+            <div className="space-y-4 mt-4 animate-in fade-in duration-500">
               {/* Description */}
               {viewingResource.description && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
                     <CardTitle className="text-base">Description</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-4">
+                  <CardContent className="p-3 pt-0">
                     <p className="text-sm text-muted-foreground leading-relaxed">{viewingResource.description}</p>
                   </CardContent>
                 </Card>
@@ -399,10 +399,10 @@ export default function ResourcesPage() {
 
               {/* Author & Date */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
                   <CardTitle className="text-base">Information</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4 space-y-2">
+                <CardContent className="p-3 pt-0 space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <User className="w-4 h-4 text-primary" />
                     <span className="font-semibold">Author:</span>
@@ -421,10 +421,10 @@ export default function ResourcesPage() {
               {/* Tags */}
               {viewingResource.tags && viewingResource.tags.length > 0 && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
                     <CardTitle className="text-base">Tags</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-4">
+                  <CardContent className="p-3 pt-0">
                     <div className="flex gap-2 flex-wrap">
                       {viewingResource.tags.map((tag: string) => (
                         <Badge key={tag} variant="outline" className="text-xs">
@@ -438,10 +438,10 @@ export default function ResourcesPage() {
 
               {/* Content Display */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
                   <CardTitle className="text-base">Content</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4">
+                <CardContent className="p-3 pt-0">
                   <div className="rounded-xl overflow-hidden border-2 border-border shadow-lg bg-background min-h-[500px]">
                     {(viewingResource.type === 'VIDEO' || viewingResource.type === 'video') && viewingResource.video_url && (
                       <iframe

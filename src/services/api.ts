@@ -2,21 +2,21 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 // Simple in-memory cache for GET requests
-interface CacheEntry {
-  data: any;
+interface CacheEntry<T> {
+  data: T;
   timestamp: number;
 }
 
 class RequestCache {
-  private cache: Map<string, CacheEntry> = new Map();
+  private cache: Map<string, CacheEntry<any>> = new Map();
   private readonly TTL = 60000; // 60 seconds cache TTL (increased from 30s)
   private readonly MAX_CACHE_SIZE = 100; // Limit cache size
 
-  set(key: string, data: any): void {
+  set<T>(key: string, data: T): void {
     // Implement LRU cache - remove oldest if at capacity
     if (this.cache.size >= this.MAX_CACHE_SIZE) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey) this.cache.delete(firstKey);
     }
 
     this.cache.set(key, {
@@ -25,7 +25,7 @@ class RequestCache {
     });
   }
 
-  get(key: string): any | null {
+  get<T>(key: string): T | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
 
@@ -35,7 +35,7 @@ class RequestCache {
       return null;
     }
 
-    return entry.data;
+    return entry.data as T;
   }
 
   clear(): void {
@@ -58,6 +58,18 @@ class RequestCache {
         this.cache.delete(key);
       }
     }
+  }
+}
+
+export class ApiError extends Error {
+  status: number;
+  data: any;
+
+  constructor(message: string, status: number, data?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
   }
 }
 
@@ -93,10 +105,12 @@ export class ApiClient {
     localStorage.removeItem('auth_token');
   }
 
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+  private getHeaders(isFormData: boolean = false): HeadersInit {
+    const headers: HeadersInit = {};
+
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
@@ -111,17 +125,13 @@ export class ApiClient {
       
       // If detail is an object (like conflict errors), stringify it for the Error message
       let errorMessage: string;
-      if (typeof error.detail === 'object') {
+      if (error.detail && typeof error.detail === 'object') {
         errorMessage = JSON.stringify(error.detail);
       } else {
         errorMessage = error.detail || `HTTP ${response.status}: ${response.statusText}`;
       }
       
-      // Create error with status code attached
-      const err: any = new Error(errorMessage);
-      err.status = response.status;
-      err.response = { status: response.status, data: error };
-      throw err;
+      throw new ApiError(errorMessage, response.status, error);
     }
 
     if (response.status === 204) {
@@ -135,7 +145,7 @@ export class ApiClient {
       return json.data as T;
     }
     
-    return json;
+    return json as T;
   }
 
   async get<T>(endpoint: string, params?: Record<string, any>, useCache: boolean = true): Promise<T> {
@@ -152,9 +162,9 @@ export class ApiClient {
 
     // Check cache first
     if (useCache) {
-      const cachedData = this.cache.get(cacheKey);
+      const cachedData = this.cache.get<T>(cacheKey);
       if (cachedData !== null) {
-        return cachedData as T;
+        return cachedData;
       }
     }
 
@@ -255,12 +265,7 @@ export class ApiClient {
   }
 
   async uploadFile<T>(endpoint: string, formData: FormData): Promise<T> {
-    const headers: HeadersInit = {};
-    
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-    // Don't set Content-Type for FormData - browser will set it with boundary
+    const headers = this.getHeaders(true); // true for isFormData
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'POST',

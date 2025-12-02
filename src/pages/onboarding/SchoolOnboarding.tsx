@@ -288,7 +288,7 @@ export default function SchoolOnboarding() {
                 <CardTitle>School Information</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div>
                 <Label htmlFor="schoolName">School Name *</Label>
                 <Input
@@ -414,7 +414,7 @@ export default function SchoolOnboarding() {
                 <CardTitle>Contact Person Information</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="contactPersonName">Full Name *</Label>
@@ -493,7 +493,7 @@ export default function SchoolOnboarding() {
                 <CardTitle>Address Details</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div>
                 <Label htmlFor="address">Street Address *</Label>
                 <Textarea
@@ -602,7 +602,7 @@ export default function SchoolOnboarding() {
               <CardTitle>Review Your Information</CardTitle>
               <CardDescription>Please review all details before submitting</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               {/* School Info Summary */}
               <div>
                 <h3 className="font-semibold mb-2 flex items-center gap-2">

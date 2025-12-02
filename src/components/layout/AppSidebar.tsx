@@ -95,9 +95,15 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas" className="border-r border-border/40 bg-sidebar text-sidebar-foreground">
       <SidebarHeader className="p-4 border-b border-border/30">
         <div className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl flex items-center justify-center flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-105">
-            <Brain className="w-5 h-5" />
-          </div>
+          {user.school_logo_url ? (
+            <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-105 bg-white">
+              <img src={user.school_logo_url} alt={user.school_name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-xl flex items-center justify-center flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-105">
+              <Brain className="w-5 h-5" />
+            </div>
+          )}
           {open && (
             <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
               <div className="mb-0.5">
@@ -156,6 +162,30 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <div className="p-4 border-t border-border/30 mt-auto">
+        <NavLink to="/profile" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex-shrink-0 border border-border group-hover:border-primary/50 transition-colors">
+            {user.profile_picture_url ? (
+              <img src={user.profile_picture_url} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-xs">
+                {user.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+              </div>
+            )}
+          </div>
+          {open && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                {user.name}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
+          )}
+        </NavLink>
+      </div>
     </Sidebar>
   );
 }

@@ -1,14 +1,16 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface SkeletonLoaderProps {
   type?: 'dashboard' | 'table' | 'card' | 'list';
   count?: number;
+  className?: string;
 }
 
-export function SkeletonLoader({ type = 'card', count = 1 }: SkeletonLoaderProps) {
+export function SkeletonLoader({ type = 'card', count = 1, className }: SkeletonLoaderProps) {
   if (type === 'dashboard') {
     return (
-      <div className="space-y-6 animate-in fade-in duration-500">
+      <div className={cn("space-y-6 animate-in fade-in duration-500", className)}>
         {/* Header skeleton */}
         <div className="space-y-2">
           <div className="skeleton h-8 w-64"></div>
@@ -49,7 +51,7 @@ export function SkeletonLoader({ type = 'card', count = 1 }: SkeletonLoaderProps
 
   if (type === 'table') {
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
+      <div className={cn("space-y-4 animate-in fade-in duration-500", className)}>
         <div className="skeleton h-10 w-full"></div>
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className="skeleton h-16 w-full" style={{ animationDelay: `${i * 50}ms` }}></div>
@@ -60,7 +62,7 @@ export function SkeletonLoader({ type = 'card', count = 1 }: SkeletonLoaderProps
 
   if (type === 'list') {
     return (
-      <div className="space-y-3 animate-in fade-in duration-500">
+      <div className={cn("space-y-3 animate-in fade-in duration-500", className)}>
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 p-4 border border-border rounded-lg" style={{ animationDelay: `${i * 50}ms` }}>
             <div className="skeleton h-12 w-12 rounded-full"></div>
@@ -76,7 +78,7 @@ export function SkeletonLoader({ type = 'card', count = 1 }: SkeletonLoaderProps
 
   // Default card skeleton
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-500">
+    <div className={cn("grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-500", className)}>
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i} className="animate-in fade-in duration-500" style={{ animationDelay: `${i * 100}ms` }}>
           <CardHeader>

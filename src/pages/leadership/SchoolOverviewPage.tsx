@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { School, TrendingUp, Users, AlertTriangle, BarChart3, Calendar, Loader2, Shield, Clock, ArrowUpRight, Target, Brain } from "lucide-react";
+import { School, TrendingUp, Users, AlertTriangle, BarChart3, Calendar, Loader2, Shield, Clock, ArrowUpRight, Target, Brain, Edit } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +9,11 @@ import { useSchoolDashboard, useCounsellorWorkload } from "@/hooks/useSchoolAdmi
 import { Progress } from "@/components/ui/progress";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { StatsCard } from "@/components/ui/stats-card";
+import { UpdateLogoModal } from "@/components/modals/UpdateLogoModal";
 
 export default function SchoolOverviewPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const { data: dashboardData, isLoading: isDashboardLoading } = useSchoolDashboard(user?.school_id);
   const { data: workloadData, isLoading: isWorkloadLoading } = useCounsellorWorkload(user?.school_id);
 
@@ -71,8 +73,18 @@ export default function SchoolOverviewPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-blue-200">
-                <Shield className="w-8 h-8 text-white" />
+              <div 
+                className="p-3 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-blue-200 relative group cursor-pointer"
+                onClick={() => setIsLogoModalOpen(true)}
+              >
+                {user?.school_logo_url ? (
+                  <img src={user.school_logo_url} alt="School Logo" className="w-8 h-8 object-contain bg-white rounded-md" />
+                ) : (
+                  <Shield className="w-8 h-8 text-white" />
+                )}
+                <div className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Edit className="w-4 h-4 text-white" />
+                </div>
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
@@ -293,6 +305,15 @@ export default function SchoolOverviewPage() {
           </CardContent>
         </Card>
       </div>
+
+
+      <UpdateLogoModal 
+        isOpen={isLogoModalOpen}
+        onClose={() => setIsLogoModalOpen(false)}
+        schoolId={user?.school_id || ''}
+        currentLogoUrl={user?.school_logo_url}
+        onSuccess={(newLogoUrl) => updateUser({ school_logo_url: newLogoUrl })}
+      />
     </div>
   );
 }

@@ -16,6 +16,7 @@ interface SchoolData {
   email?: string;
   phone?: string;
   needs_data_onboarding?: boolean;
+  logo_url?: string;
 }
 
 export default function SchoolSelection() {
@@ -81,7 +82,8 @@ export default function SchoolSelection() {
         state: school.state,
         email: school.email,
         phone: school.phone,
-        needs_data_onboarding: school.needs_data_onboarding
+        needs_data_onboarding: school.needs_data_onboarding,
+        logo_url: school.logo_url
       };
       
       localStorage.setItem('selected_school', JSON.stringify(schoolData));
@@ -260,9 +262,17 @@ export default function SchoolSelection() {
                     </div>
                     
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-secondary/50 rounded-xl flex items-center justify-center group-hover:bg-secondary transition-colors">
-                        <Building2 className="w-6 h-6 text-primary" />
-                      </div>
+                    <div className="flex-shrink-0">
+                      {school.logo_url ? (
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-border/50 flex items-center justify-center">
+                          <img src={school.logo_url} alt={school.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-secondary/50 rounded-xl flex items-center justify-center group-hover:bg-secondary transition-colors">
+                          <Building2 className="w-6 h-6 text-primary" />
+                        </div>
+                      )}
+                    </div>
                     </div>
                   </div>
                 </CardHeader>
