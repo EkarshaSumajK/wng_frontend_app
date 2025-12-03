@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LoadingState } from '@/components/shared/LoadingState';
 import { 
   useTeacherAssignments, 
   useAssignmentSubmissions,
@@ -194,11 +195,8 @@ export default function ActivityMonitoringPage() {
 
   if (assignmentsLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading assignments...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading assignments..." />
       </div>
     );
   }
@@ -523,14 +521,11 @@ export default function ActivityMonitoringPage() {
             </Badge>
           </div>
 
-          {submissionsLoading ? (
-            <Card className="border-2">
-              <CardContent className="text-center py-12">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading submissions...</p>
-              </CardContent>
-            </Card>
-          ) : (
+            {submissionsLoading ? (
+              <div className="p-8">
+                <LoadingState message="Loading submissions..." />
+              </div>
+            ) : (
             <>
               {/* Assignment Card */}
               <Card className="border-2">

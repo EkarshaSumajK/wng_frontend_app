@@ -78,7 +78,7 @@ export function ReferStudentModal({
       title: `Wellness Check: ${studentName}`,
       description: `Reason: ${formData.reason}\n\nNotes: ${
         formData.notes
-      }\n\nReferred by: ${user?.display_name || user?.name || "Teacher"}`,
+      }\n\nReferred by: ${user?.name || "Teacher"}`,
       type: "SESSION",
       start_time: startTime.toISOString(),
       end_time: endTime.toISOString(),
@@ -155,23 +155,23 @@ export function ReferStudentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="border-b pb-4">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="border-b pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
-              <UserPlus className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <UserPlus className="w-5 h-5 text-white" />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-bold">Refer Student for Wellness Check</DialogTitle>
-              <DialogDescription className="mt-1">
-                Schedule a wellness check appointment with a counselor for{" "}
+              <DialogTitle className="text-xl font-bold">Refer Student</DialogTitle>
+              <DialogDescription className="mt-0.5 text-xs">
+                Schedule a wellness check for{" "}
                 <span className="font-semibold text-foreground">{student?.first_name} {student?.last_name}</span>
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-500">
+        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in duration-500 pt-2">
           {/* Conflict Error Alert */}
           {conflictError && (
             <Alert variant="destructive" className="border-2">
@@ -272,9 +272,9 @@ export function ReferStudentModal({
           )}
 
           {/* Counselor Selection */}
-          <div className="space-y-3">
-            <Label htmlFor="counselor" className="text-base font-semibold flex items-center gap-2">
-              <Users className="w-4 h-4" />
+          <div className="space-y-1.5">
+            <Label htmlFor="counselor" className="text-sm font-semibold flex items-center gap-2">
+              <Users className="w-3.5 h-3.5" />
               Select Counselor *
             </Label>
             <Select
@@ -284,12 +284,12 @@ export function ReferStudentModal({
               }
               required
             >
-              <SelectTrigger className="h-12 border-2">
+              <SelectTrigger className="h-9 border-2 text-sm">
                 <SelectValue placeholder="Choose a counselor" />
               </SelectTrigger>
               <SelectContent>
                 {counselors.map((counselor) => (
-                  <SelectItem key={counselor.user_id} value={counselor.user_id}>
+                  <SelectItem key={counselor.user_id} value={counselor.user_id} className="text-sm">
                     {counselor.display_name || counselor.email}
                   </SelectItem>
                 ))}
@@ -300,20 +300,20 @@ export function ReferStudentModal({
           <Separator />
 
           {/* Date & Time Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Date Selection */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4" />
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                <CalendarIcon className="w-3.5 h-3.5" />
                 Preferred Date *
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left font-normal h-12 border-2"
+                    className="w-full justify-start text-left font-normal h-9 border-2 text-sm"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                     {format(formData.date, "PPP")}
                   </Button>
                 </PopoverTrigger>
@@ -331,9 +331,9 @@ export function ReferStudentModal({
             </div>
 
             {/* Time Selection */}
-            <div className="space-y-3">
-              <Label htmlFor="time" className="text-base font-semibold flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+            <div className="space-y-1.5">
+              <Label htmlFor="time" className="text-sm font-semibold flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5" />
                 Preferred Time *
               </Label>
               <Input
@@ -343,7 +343,7 @@ export function ReferStudentModal({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, time: e.target.value }))
                 }
-                className="h-12 border-2"
+                className="h-9 border-2 text-sm"
                 required
               />
             </div>
@@ -352,9 +352,9 @@ export function ReferStudentModal({
           <Separator />
 
           {/* Reason */}
-          <div className="space-y-3">
-            <Label htmlFor="reason" className="text-base font-semibold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
+          <div className="space-y-1.5">
+            <Label htmlFor="reason" className="text-sm font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5" />
               Reason for Referral *
             </Label>
             <Textarea
@@ -364,16 +364,16 @@ export function ReferStudentModal({
                 setFormData((prev) => ({ ...prev, reason: e.target.value }))
               }
               placeholder="Brief description of concerns..."
-              rows={4}
-              className="resize-none border-2"
+              rows={3}
+              className="resize-none border-2 text-sm min-h-[60px]"
               required
             />
           </div>
 
           {/* Additional Notes */}
-          <div className="space-y-3">
-            <Label htmlFor="notes" className="text-base font-semibold flex items-center gap-2">
-              <FileText className="w-4 h-4" />
+          <div className="space-y-1.5">
+            <Label htmlFor="notes" className="text-sm font-semibold flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5" />
               Additional Notes (Optional)
             </Label>
             <Textarea
@@ -383,8 +383,8 @@ export function ReferStudentModal({
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
               placeholder="Any additional context or observations..."
-              rows={3}
-              className="resize-none border-2"
+              rows={2}
+              className="resize-none border-2 text-sm min-h-[50px]"
             />
           </div>
 
@@ -395,23 +395,23 @@ export function ReferStudentModal({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-12"
+              className="flex-1 h-10 text-sm"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="flex-1 h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
+              className="flex-1 h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md text-sm"
               disabled={createEvent.isPending}
             >
               {createEvent.isPending ? (
                 <>
-                  <Clock className="w-4 h-4 mr-2 animate-spin" />
+                  <Clock className="w-3.5 h-3.5 mr-2 animate-spin" />
                   Scheduling...
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4 mr-2" />
+                  <UserPlus className="w-3.5 h-3.5 mr-2" />
                   Schedule Wellness Check
                 </>
               )}

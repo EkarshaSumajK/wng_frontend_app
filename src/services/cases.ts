@@ -13,8 +13,8 @@ export interface CreateCaseData {
 }
 
 export interface UpdateCaseData {
-  status?: 'intake' | 'assessment' | 'intervention' | 'monitoring' | 'closed';
-  risk_level?: 'low' | 'medium' | 'high' | 'critical';
+  status?: 'INTAKE' | 'ASSESSMENT' | 'INTERVENTION' | 'MONITORING' | 'CLOSED';
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   tags?: string[];
   assigned_counsellor?: string;
   ai_summary?: string;

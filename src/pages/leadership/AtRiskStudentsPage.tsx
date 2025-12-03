@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, Loader2, Filter, Download, TrendingUp, Users, Clock } from "lucide-react";
+import { AlertTriangle, Loader2, Filter, Download, TrendingUp, Users, Clock, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAtRiskStudents } from "@/hooks/useSchoolAdmin";
 import { ViewCaseDetailModal } from "@/components/modals/ViewCaseDetailModal";
 import { getRiskLevelColor, formatRiskLevel } from "@/lib/utils";
+import { LoadingState } from '@/components/shared/LoadingState';
 import { AnimatedBackground } from "@/components/ui/animated-background";
 
 export default function AtRiskStudentsPage() {
   const { user } = useAuth();
   const [riskFilter, setRiskFilter] = useState<string>("HIGH_CRITICAL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [selectedCase, setSelectedCase] = useState<any>(null);
   const [showCaseModal, setShowCaseModal] = useState(false);
   
@@ -36,8 +41,8 @@ export default function AtRiskStudentsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading at-risk students..." />
       </div>
     );
   }
@@ -45,12 +50,28 @@ export default function AtRiskStudentsPage() {
   const allStudents = (data as any)?.students || [];
   
   // Filter to show only HIGH and CRITICAL risk levels
-  const students = allStudents.filter((student: any) => {
-    if (riskFilter === "HIGH_CRITICAL") {
-      return student.risk_level === 'HIGH' || student.risk_level === 'CRITICAL';
-    }
-    return true; // For specific filters (CRITICAL or HIGH), show all from API
+  // Filter to show only HIGH and CRITICAL risk levels and match search query
+  const filteredStudents = allStudents.filter((student: any) => {
+    // Risk Level Filter
+    const matchesRisk = riskFilter === "HIGH_CRITICAL" 
+      ? (student.risk_level === 'HIGH' || student.risk_level === 'CRITICAL')
+      : true; // API handles specific filters
+
+    // Search Filter
+    const matchesSearch = student.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (student.assigned_counsellor && student.assigned_counsellor.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesRisk && matchesSearch;
   });
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedStudents = filteredStudents.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 relative">
@@ -83,9 +104,24 @@ export default function AtRiskStudentsPage() {
             </p>
           </div>
           
-          <div className="flex gap-3">
-            <Select value={riskFilter} onValueChange={setRiskFilter}>
-              <SelectTrigger className="w-[200px] h-11 border-2">
+          <div className="flex gap-3 items-center">
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search students..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1); // Reset to first page on search
+                }}
+                className="pl-8 h-11 border-2"
+              />
+            </div>
+            <Select value={riskFilter} onValueChange={(value) => {
+              setRiskFilter(value);
+              setCurrentPage(1);
+            }}>
+              <SelectTrigger className="w-[180px] h-11 border-2">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Filter Risk Level" />
               </SelectTrigger>
@@ -98,7 +134,7 @@ export default function AtRiskStudentsPage() {
             
             <Button variant="outline" className="h-11 border-2">
               <Download className="w-4 h-4 mr-2" />
-              Export Report
+              Export
             </Button>
           </div>
         </div>
@@ -120,7 +156,7 @@ export default function AtRiskStudentsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground mb-1">{students.length}</div>
+            <div className="text-4xl font-bold text-foreground mb-1">{filteredStudents.length}</div>
             <p className="text-xs text-muted-foreground">Students requiring attention</p>
           </CardContent>
         </Card>
@@ -177,7 +213,7 @@ export default function AtRiskStudentsPage() {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            {students.length === 0 ? (
+            {paginatedStudents.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                   <AlertTriangle className="w-8 h-8 text-muted-foreground" />
@@ -187,7 +223,7 @@ export default function AtRiskStudentsPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {students.map((student: any, index: number) => (
+                {paginatedStudents.map((student: any, index: number) => (
                   <motion.div
                     key={student.case_id}
                     initial={{ opacity: 0, x: -20 }}
@@ -235,6 +271,38 @@ export default function AtRiskStudentsPage() {
                     </div>
                   </motion.div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {filteredStudents.length > itemsPerPage && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredStudents.length)} of {filteredStudents.length} students
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+                  <div className="text-sm font-medium">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

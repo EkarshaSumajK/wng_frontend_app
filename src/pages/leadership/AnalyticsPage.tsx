@@ -7,6 +7,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { MetricChart } from "@/components/shared/MetricChart";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSchoolDashboard } from "@/hooks/useSchoolAdmin";
+import { LoadingState } from "@/components/shared/LoadingState";
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
@@ -63,8 +64,8 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading analytics..." />
       </div>
     );
   }

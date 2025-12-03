@@ -300,8 +300,8 @@ export default function WebinarsPage() {
                             )}
                           </div>
 
-                          <CardContent className="flex flex-col p-4 flex-1">
-                            <div className="flex-1 space-y-2">
+                          <CardContent className="flex flex-col p-3 flex-1">
+                            <div className="flex-1 space-y-1.5">
                               <div className="flex items-start justify-between gap-2">
                                 <h3 className="text-sm font-bold line-clamp-2 flex-1">{webinar.title}</h3>
                               </div>
@@ -316,7 +316,7 @@ export default function WebinarsPage() {
                               </div>
                             </div>
                             
-                            <div className="mt-3 pt-3 border-t space-y-2">
+                            <div className="mt-2 pt-2 border-t space-y-1.5">
                               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                                 <Users className="w-3 h-3" />
                                 <span className="truncate">{webinar.speaker}</span>
@@ -338,7 +338,7 @@ export default function WebinarsPage() {
                                 )}
                               </div>
                               
-                              <Button variant="outline" size="sm" className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-500 transition-colors text-xs h-8">
+                              <Button variant="outline" size="sm" className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-500 transition-colors text-xs h-7">
                                 <Eye className="w-3 h-3 mr-1" />
                                 View Details
                               </Button>
@@ -439,12 +439,11 @@ export default function WebinarsPage() {
                               )}
                             </div>
 
-                            <CardContent className="flex flex-col p-4 flex-1">
-                              <div className="flex-1 space-y-2">
+                            <CardContent className="flex flex-col p-3 flex-1">
+                              <div className="flex-1 space-y-1.5">
                                 <div className="flex items-start justify-between gap-2">
                                   <h3 className="text-sm font-bold line-clamp-2 flex-1">{webinar.title}</h3>
                                 </div>
-
 
                                 <div className="space-y-0.5">
                                   <p className="text-[11px] text-muted-foreground font-medium">
@@ -456,7 +455,7 @@ export default function WebinarsPage() {
                                 </div>
                               </div>
                               
-                              <div className="mt-3 pt-3 border-t space-y-2">
+                              <div className="mt-2 pt-2 border-t space-y-1.5">
                                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                                   <Users className="w-3 h-3" />
                                   <span className="truncate">{webinar.speaker}</span>
@@ -478,7 +477,7 @@ export default function WebinarsPage() {
                                   )}
                                 </div>
                                 
-                                <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors text-xs h-8">
+                                <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors text-xs h-7">
                                   <Eye className="w-3 h-3 mr-1" />
                                   View Details
                                 </Button>
@@ -619,7 +618,7 @@ export default function WebinarsPage() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-3 flex-1 flex flex-col">
+                  <CardContent className="space-y-2 flex-1 flex flex-col">
                     <Separator />
                     <p className="text-sm text-muted-foreground line-clamp-2">{webinar.description}</p>
                     
@@ -633,8 +632,8 @@ export default function WebinarsPage() {
                       <span>{webinar.date}</span>
                     </div>
 
-                    <div className="mt-auto pt-3 border-t">
-                      <div className="flex items-baseline gap-2 mb-3">
+                    <div className="mt-auto pt-2 border-t">
+                      <div className="flex items-baseline gap-2 mb-2">
                         <span className="text-lg font-bold text-gray-900 dark:text-white">
                           {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
                         </span>
@@ -648,7 +647,7 @@ export default function WebinarsPage() {
                         )}
                       </div>
 
-                      <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors">
+                      <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors text-xs h-7">
                         <Eye className="w-3 h-3 mr-2" />
                         View Details
                       </Button>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Brain, Users, Shield, Building2, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { Brain, Users, Shield, Building2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -59,19 +60,17 @@ export default function RoleSelection() {
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
   const [hoveredRole, setHoveredRole] = useState<UserRole | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    console.log('RoleSelection: useEffect triggered, location:', location.pathname);
     // Get selected school from localStorage
     const schoolData = localStorage.getItem('selected_school');
     if (schoolData) {
       const school = JSON.parse(schoolData);
       setSelectedSchool(school);
-      console.log('RoleSelection: Loaded school:', school.name, school.school_id);
     } else {
       // If no school selected, redirect back to school selection
-      console.warn('RoleSelection: No school found, redirecting to school selection');
       navigate('/school-selection');
     }
   }, [navigate, location]);
@@ -79,6 +78,7 @@ export default function RoleSelection() {
   const handleRoleSelect = async (role: UserRole) => {
     setSelectedRole(role);
     setError(null);
+    setIsLoading(true);
     try {
       // Add a brief delay for visual feedback
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -112,6 +112,8 @@ export default function RoleSelection() {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
       setSelectedRole(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,7 +217,7 @@ export default function RoleSelection() {
                 >
                   {selectedRole === role.id ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {selectedRole && isLoading && <Spinner size="sm" className="mr-2" />}
                       Accessing...
                     </>
                   ) : (

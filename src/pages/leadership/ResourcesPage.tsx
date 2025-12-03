@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useResources, useResourceCategories } from '@/hooks/useResources';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { LoadingState } from '@/components/shared/LoadingState';
 import {
   Carousel,
   CarouselContent,
@@ -95,11 +96,8 @@ export default function ResourcesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-12 h-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading resources...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading resources..." />
       </div>
     );
   }

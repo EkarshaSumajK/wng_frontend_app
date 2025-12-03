@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { LoadingState } from "@/components/shared/LoadingState";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActivities } from '@/hooks/useActivities';
@@ -201,11 +202,8 @@ export default function ActivitiesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading activities...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading activities..." />
       </div>
     );
   }

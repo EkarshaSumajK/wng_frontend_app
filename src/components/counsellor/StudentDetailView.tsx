@@ -83,7 +83,7 @@ export function StudentDetailView({ student, onBack }: StudentDetailViewProps) {
                     student.wellbeingScore && student.wellbeingScore >= 60 ? 'text-warning' :
                     'text-destructive'
                   }`}>
-                    {student.wellbeingScore || 'Not assessed'}%
+                    {student.wellbeingScore || 0}%
                   </p>
                 </div>
               </div>

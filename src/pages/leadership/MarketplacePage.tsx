@@ -186,12 +186,11 @@ export default function MarketplacePage() {
   const fetchMyBookings = async () => {
     if (!user) return;
     try {
-      setLoading(true);
       const response = await marketplaceApi.getMyBookings(user.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setMyBookings((response as any).bookings || []);
     } catch (err) {
-      console.error("Error fetching bookings:", err);
+
       toast.error("Failed to load bookings");
     } finally {
       setLoading(false);
@@ -547,11 +546,11 @@ export default function MarketplacePage() {
         open={!!selectedBooking}
         onOpenChange={(open) => !open && setSelectedBooking(null)}
         onCancel={(id) => {
-          console.log("Cancel booking", id);
+
           // TODO: Implement cancel API
         }}
         onReschedule={(id) => {
-          console.log("Reschedule booking", id);
+
           // TODO: Implement reschedule API
         }}
       />

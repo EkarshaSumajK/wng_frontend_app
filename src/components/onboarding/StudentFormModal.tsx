@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { useCreateStudent, useUpdateStudent, useClasses } from '@/hooks/useOnboarding';
 
 interface StudentFormModalProps {
@@ -262,7 +262,7 @@ export default function StudentFormModal({ open, onClose, student, schoolId }: S
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isLoading && <Spinner size="sm" className="mr-2" />}
               {isEdit ? 'Update' : 'Create'}
             </Button>
           </div>

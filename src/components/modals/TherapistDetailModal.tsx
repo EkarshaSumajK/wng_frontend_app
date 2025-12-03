@@ -114,13 +114,15 @@ export function TherapistDetailModal({
 
           <div className="flex items-center gap-3 pt-2">
             {socialIcons.map(({ Icon, name }) => (
-              <button
+              <Button
                 key={name}
+                variant="ghost"
+                size="icon"
                 aria-label={name}
-                className="w-10 h-10 hidden rounded-full border border-white/25 text-white/80 md:flex items-center justify-center hover:bg-white/10 transition-colors"
+                className="w-10 h-10 hidden rounded-full border border-white/25 text-white/80 md:flex hover:bg-white/10 hover:text-white"
               >
                 <Icon className="h-4 w-4" />
-              </button>
+              </Button>
             ))}
           </div>
         </div>

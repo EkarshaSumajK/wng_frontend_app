@@ -10,6 +10,7 @@ import {
   CheckCircle,
   FileText,
   Coffee,
+  Eye,
 } from "lucide-react";
 import {
   Card,
@@ -24,14 +25,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatCard } from "@/components/shared/StatCard";
 import { EditCalendarEventModal } from "@/components/modals/EditCalendarEventModal";
-import { NewCaseModal } from "@/components/modals/NewCaseModal";
 import { ScheduleSessionModal } from "@/components/modals/ScheduleSessionModal";
 import {
   useMyCalendarEvents,
   useUpdateCalendarEvent,
 } from "@/hooks/useCalendarEvents";
-import { useCreateCase } from "@/hooks/useCases";
 import { useAuth } from "@/contexts/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { format, startOfWeek } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { AnimatedBackground } from "@/components/ui/animated-background";
@@ -43,13 +44,10 @@ export default function TeacherCalendarPage() {
   );
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
-  const [selectedEventForCase, setSelectedEventForCase] = useState<any>(null);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const { data: eventsData = [], isLoading } = useMyCalendarEvents();
   const updateEvent = useUpdateCalendarEvent();
-  const createCase = useCreateCase();
 
   // Transform API events to calendar format with IST timezone
   const timezone = "Asia/Kolkata";
@@ -86,10 +84,7 @@ export default function TeacherCalendarPage() {
       event.status !== "COMPLETED"
   );
 
-  // Requested Events: Events that need counselor approval
-  const requestedEvents = events.filter(
-    (event: any) => event.status === "REQUESTED"
-  );
+
 
   // Upcoming Sessions: All NON-completed events (including today and future)
   const upcomingEvents = events
@@ -118,11 +113,7 @@ export default function TeacherCalendarPage() {
       value: todaysEvents.length.toString(),
       icon: Calendar,
     },
-    {
-      title: "Pending Requests",
-      value: requestedEvents.length.toString(),
-      icon: AlertCircle,
-    },
+
     {
       title: "This Week",
       value: thisWeekEvents.length.toString(),
@@ -143,38 +134,10 @@ export default function TeacherCalendarPage() {
     });
   };
 
-  const handleOpenCaseModal = (event: any) => {
-    setSelectedEventForCase(event);
-    setIsNewCaseModalOpen(true);
-  };
-
-  const handleCreateCaseSubmit = async (caseData: any) => {
-    const fullCaseData = {
-      student_id: caseData.studentId,
-      created_by: caseData.assignedCounsellor || user?.id || "",
-      presenting_concerns: caseData.summary,
-      initial_risk: caseData.priority?.toUpperCase() || "MEDIUM",
-      status: "INTAKE",
-      notes: caseData.initialNotes || undefined,
-    };
-
-    await createCase.mutateAsync(fullCaseData as any);
-
-    // Automatically mark the session as completed after creating a case
-    if (selectedEventForCase) {
-      await updateEvent.mutateAsync({
-        id: selectedEventForCase.id,
-        data: { status: "COMPLETED" },
-      });
-    }
-    
-    setSelectedEventForCase(null);
-  };
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="p-8">
+        <LoadingState message="Loading calendar..." />
       </div>
     );
   }
@@ -230,59 +193,7 @@ export default function TeacherCalendarPage() {
         })}
       </div>
 
-      {requestedEvents.length > 0 && (
-        <Card className="border border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-50/50 dark:from-yellow-900/20 dark:to-yellow-900/10 dark:border-yellow-800 shadow-sm rounded-xl">
-          <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
-                  <AlertCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold">Pending Requests</CardTitle>
-                  <CardDescription className="text-sm mt-1">
-                    {requestedEvents.length} wellness check{requestedEvents.length !== 1 ? 's' : ''} awaiting your approval
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant="destructive" className="text-sm px-3 py-1">
-                {requestedEvents.length} Pending
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-4">
-                {requestedEvents.map((event: any) => (
-                  <div
-                    key={event.id}
-                    className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border border-yellow-300 dark:border-yellow-800"
-                    onClick={() => handleEditEvent(event)}
-                  >
-                    <div className="flex-1 w-full sm:w-auto">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="font-semibold text-base">{event.title}</span>
-                        <Badge className="text-xs border-yellow-500 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/40">
-                          REQUESTED
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        {format(event.start, "PPp")}
-                      </div>
-                      {event.location && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {event.location}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
+
 
       <Tabs defaultValue="today" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -425,18 +336,10 @@ export default function TeacherCalendarPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleMarkComplete(event)}
-                            title="Mark Complete"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => handleEditEvent(event)}
-                            title="Edit Event"
+                            title="View Details"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -502,18 +405,10 @@ export default function TeacherCalendarPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleOpenCaseModal(event)}
-                            title="Create Case"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => handleEditEvent(event)}
-                            title="Edit Event"
+                            title="View Details"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -540,15 +435,11 @@ export default function TeacherCalendarPage() {
         event={selectedEvent}
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
-        canDelete={true}
+        canDelete={false}
+        readOnly={true}
       />
 
-      <NewCaseModal
-        open={isNewCaseModalOpen}
-        onOpenChange={setIsNewCaseModalOpen}
-        onSubmit={handleCreateCaseSubmit}
-        initialStudentId={selectedEventForCase?.related_student_id}
-      />
+
 
       <ScheduleSessionModal
         open={isScheduleModalOpen}

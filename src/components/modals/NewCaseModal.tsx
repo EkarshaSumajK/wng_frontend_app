@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, X } from 'lucide-react';
+import { Plus, Search, X, Loader2 } from 'lucide-react';
 import { useStudents } from '@/hooks/useStudents';
 import { useCounsellors } from '@/hooks/useCounsellors';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,9 +16,10 @@ interface NewCaseModalProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (caseData: any) => void;
   initialStudentId?: string;
+  isLoading?: boolean;
 }
 
-export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId }: NewCaseModalProps) {
+export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId, isLoading }: NewCaseModalProps) {
   const { user } = useAuth();
   const { data: studentsData = [], isLoading: loadingStudents } = useStudents({
     school_id: user?.school_id
@@ -100,6 +101,7 @@ export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId }:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+    // Do not close modal here, let parent handle it on success
     setFormData({
       studentId: '',
       assignedCounsellor: user?.id || '',
@@ -107,13 +109,12 @@ export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId }:
       summary: '',
       initialNotes: ''
     });
-    onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
+        <DialogHeader className="p-6 pb-2">
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
               <Plus className="w-5 h-5 text-white" />
@@ -125,7 +126,8 @@ export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId }:
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {/* Student Filters - Enhanced - Only show if student is not locked */}
           {!isStudentLocked && (
           <div className="space-y-3 p-4 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl border-2 border-primary/10">
@@ -419,7 +421,8 @@ export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId }:
             />
           </div>
           
-          <DialogFooter className="gap-2 sm:gap-0">
+          </div>
+          <DialogFooter className="p-6 pt-2 gap-2 sm:gap-0">
             <Button 
               type="button" 
               variant="outline" 
@@ -431,10 +434,19 @@ export function NewCaseModal({ open, onOpenChange, onSubmit, initialStudentId }:
             <Button 
               type="submit" 
               className="bg-gradient-primary hover:bg-primary-hover flex-1 sm:flex-none"
-              disabled={!formData.studentId || !formData.summary}
+              disabled={!formData.studentId || !formData.summary || isLoading}
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Case
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Case
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

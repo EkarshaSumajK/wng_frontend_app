@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSchoolDashboard, useCounsellorWorkload } from "@/hooks/useSchoolAdmin";
 import { Progress } from "@/components/ui/progress";
 import { AnimatedBackground } from "@/components/ui/animated-background";
+import { LoadingState } from '@/components/shared/LoadingState';
 import { StatsCard } from "@/components/ui/stats-card";
 import { UpdateLogoModal } from "@/components/modals/UpdateLogoModal";
 
@@ -17,10 +18,12 @@ export default function SchoolOverviewPage() {
   const { data: dashboardData, isLoading: isDashboardLoading } = useSchoolDashboard(user?.school_id);
   const { data: workloadData, isLoading: isWorkloadLoading } = useCounsellorWorkload(user?.school_id);
 
-  if (isDashboardLoading || isWorkloadLoading) {
+  const isLoading = isDashboardLoading || isWorkloadLoading;
+
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading dashboard..." />
       </div>
     );
   }

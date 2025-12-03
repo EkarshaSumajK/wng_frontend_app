@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Building2, ArrowRight, Loader2, Plus, Search, MapPin, School } from "lucide-react";
+import { Building2, ArrowRight, Plus, Search, MapPin, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/services/api";
 import { useNavigate } from "react-router-dom";
 import { GridBackground } from "@/components/ui/grid-background";
+import { LoadingState } from "@/components/shared/LoadingState";
 
 interface SchoolData {
   school_id: string;
@@ -87,11 +88,9 @@ export default function SchoolSelection() {
       };
       
       localStorage.setItem('selected_school', JSON.stringify(schoolData));
-      console.log('SchoolSelection: Stored school data:', schoolData);
       
       // Check if school needs data onboarding (new schools only)
       const needsOnboarding = school.needs_data_onboarding === true;
-      console.log('SchoolSelection: needs_data_onboarding =', needsOnboarding);
       
       if (needsOnboarding) {
         navigate('/data-onboarding');
@@ -104,12 +103,7 @@ export default function SchoolSelection() {
   if (isLoading) {
     return (
       <GridBackground className="flex items-center justify-center">
-        <div className="text-center relative z-10 animate-pulse">
-          <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-          <p className="text-lg font-medium text-muted-foreground">Loading schools...</p>
-        </div>
+        <LoadingState message="Loading schools..." />
       </GridBackground>
     );
   }

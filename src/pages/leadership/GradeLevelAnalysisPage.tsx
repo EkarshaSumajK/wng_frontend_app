@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Loader2, TrendingUp, Users, AlertTriangle, ChevronRight } from "lucide-react";
+import { TrendingUp, Users, AlertTriangle, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MetricChart } from "@/components/shared/MetricChart";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGradeLevelAnalysis, useSchoolDashboard } from "@/hooks/useSchoolAdmin";
+import { LoadingState } from '@/components/shared/LoadingState';
 
 export default function GradeLevelAnalysisPage() {
   const { user } = useAuth();
@@ -14,10 +15,10 @@ export default function GradeLevelAnalysisPage() {
   const { data, isLoading } = useGradeLevelAnalysis(user?.school_id);
   const { data: dashboardData, isLoading: isDashboardLoading } = useSchoolDashboard(user?.school_id);
 
-  if (isLoading || isDashboardLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading grades..." />
       </div>
     );
   }

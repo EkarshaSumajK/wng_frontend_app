@@ -78,11 +78,9 @@ export const useMyWebinarRegistrations = () => {
       if (!user?.school_id) {
         throw new Error('No school ID available');
       }
-      console.log('Fetching registrations for school:', user.school_id);
       const response = await api.get('/webinars/my-registrations', {
         params: { school_id: user.school_id }
       });
-      console.log('Registrations response:', response.data);
       return response.data;
     },
     enabled: !!user?.school_id, // Only run query if school_id is available

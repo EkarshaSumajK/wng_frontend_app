@@ -22,6 +22,8 @@ import { useTeacherClassesInsights } from '@/hooks/useTeachers';
 import { ViewStudentProfileModal } from '@/components/modals/ViewStudentProfileModal';
 import { ReferStudentModal } from '@/components/modals/ReferStudentModal';
 import { useCounsellors } from '@/hooks/useCounsellors';
+import { FilterSection } from '@/components/shared/FilterSection';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { Student } from '@/types';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { Separator } from '@/components/ui/separator';
@@ -159,12 +161,8 @@ export default function StudentMonitoringPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96 relative">
-        <AnimatedBackground />
-        <div className="text-center relative z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading classes...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading students..." />
       </div>
     );
   }

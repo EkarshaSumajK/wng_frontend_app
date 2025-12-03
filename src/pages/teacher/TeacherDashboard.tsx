@@ -3,6 +3,7 @@ import { Users, BookOpen, Eye, AlertTriangle, Heart, MessageSquare, Activity, Cl
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { LoadingState } from "@/components/shared/LoadingState";
 import { AddObservationModal } from "@/components/modals/AddObservationModal";
 import { ViewStudentProfileModal } from "@/components/modals/ViewStudentProfileModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,11 +53,8 @@ export default function TeacherDashboard() {
 
   if (isDashboardLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading dashboard..." />
       </div>
     );
   }

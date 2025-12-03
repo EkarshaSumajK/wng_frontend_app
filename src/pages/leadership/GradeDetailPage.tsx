@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSchoolDashboard } from '@/hooks/useSchoolAdmin';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { Loader2 } from 'lucide-react';
 
 export default function GradeDetailPage() {
@@ -15,8 +16,8 @@ export default function GradeDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading grade details..." />
       </div>
     );
   }

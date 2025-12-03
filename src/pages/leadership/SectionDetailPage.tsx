@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudents } from '@/hooks/useStudents';
 import { useSchoolDashboard } from '@/hooks/useSchoolAdmin';
-import { Loader2 } from 'lucide-react';
 import { ViewStudentProfileModal } from '@/components/modals/ViewStudentProfileModal';
 import { useState } from 'react';
+import { LoadingState } from '@/components/shared/LoadingState';
 
 export default function SectionDetailPage() {
   const { sectionId } = useParams<{ sectionId: string }>();
@@ -24,8 +24,8 @@ export default function SectionDetailPage() {
 
   if (isDashboardLoading || isStudentsLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="p-8">
+        <LoadingState message="Loading section details..." />
       </div>
     );
   }

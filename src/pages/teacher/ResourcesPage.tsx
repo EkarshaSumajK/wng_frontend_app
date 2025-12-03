@@ -3,6 +3,7 @@ import { Book, Search, ExternalLink, Video, Music, FileText, Eye, Calendar, User
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
@@ -106,11 +107,8 @@ export default function ResourcesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-12 h-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading resources...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading resources..." />
       </div>
     );
   }

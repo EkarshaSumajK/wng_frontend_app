@@ -32,6 +32,7 @@ import {
 } from "@/hooks/useCalendarEvents";
 import { useCreateCase } from "@/hooks/useCases";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoadingState } from '@/components/shared/LoadingState';
 import { format, startOfWeek } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { AnimatedBackground } from "@/components/ui/animated-background";
@@ -173,8 +174,8 @@ export default function CalendarPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="p-8">
+        <LoadingState message="Loading calendar..." />
       </div>
     );
   }

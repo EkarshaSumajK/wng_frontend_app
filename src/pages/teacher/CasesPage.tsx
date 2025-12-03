@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ViewCaseDetailModal } from '@/components/modals/ViewCaseDetailModal';
 import { FilterSection } from '@/components/shared/FilterSection';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { useCases } from '@/hooks/useCases';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,11 +25,6 @@ export default function TeacherCasesPage() {
   // Fetch all cases
   const { data: casesResponse = [], isLoading } = useCases({});
 
-  // Debug logging
-  console.log('Teacher User ID:', user?.id);
-  console.log('Cases Response:', casesResponse);
-  console.log('Is Array:', Array.isArray(casesResponse));
-  
   // Transform and filter cases to only show teacher's students
   // Filter by matching the teacher's user_id with the teacher info in the case
   const allCases = Array.isArray(casesResponse) ? casesResponse
@@ -91,11 +87,8 @@ export default function TeacherCasesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading cases...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading cases..." />
       </div>
     );
   }

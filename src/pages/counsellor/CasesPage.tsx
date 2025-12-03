@@ -115,6 +115,7 @@ export default function CasesPage() {
       });
       
       // Immediately assign the counsellor using the update mutation
+      // Immediately assign the counsellor using the update mutation
       if (newCase && (newCase as any).case_id && caseData.assignedCounsellor) {
         await updateCaseMutation.mutateAsync({
           id: (newCase as any).case_id,
@@ -1188,11 +1189,12 @@ export default function CasesPage() {
       </div>
 
       {/* Modals */}
-      <NewCaseModal
-        open={showNewCaseModal}
-        onOpenChange={setShowNewCaseModal}
-        onSubmit={handleNewCase}
-      />
+        <NewCaseModal 
+          open={showNewCaseModal} 
+          onOpenChange={setShowNewCaseModal}
+          onSubmit={handleNewCase}
+          isLoading={createCaseMutation.isPending || updateCaseMutation.isPending}
+        />
     </div>
   );
 }

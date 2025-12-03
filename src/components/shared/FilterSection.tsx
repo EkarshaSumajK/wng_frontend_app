@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FilterSectionProps {
@@ -36,18 +37,16 @@ export const FilterSection = ({ title, options, selected, setSelected }: FilterS
             <div className="space-y-2 mt-2 pb-2">
               {options.map((option) => (
                 <div key={option} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id={`${title}-${option}`}
                     checked={selected.includes(option)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
+                    onCheckedChange={(checked) => {
+                      if (checked) {
                         setSelected([...selected, option]);
                       } else {
                         setSelected(selected.filter((item) => item !== option));
                       }
                     }}
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <label
                     htmlFor={`${title}-${option}`}

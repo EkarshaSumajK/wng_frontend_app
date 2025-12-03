@@ -23,8 +23,9 @@ export function EditCalendarEventModal({
   event, 
   open, 
   onOpenChange,
-  canDelete = false 
-}: EditCalendarEventModalProps) {
+  canDelete = false,
+  readOnly = false
+}: EditCalendarEventModalProps & { readOnly?: boolean }) {
   const { toast } = useToast();
   const updateEvent = useUpdateCalendarEvent();
   const deleteEvent = useDeleteCalendarEvent();
@@ -151,7 +152,7 @@ export function EditCalendarEventModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
+          <DialogTitle>{readOnly ? 'Event Details' : 'Edit Event'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -165,6 +166,7 @@ export function EditCalendarEventModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Event title"
+              disabled={readOnly}
             />
           </div>
 
@@ -177,6 +179,7 @@ export function EditCalendarEventModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Event description"
               rows={3}
+              disabled={readOnly}
             />
           </div>
 
@@ -191,6 +194,7 @@ export function EditCalendarEventModal({
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Event location"
+              disabled={readOnly}
             />
           </div>
 
@@ -202,7 +206,11 @@ export function EditCalendarEventModal({
             </Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-left font-normal"
+                  disabled={readOnly}
+                >
                   {date ? format(date, 'PPP') : 'Select date'}
                 </Button>
               </PopoverTrigger>
@@ -212,6 +220,7 @@ export function EditCalendarEventModal({
                   selected={date}
                   onSelect={setDate}
                   initialFocus
+                  disabled={readOnly}
                 />
               </PopoverContent>
             </Popover>
@@ -229,6 +238,7 @@ export function EditCalendarEventModal({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
+                disabled={readOnly}
               />
             </div>
             <div className="space-y-2">
@@ -241,6 +251,7 @@ export function EditCalendarEventModal({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
+                disabled={readOnly}
               />
             </div>
           </div>
@@ -248,7 +259,7 @@ export function EditCalendarEventModal({
           {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={setStatus} disabled={readOnly}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -264,7 +275,7 @@ export function EditCalendarEventModal({
 
         <DialogFooter className="flex justify-between">
           <div className="flex gap-2">
-            {canDelete && !showDeleteConfirm && (
+            {!readOnly && canDelete && !showDeleteConfirm && (
               <Button
                 variant="destructive"
                 onClick={() => setShowDeleteConfirm(true)}
@@ -290,7 +301,7 @@ export function EditCalendarEventModal({
                 </Button>
               </>
             )}
-            {event.status === 'REQUESTED' && !showDeleteConfirm && (
+            {!readOnly && event.status === 'REQUESTED' && !showDeleteConfirm && (
               <Button
                 variant="default"
                 onClick={handleAccept}
@@ -305,11 +316,13 @@ export function EditCalendarEventModal({
           
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {readOnly ? 'Close' : 'Cancel'}
             </Button>
-            <Button onClick={handleSubmit} disabled={updateEvent.isPending}>
-              {updateEvent.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
+            {!readOnly && (
+              <Button onClick={handleSubmit} disabled={updateEvent.isPending}>
+                {updateEvent.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>

@@ -197,8 +197,8 @@ export default function AIInsightsPage() {
                 <AIRecommendationCard
                   key={rec.id}
                   recommendation={rec}
-                  onAccept={() => console.log('Accepted:', rec.id)}
-                  onDismiss={() => console.log('Dismissed:', rec.id)}
+                  onAccept={() => {}}
+                  onDismiss={() => {}}
                 />
               ))}
             </div>

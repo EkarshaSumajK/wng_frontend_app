@@ -57,7 +57,7 @@ export default function StudentsPage() {
             student.wellbeingScore && student.wellbeingScore >= 60 ? 'text-warning' :
             'text-destructive'
           }`}>
-            {student.wellbeingScore || 'N/A'}
+            {student.wellbeingScore || 0}
           </span>
           {student.wellbeingScore && <span className="text-muted-foreground">%</span>}
         </div>

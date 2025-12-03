@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/shared/DataTable';
 import { Assessment, AssessmentResponse } from '@/types';
 import { Input } from '@/components/ui/input';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { AssessmentTemplateDetailModal } from '@/components/modals/AssessmentTemplateDetailModal';
 
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +19,7 @@ import {
   useDeleteAssessment,
   useAssessment
 } from '@/hooks/useAssessments';
+import { useAssessmentResponses } from '@/hooks/useAssessmentResponses';
 import { useClasses } from '@/hooks/useClasses';
 import {
   Select,
@@ -32,6 +35,10 @@ export default function AssessmentsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [showTemplateDetailModal, setShowTemplateDetailModal] = useState(false);
+  const [selectedAssessmentFilter, setSelectedAssessmentFilter] = useState<string | null>(null);
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string | null>(null);
 
   // Fetch assessments for the school
   const { data: assessments = [], isLoading: assessmentsLoading } = useAssessments({
@@ -45,6 +52,9 @@ export default function AssessmentsPage() {
 
   // Fetch classes for the school
   const { data: classes = [] } = useClasses({ school_id: user?.school_id });
+
+  // Fetch assessment responses for selected assessment
+  const { data: responsesData, isLoading: responsesLoading } = useAssessmentResponses(selectedAssessmentFilter);
 
   // Fetch selected assessment details
   const { data: selectedAssessment, isLoading: selectedAssessmentLoading } = useAssessment(
@@ -88,12 +98,29 @@ export default function AssessmentsPage() {
   }, [assessments, selectedCategories, selectedClasses, searchQuery]);
 
   const filteredTemplates = useMemo(() => {
-    return templates.filter((t: any) => {
-      const matchesCategory = selectedCategories.length === 0 || (t.category && selectedCategories.includes(t.category));
-      const matchesSearch = !searchQuery || (t.name && t.name.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesCategory && matchesSearch;
-    });
+    let filtered = templates;
+    
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((template: any) => 
+        selectedCategories.includes(template.category)
+      );
+    }
+    
+    if (searchQuery) {
+      filtered = filtered.filter((template: any) =>
+        template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return filtered;
   }, [templates, selectedCategories, searchQuery]);
+
+  // Filter assessments by selected class for Student Responses tab
+  const filteredAssessmentsByClass = useMemo(() => {
+    if (!selectedClassFilter) return assessments;
+    return assessments.filter((assessment: any) => assessment.class_id === selectedClassFilter);
+  }, [assessments, selectedClassFilter]);
 
   const assessmentColumns = [
     {
@@ -171,8 +198,7 @@ export default function AssessmentsPage() {
           </Button>
           <Card className="card-professional">
             <CardContent className="py-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading assessment details...</p>
+              <LoadingState message="Loading assessment details..." />
             </CardContent>
           </Card>
         </div>
@@ -501,8 +527,8 @@ export default function AssessmentsPage() {
                           key={template.template_id} 
                           className="group cursor-pointer space-y-3"
                           onClick={() => {
-                            // Handle template click - maybe show details or create assessment
-                            // For now, we don't have a direct action in the original code other than viewing
+                            setSelectedTemplate(template);
+                            setShowTemplateDetailModal(true);
                           }}
                         >
                           {/* Thumbnail / App Icon Style */}
@@ -572,18 +598,211 @@ export default function AssessmentsPage() {
             <TabsContent value="responses">
               <Card className="card-professional">
                 <CardHeader>
-                  <CardTitle>Student Responses</CardTitle>
-                  <CardDescription>View and review student assessment responses</CardDescription>
+                  <CardTitle>Student Assessment Responses</CardTitle>
+                  <CardDescription>View and analyze student responses by assessment or class</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Student responses are available in the Cases page for each individual student.
-                  </p>
+                <CardContent className="space-y-6">
+                  {/* Filter Options */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Filter by Class (Optional)</label>
+                      <Select 
+                        value={selectedClassFilter || "all"} 
+                        onValueChange={(value) => {
+                          setSelectedClassFilter(value === "all" ? null : value);
+                          setSelectedAssessmentFilter(null); // Reset assessment when class changes
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All classes" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Classes</SelectItem>
+                          {classes.map((cls: any) => (
+                            <SelectItem key={cls.class_id} value={cls.class_id}>
+                              {cls.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">Filter assessments by class or view all</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select Assessment</label>
+                      <Select 
+                        value={selectedAssessmentFilter || "none"} 
+                        onValueChange={(value) => setSelectedAssessmentFilter(value === "none" ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select assessment" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Select an assessment</SelectItem>
+                          {filteredAssessmentsByClass.map((assessment: any) => (
+                            <SelectItem key={assessment.assessment_id} value={assessment.assessment_id}>
+                              {assessment.title || assessment.template_name}
+                              {assessment.class_name && ` (${assessment.class_name})`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedClassFilter 
+                          ? `Showing ${filteredAssessmentsByClass.length} assessment(s) for selected class`
+                          : `Showing all ${filteredAssessmentsByClass.length} assessment(s)`
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Results Display */}
+                  {!selectedAssessmentFilter ? (
+                    <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
+                          <ClipboardList className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-2">
+                            Select an Assessment
+                          </h3>
+                          <p className="text-sm text-blue-800 dark:text-blue-200">
+                            Choose an assessment from the dropdown above to view student responses and analytics.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : responsesLoading ? (
+                    <div className="text-center py-12">
+                      <LoadingState message="Loading assessment responses..." />
+                    </div>
+                  ) : responsesData && responsesData.total_students > 0 ? (
+                    <>
+                      {/* Statistics Cards */}
+                      <div className="grid md:grid-cols-5 gap-4">
+                        <Card className="border-2 border-blue-100 dark:border-blue-900 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950">
+                          <CardContent className="pt-6">
+                            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                              {responsesData.total_students}
+                            </div>
+                            <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mt-1">Responses</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-2 border-green-100 dark:border-green-900 bg-gradient-to-br from-green-50 to-transparent dark:from-green-950">
+                          <CardContent className="pt-6">
+                            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                              {responsesData.statistics.average_score?.toFixed(1) || 'N/A'}
+                            </div>
+                            <p className="text-xs font-medium text-green-700 dark:text-green-300 mt-1">Avg Score</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-2 border-orange-100 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-950">
+                          <CardContent className="pt-6">
+                            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                              {responsesData.statistics.min_score?.toFixed(1) || 'N/A'}
+                            </div>
+                            <p className="text-xs font-medium text-orange-700 dark:text-orange-300 mt-1">Min Score</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-2 border-purple-100 dark:border-purple-900 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-950">
+                          <CardContent className="pt-6">
+                            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                              {responsesData.statistics.max_score?.toFixed(1) || 'N/A'}
+                            </div>
+                            <p className="text-xs font-medium text-purple-700 dark:text-purple-300 mt-1">Max Score</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-2 border-pink-100 dark:border-pink-900 bg-gradient-to-br from-pink-50 to-transparent dark:from-pink-950">
+                          <CardContent className="pt-6">
+                            <div className="text-3xl font-bold text-pink-600 dark:text-pink-400">
+                              {responsesData.statistics.median_score?.toFixed(1) || 'N/A'}
+                            </div>
+                            <p className="text-xs font-medium text-pink-700 dark:text-pink-300 mt-1">Median</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Student Results Table */}
+                      <div className="space-y-3">
+                        <h3 className="text-lg font-bold">Student Results</h3>
+                        <div className="border-2 rounded-xl overflow-hidden">
+                          <table className="w-full">
+                            <thead className="bg-muted/50">
+                              <tr>
+                                <th className="text-left p-4 font-semibold">Student Name</th>
+                                <th className="text-center p-4 font-semibold">Score</th>
+                                <th className="text-center p-4 font-semibold">Completed</th>
+                                <th className="text-center p-4 font-semibold">Responses</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {responsesData.student_results
+                                .filter((result: any) => !selectedClassFilter || responsesData.class_id === selectedClassFilter)
+                                .map((result: any, index: number) => (
+                                  <tr 
+                                    key={result.student_id}
+                                    className={`border-t hover:bg-muted/30 transition-colors ${index % 2 === 0 ? 'bg-muted/10' : ''}`}
+                                  >
+                                    <td className="p-4 font-medium">{result.student_name}</td>
+                                    <td className="p-4 text-center">
+                                      <Badge className="bg-primary text-white font-bold">
+                                        {result.total_score.toFixed(1)}
+                                      </Badge>
+                                    </td>
+                                    <td className="p-4 text-center text-sm text-muted-foreground">
+                                      {new Date(result.completed_at).toLocaleDateString()}
+                                    </td>
+                                    <td className="p-4 text-center">
+                                      <Badge variant="outline">{result.responses.length} answers</Badge>
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-12 border-2 border-dashed rounded-xl">
+                      <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                        <Users className="w-10 h-10 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-bold mb-2">No Responses Yet</h3>
+                      <p className="text-sm text-muted-foreground">
+                        No students have completed this assessment yet.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
       </div>
+
+      {/* Assessment Template Detail Modal */}
+      <AssessmentTemplateDetailModal
+        template={selectedTemplate}
+        isOpen={showTemplateDetailModal}
+        onClose={() => {
+          setShowTemplateDetailModal(false);
+          setSelectedTemplate(null);
+        }}
+        onCreateAssessment={(templateId, classId) => {
+          createAssessment.mutate({
+            template_id: templateId,
+            school_id: user?.school_id || '',
+            class_id: classId,
+            title: selectedTemplate?.name,
+            created_by: user?.id || ''
+          }, {
+            onSuccess: () => {
+              setShowTemplateDetailModal(false);
+              setSelectedTemplate(null);
+            }
+          });
+        }}
+        classes={classes}
+      />
     </div>
   );
 }

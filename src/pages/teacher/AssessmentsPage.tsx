@@ -15,12 +15,16 @@ import {
 } from '@/hooks/useAssessments';
 import { useTeacherClassesInsights } from '@/hooks/useTeachers';
 import { Separator } from '@/components/ui/separator';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { AssessmentTemplateDetailModal } from '@/components/modals/AssessmentTemplateDetailModal';
 
 export default function TeacherAssessmentsPage() {
   const { user } = useAuth();
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [showTemplateDetailModal, setShowTemplateDetailModal] = useState(false);
 
   // Fetch assessments for the school
   const { data: assessments = [], isLoading: assessmentsLoading } = useAssessments({
@@ -454,16 +458,19 @@ export default function TeacherAssessmentsPage() {
                 <CardContent className="pt-6">
               {templatesLoading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading templates...</p>
+                  <LoadingState message="Loading templates..." />
                 </div>
               ) : templates.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {templates.map((template: any, index: number) => (
                     <Card 
                       key={template.template_id} 
-                      className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-blue-300"
+                      className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-blue-300"
                       style={{ animationDelay: `${index * 50}ms` }}
+                      onClick={() => {
+                        setSelectedTemplate(template);
+                        setShowTemplateDetailModal(true);
+                      }}
                     >
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2">
@@ -506,6 +513,18 @@ export default function TeacherAssessmentsPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Assessment Template Detail Modal */}
+      <AssessmentTemplateDetailModal
+        template={selectedTemplate}
+        isOpen={showTemplateDetailModal}
+        onClose={() => {
+          setShowTemplateDetailModal(false);
+          setSelectedTemplate(null);
+        }}
+        readOnly={true}
+        classes={[]}
+      />
     </div>
   );
 }

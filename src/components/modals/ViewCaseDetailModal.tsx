@@ -1,5 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -91,11 +92,16 @@ export function ViewCaseDetailModal({ isOpen, onClose, caseData }: ViewCaseDetai
                     <span>Student</span>
                   </div>
                   <p className="font-medium">
-                    {caseData.student?.name || 
-                     caseData.student?.first_name && caseData.student?.last_name 
-                       ? `${caseData.student.first_name} ${caseData.student.last_name}` 
-                       : caseData.student_name || 
-                     'Unknown Student'}
+                    {(() => {
+                      const safeString = (str: any) => (!str || str === 'undefined' || str === 'null') ? null : str;
+                      
+                      return safeString(caseData.student?.name) || 
+                             (safeString(caseData.student?.first_name) && safeString(caseData.student?.last_name) 
+                               ? `${caseData.student.first_name} ${caseData.student.last_name}` 
+                               : null) ||
+                             safeString(caseData.student_name) || 
+                             'Unknown Student';
+                    })()}
                   </p>
                 </div>
 
@@ -104,7 +110,15 @@ export function ViewCaseDetailModal({ isOpen, onClose, caseData }: ViewCaseDetai
                     <Users className="w-4 h-4" />
                     <span>Assigned Counsellor</span>
                   </div>
-                  <p className="font-medium">{caseData.counsellor?.name || caseData.counsellor?.display_name || 'Unassigned'}</p>
+                  <p className="font-medium">
+                    {(() => {
+                      const safeString = (str: any) => (!str || str === 'undefined' || str === 'null') ? null : str;
+                      return safeString(caseData.counsellor?.name) || 
+                             safeString(caseData.counsellor?.display_name) || 
+                             safeString(caseData.assigned_counsellor) || 
+                             'Unassigned';
+                    })()}
+                  </p>
                 </div>
 
                 <div>
@@ -360,6 +374,12 @@ export function ViewCaseDetailModal({ isOpen, onClose, caseData }: ViewCaseDetai
             </TabsContent>
           </Tabs>
         </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

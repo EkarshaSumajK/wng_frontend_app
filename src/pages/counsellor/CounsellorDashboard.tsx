@@ -7,7 +7,9 @@ import { useCases } from "@/hooks/useCases";
 import { getRiskLevelColor, formatRiskLevel } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { ViewCaseDetailModal } from "@/components/modals/ViewCaseDetailModal";
+import { AddObservationModal } from '@/components/modals/AddObservationModal';
 import { AnimatedBackground } from "@/components/ui/animated-background";
+import { LoadingState } from '@/components/shared/LoadingState';
 import { useState } from "react";
 
 
@@ -26,10 +28,7 @@ export default function CounsellorDashboard() {
   
   // Fetch calendar events for dynamic metrics
   // Debug logging
-  console.log('Dashboard Data:', dashboardData);
-  console.log('Dashboard Loading:', isDashboardLoading);
-  console.log('Dashboard Error:', dashboardError);
-  console.log('User ID:', user?.id);
+
 
   // Transform cases data
   const cases = Array.isArray(casesResponse) ? casesResponse.map((item: any) => ({
@@ -41,13 +40,8 @@ export default function CounsellorDashboard() {
   // Show loading state
   if (isDashboardLoading) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard...</p>
-          </div>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading dashboard..." />
       </div>
     );
   }
@@ -234,7 +228,7 @@ export default function CounsellorDashboard() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
-                          <span>Updated: {case_.updated_at ? new Date(case_.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
+                          <span>Updated: {case_.updated_at || case_.created_at ? new Date(case_.updated_at || case_.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-primary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                           <Eye className="w-3 h-3" />

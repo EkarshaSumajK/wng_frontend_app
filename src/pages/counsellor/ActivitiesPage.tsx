@@ -23,10 +23,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { LoadingState } from "@/components/shared/LoadingState";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActivities } from '@/hooks/useActivities';
-import { Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -196,11 +196,8 @@ export default function ActivitiesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading activities...</p>
-        </div>
+      <div className="p-8">
+        <LoadingState message="Loading activities..." />
       </div>
     );
   }
@@ -897,23 +894,23 @@ export default function ActivitiesPage() {
       {/* Activity Detail Modal */}
       {selectedActivity && (
         <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-4">
-            <DialogHeader className="border-b pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-3">
+            <DialogHeader className="border-b pb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <DialogTitle className="text-2xl font-bold">{selectedActivity.title}</DialogTitle>
-                  <DialogDescription className="mt-2">
+                  <DialogTitle className="text-xl font-bold">{selectedActivity.title}</DialogTitle>
+                  <DialogDescription className="mt-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={`${activityTypeColors[selectedActivity.type]} font-semibold`}>
+                      <Badge className={`${activityTypeColors[selectedActivity.type]} font-semibold text-xs`}>
                         {activityTypeLabels[selectedActivity.type]}
                       </Badge>
                       {selectedActivity.duration && (
-                        <Badge variant="outline" className="flex items-center gap-1">
+                        <Badge variant="outline" className="flex items-center gap-1 text-xs">
                           <Clock className="w-3 h-3" />
-                          {selectedActivity.duration} minutes
+                          {selectedActivity.duration} min
                         </Badge>
                       )}
                     </div>
@@ -922,14 +919,14 @@ export default function ActivitiesPage() {
               </div>
             </DialogHeader>
 
-            <div className="space-y-6 mt-4 animate-in fade-in duration-500">
+            <div className="space-y-3 mt-3 animate-in fade-in duration-500">
                 {/* Description */}
                 {selectedActivity.description && (
                   <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20">
-                      <CardTitle className="text-base">Description</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
+                      <CardTitle className="text-sm font-semibold">Description</CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4">
+                    <CardContent className="pt-2 pb-3">
                       <p className="text-sm text-muted-foreground leading-relaxed">{selectedActivity.description}</p>
                     </CardContent>
                   </Card>
@@ -938,14 +935,14 @@ export default function ActivitiesPage() {
                 {/* Objectives */}
                 {selectedActivity.objectives && selectedActivity.objectives.length > 0 && (
                   <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20">
-                      <CardTitle className="text-base">Learning Objectives</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
+                      <CardTitle className="text-sm font-semibold">Learning Objectives</CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4">
-                      <ul className="space-y-2">
+                    <CardContent className="pt-2 pb-3">
+                      <ul className="space-y-1.5">
                         {selectedActivity.objectives.map((obj: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                               <span className="text-xs font-semibold text-primary">{idx + 1}</span>
                             </span>
                             <span className="text-sm text-muted-foreground flex-1">{obj}</span>
@@ -959,13 +956,13 @@ export default function ActivitiesPage() {
                 {/* Target Grades */}
                 {selectedActivity.target_grades && selectedActivity.target_grades.length > 0 && (
                   <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20">
-                      <CardTitle className="text-base">Target Grades</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
+                      <CardTitle className="text-sm font-semibold">Target Grades</CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4">
-                      <div className="flex flex-wrap gap-2">
+                    <CardContent className="pt-2 pb-3">
+                      <div className="flex flex-wrap gap-1.5">
                         {selectedActivity.target_grades.map((grade: string, idx: number) => (
-                          <Badge key={idx} variant="secondary" className="text-sm px-3 py-1">
+                          <Badge key={idx} variant="secondary" className="text-xs px-2 py-0.5">
                             Grade {grade}
                           </Badge>
                         ))}
@@ -977,14 +974,14 @@ export default function ActivitiesPage() {
                 {/* Materials */}
                 {selectedActivity.materials && selectedActivity.materials.length > 0 && (
                   <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20">
-                      <CardTitle className="text-base">Materials Needed</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
+                      <CardTitle className="text-sm font-semibold">Materials Needed</CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4">
-                      <ul className="space-y-2">
+                    <CardContent className="pt-2 pb-3">
+                      <ul className="space-y-1.5">
                         {selectedActivity.materials.map((material: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <span className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
                             <span className="text-sm text-muted-foreground flex-1">{material}</span>
                           </li>
                         ))}
@@ -995,7 +992,7 @@ export default function ActivitiesPage() {
               </div>
 
               {/* Right Column - Instructions Flashcards */}
-              <div className="space-y-6">
+              <div className="space-y-3">
                 {selectedActivity.instructions && selectedActivity.instructions.length > 0 && (
                   <Carousel
                     opts={{
@@ -1005,29 +1002,29 @@ export default function ActivitiesPage() {
                     className="w-full"
                   >
                     <Card className="border-2">
-                      <CardHeader className="bg-gradient-to-r from-background to-muted/20 flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-base">Step-by-Step Instructions</CardTitle>
-                        <div className="flex items-center gap-2">
-                          <CarouselPrevious className="static translate-y-0 translate-x-0 h-8 w-8" />
-                          <CarouselNext className="static translate-y-0 translate-x-0 h-8 w-8" />
+                      <CardHeader className="bg-gradient-to-r from-background to-muted/20 flex flex-row items-center justify-between space-y-0 py-2">
+                        <CardTitle className="text-sm font-semibold">Step-by-Step Instructions</CardTitle>
+                        <div className="flex items-center gap-1">
+                          <CarouselPrevious className="static translate-y-0 translate-x-0 h-7 w-7" />
+                          <CarouselNext className="static translate-y-0 translate-x-0 h-7 w-7" />
                         </div>
                       </CardHeader>
-                      <CardContent className="pt-4">
+                      <CardContent className="pt-2 pb-3">
                         <CarouselContent>
                           {selectedActivity.instructions.map((instruction: string, idx: number) => (
                             <CarouselItem key={idx}>
-                              <div className="p-1">
+                              <div className="p-0.5">
                                 <Card className="border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5 dark:from-gray-800 dark:to-primary/10">
-                                  <CardContent className="flex flex-col items-center justify-center p-8 min-h-[280px] text-center">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg mb-6">
-                                      <span className="text-2xl font-bold text-white">
+                                  <CardContent className="flex flex-col items-center justify-center p-6 min-h-[220px] text-center">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md mb-4">
+                                      <span className="text-xl font-bold text-white">
                                         {idx + 1}
                                       </span>
                                     </div>
-                                    <p className="text-base text-foreground leading-relaxed">
+                                    <p className="text-sm text-foreground leading-relaxed">
                                       {instruction}
                                     </p>
-                                    <div className="mt-6 text-xs text-muted-foreground">
+                                    <div className="mt-4 text-xs text-muted-foreground">
                                       Step {idx + 1} of {selectedActivity.instructions.length}
                                     </div>
                                   </CardContent>

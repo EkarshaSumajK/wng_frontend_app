@@ -37,7 +37,7 @@ export default function ClassesOnboarding({ schoolId }: ClassesOnboardingProps) 
   const [searchQuery, setSearchQuery] = useState('');
 
   // Debug logging
-  console.log('ClassesOnboarding - schoolId:', schoolId);
+
   console.log('ClassesOnboarding - classes:', classes);
   console.log('ClassesOnboarding - isLoading:', isLoading);
   console.log('ClassesOnboarding - error:', error);

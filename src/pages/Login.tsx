@@ -274,13 +274,15 @@ export default function Login() {
                                     disabled={isLoading}
                                   />
                                 </FormControl>
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground transition-colors"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                                 >
-                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
+                                  {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
+                                </Button>
                               </div>
                               <FormMessage />
                             </FormItem>
@@ -330,13 +332,14 @@ export default function Login() {
                             </FormItem>
                           )}
                         />
-                        <button
+                        <Button
                           type="button"
-                          className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                          variant="link"
+                          className="text-sm font-medium text-primary hover:text-primary/80 transition-colors px-0"
                           onClick={() => alert('Please contact your administrator to reset your password.')}
                         >
                           Forgot password?
-                        </button>
+                        </Button>
                       </div>
 
                       {error && (
@@ -429,13 +432,15 @@ export default function Login() {
                                     disabled={isLoading}
                                   />
                                 </FormControl>
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground transition-colors"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                                 >
-                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
+                                  {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
+                                </Button>
                               </div>
                               <FormMessage />
                             </FormItem>

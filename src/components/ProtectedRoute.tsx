@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingState } from '@/components/shared/LoadingState';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -8,12 +8,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="space-y-4 w-full max-w-md">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading..." />
       </div>
     );
   }

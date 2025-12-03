@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import {
   useCreateTeacher,
   useUpdateTeacher,
@@ -200,7 +200,7 @@ export default function UserFormModal({ open, onClose, user, role, schoolId }: U
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isLoading && <Spinner size="sm" className="mr-2" />}
               {isEdit ? 'Update' : 'Create'}
             </Button>
           </div>

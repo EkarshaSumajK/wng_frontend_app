@@ -40,9 +40,6 @@ export function ViewStudentProfileModal({ open, onOpenChange, student }: ViewStu
   // The student assessments endpoint returns { student_id, student_name, total_assessments, overall_statistics, assessments: [...] }
   const studentAssessments = assessmentsData?.assessments || [];
   
-  console.log('Student Assessments Data:', assessmentsData);
-  console.log('Processed Assessments:', studentAssessments);
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -211,7 +208,7 @@ export function ViewStudentProfileModal({ open, onOpenChange, student }: ViewStu
                     ((fullStudentData?.wellbeing_score || studentData.wellbeingScore) || 0) >= 80 ? 'text-green-600' :
                     ((fullStudentData?.wellbeing_score || studentData.wellbeingScore) || 0) >= 60 ? 'text-yellow-600' : 'text-red-600'
                   }`}>
-                    {fullStudentData?.wellbeing_score || studentData.wellbeingScore || 'N/A'}
+                    {fullStudentData?.wellbeing_score || studentData.wellbeingScore || 0}
                   </p>
                 </div>
                 <div className="text-center p-6 bg-gradient-to-br from-muted/50 to-muted/30 rounded-xl border-2 hover:shadow-md transition-all">

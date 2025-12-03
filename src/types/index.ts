@@ -15,6 +15,8 @@ export interface User {
 export interface Student {
   id: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
   rollNumber?: string;
   grade: string;
   class?: string;

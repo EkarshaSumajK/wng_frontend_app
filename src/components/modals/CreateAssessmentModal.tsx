@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CreateAssessmentModalProps {
   open: boolean;
@@ -255,12 +256,10 @@ export function CreateAssessmentModal({ open, onOpenChange, onSubmit, classes = 
                 </div>
                 
                 <div className="flex items-center space-x-2 mt-7">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="required"
                     checked={currentQuestion.required}
-                    onChange={(e) => setCurrentQuestion({...currentQuestion, required: e.target.checked})}
-                    className="rounded"
+                    onCheckedChange={(checked) => setCurrentQuestion({...currentQuestion, required: checked as boolean})}
                   />
                   <Label htmlFor="required">Required question</Label>
                 </div>

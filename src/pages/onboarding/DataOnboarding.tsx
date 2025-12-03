@@ -38,14 +38,11 @@ export default function DataOnboarding() {
 
   // Read school data on mount and whenever we navigate to this page
   useEffect(() => {
-    console.log('DataOnboarding: useEffect triggered, location:', location.pathname);
     const stored = localStorage.getItem('selected_school');
     if (stored) {
       const schoolData = JSON.parse(stored);
       setSchool(schoolData);
-      console.log('DataOnboarding: Loaded school:', schoolData.name, schoolData.school_id);
     } else {
-      console.warn('DataOnboarding: No school found in localStorage');
       navigate('/school-selection');
     }
   }, [navigate, location]);

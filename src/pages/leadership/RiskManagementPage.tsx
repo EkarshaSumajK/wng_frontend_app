@@ -8,6 +8,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { DataTable } from "@/components/shared/DataTable";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRiskAlerts, useAtRiskStudents } from "@/hooks/useSchoolAdmin";
+import { LoadingState } from '@/components/shared/LoadingState';
 import { ViewCaseDetailModal } from "@/components/modals/ViewCaseDetailModal";
 import { getRiskLevelColor, formatRiskLevel } from "@/lib/utils";
 
@@ -44,8 +45,8 @@ export default function RiskManagementPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState message="Loading risk data..." />
       </div>
     );
   }
