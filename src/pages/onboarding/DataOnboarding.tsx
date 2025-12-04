@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { apiClient } from "@/services/api";
 
+// Use environment variable for API base URL, with localhost fallback for development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+
 interface UploadStatus {
   staff: 'pending' | 'uploading' | 'success' | 'error';
   students: 'pending' | 'uploading' | 'success' | 'error';
@@ -309,7 +312,7 @@ export default function DataOnboarding() {
                 variant="link" 
                 size="sm" 
                 className="text-primary"
-                onClick={() => window.open('http://localhost:8000/api/v1/templates/staff-template', '_blank')}
+                onClick={() => window.open(`${API_BASE_URL}/templates/staff-template`, '_blank')}
               >
                 Download Staff Template
               </Button>
@@ -418,7 +421,7 @@ export default function DataOnboarding() {
                 variant="link" 
                 size="sm" 
                 className="text-primary"
-                onClick={() => window.open('http://localhost:8000/api/v1/templates/students-template', '_blank')}
+                onClick={() => window.open(`${API_BASE_URL}/templates/students-template`, '_blank')}
               >
                 Download Students & Parents Template
               </Button>
@@ -527,7 +530,7 @@ export default function DataOnboarding() {
                 variant="link" 
                 size="sm" 
                 className="text-primary"
-                onClick={() => window.open('http://localhost:8000/api/v1/templates/classes-template', '_blank')}
+                onClick={() => window.open(`${API_BASE_URL}/templates/classes-template`, '_blank')}
               >
                 Download Classes Template
               </Button>
