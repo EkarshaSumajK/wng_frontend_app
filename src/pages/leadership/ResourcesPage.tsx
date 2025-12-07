@@ -113,7 +113,7 @@ export default function ResourcesPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                 <Book className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 Resource Library
               </h1>
             </div>
@@ -134,7 +134,7 @@ export default function ResourcesPage() {
             return (
               <section key={category} className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-3xl -z-10" />
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-primary/10 shadow-xl p-8 space-y-6">
+                <div className="bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-3xl border-2 border-primary/10 shadow-xl p-8 space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
@@ -198,8 +198,8 @@ export default function ResourcesPage() {
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="left-0 -translate-x-1/2 shadow-lg border-2 border-primary/20 bg-white/95 w-12 h-12" />
-                    <CarouselNext className="right-0 translate-x-1/2 shadow-lg border-2 border-primary/20 bg-white/95 w-12 h-12" />
+                    <CarouselPrevious className="left-0 -translate-x-1/2 shadow-lg border-2 border-primary/20 bg-card/95 dark:bg-card/95 w-12 h-12" />
+                    <CarouselNext className="right-0 translate-x-1/2 shadow-lg border-2 border-primary/20 bg-card/95 dark:bg-card/95 w-12 h-12" />
                   </Carousel>
                 </div>
               </section>
@@ -221,8 +221,8 @@ export default function ResourcesPage() {
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Categories
             </Button>
-            <div className="h-8 w-px bg-gray-200" />
-            <h2 className="text-2xl font-bold text-gray-900 capitalize">
+            <div className="h-8 w-px bg-border" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
               {selectedCategory} Resources
             </h2>
             <Badge variant="secondary" className="ml-2">
@@ -231,7 +231,7 @@ export default function ResourcesPage() {
           </div>
 
           {/* Filter Bar */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border-2 border-gray-200/50 shadow-lg p-4">
+          <div className="bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-2xl border-2 border-border/50 shadow-lg p-4">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="relative flex-1">
@@ -240,7 +240,7 @@ export default function ResourcesPage() {
                   placeholder="Search resources..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+                  className="pl-10 h-10 bg-card border-border focus:border-primary rounded-xl"
                 />
               </div>
 
@@ -256,7 +256,7 @@ export default function ResourcesPage() {
                     }
                   }}
                 >
-                  <SelectTrigger className="h-10 rounded-xl border-gray-200 focus:border-primary">
+                  <SelectTrigger className="h-10 rounded-xl border-border focus:border-primary">
                     <SelectValue placeholder="Resource Type" />
                   </SelectTrigger>
                   <SelectContent>

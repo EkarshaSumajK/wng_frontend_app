@@ -159,11 +159,11 @@ export default function WebinarsPage() {
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <Video className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
@@ -176,7 +176,7 @@ export default function WebinarsPage() {
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border-2 border-gray-200/50 shadow-lg p-4">
+      <div className="bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-2xl border-2 border-border/50 shadow-lg p-4">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -185,7 +185,7 @@ export default function WebinarsPage() {
               placeholder="Search webinars by title, speaker..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-card border-border focus:border-primary rounded-xl"
             />
           </div>
 
@@ -201,7 +201,7 @@ export default function WebinarsPage() {
                 }
               }}
             >
-              <SelectTrigger className="h-10 rounded-xl border-gray-200 focus:border-primary">
+              <SelectTrigger className="h-10 rounded-xl border-border focus:border-primary">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -231,6 +231,12 @@ export default function WebinarsPage() {
           )}
         </div>
       </div>
+       <p className="text-xs text-muted-foreground flex items-center gap-1.5 ml-2">
+                      <span className="w-4 h-4 rounded-full bg-green-600 flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </span>
+                      Badge shows you are registered to the Webinar
+                    </p>
 
       {/* Main Layout with Sidebar */}
       <div className="flex flex-col lg:flex-row gap-8">
@@ -240,118 +246,121 @@ export default function WebinarsPage() {
         <div className="space-y-12">
           {/* Featured Webinars Section */}
           {featuredWebinars.length > 0 && (
-            <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-purple-300/3 to-transparent rounded-3xl -z-10" />
-              <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-purple-200/30 shadow-xl p-8 space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-lg">
-                      <Award className="w-6 h-6 text-white" />
+            <section className="space-y-4">
+              <Carousel opts={{ align: "start" }} className="w-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <Award className="w-5 h-5 text-purple-600" />
+                      </div>
+                      Featured Webinars
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                     </div>
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Featured Webinars</h2>
-                      <p className="text-sm text-muted-foreground mt-1">{featuredWebinars.length} handpicked sessions</p>
-                    </div>
+                    {/* Legend for registered badge */}
+                   
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    className="text-primary hover:bg-purple-50"
+                    onClick={() => setSelectedStatus('Featured')}
+                  >
+                    View All
+                    <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                  </Button>
                 </div>
-                
-                <Carousel
-                  opts={{
-                    align: "start",
-                  }}
-                  className="w-full"
-                >
-                  <CarouselContent className="-ml-2 md:-ml-4">
-                    {featuredWebinars.map((webinar: any) => (
-                      <CarouselItem key={webinar.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                        <Card 
-                          className="cursor-pointer transition-colors duration-300 hover:border-purple-500 border-2 group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 h-full flex flex-col"
-                          onClick={() => setSelectedWebinar(webinar)}
-                        >
-                          {/* Image Section */}
-                          <div className="relative h-36 w-full overflow-hidden bg-gray-100 rounded-t-xl">
-                            {webinar.speakerImage ? (
-                              <img 
-                                src={webinar.speakerImage} 
-                                alt={webinar.title}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                                <Video className="w-10 h-10" />
-                              </div>
-                            )}
-                            
-                            {/* Featured Badge */}
-                            <div className="absolute top-2 left-2">
-                              <Badge className="bg-purple-100 text-purple-800 border-purple-200 font-semibold text-xs">
-                                Featured
-                              </Badge>
+                <CarouselContent className="-ml-4">
+                  {featuredWebinars.map((webinar: any) => (
+                    <CarouselItem key={webinar.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <div 
+                        className="group cursor-pointer space-y-2"
+                        onClick={() => setSelectedWebinar(webinar)}
+                      >
+                        {/* Thumbnail - 4:3 aspect ratio */}
+                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-purple-100 to-blue-100 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                          {webinar.speakerImage ? (
+                            <img 
+                              src={webinar.speakerImage} 
+                              alt={webinar.title}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100">
+                              <Video className="w-16 h-16 text-purple-300" />
                             </div>
-
-                            {/* Registered Badge */}
-                            {isRegistered(webinar.id) && (
-                              <div className="absolute top-2 right-2">
-                                <Badge className="bg-green-600 text-white text-xs">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Registered
-                                </Badge>
-                              </div>
-                            )}
+                          )}
+                          
+                          {/* Views Count - Bottom Left */}
+                          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-card/90 dark:bg-card/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{webinar.views}</span>
                           </div>
-
-                          <CardContent className="flex flex-col p-4 flex-1">
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <h3 className="text-sm font-bold line-clamp-2 flex-1">{webinar.title}</h3>
-                              </div>
-
-                              <div className="space-y-0.5">
-                                <p className="text-[11px] text-muted-foreground font-medium">
-                                  {webinar.date}
-                                </p>
-                                <p className="text-[11px] text-muted-foreground">
-                                  {webinar.duration} • {webinar.language}
-                                </p>
+                          
+                          {/* Play Button - Bottom Right */}
+                          <div className="absolute bottom-3 right-3">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                              <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                            </div>
+                          </div>
+                          
+                          {/* Registered Badge - Minimal */}
+                          {isRegistered(webinar.id) && (
+                            <div className="absolute top-3 right-3" title="Registered">
+                              <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center shadow-md cursor-help">
+                                <CheckCircle className="w-4 h-4 text-white" />
                               </div>
                             </div>
-                            
-                            <div className="mt-3 pt-3 border-t space-y-2">
-                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                <Users className="w-3 h-3" />
-                                <span className="truncate">{webinar.speaker}</span>
-                              </div>
-
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-base font-bold text-gray-900">
-                                  {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
+                          )}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="space-y-1.5">
+                          {/* Language & Category Pills */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {webinar.language}
+                            </span>
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-primary bg-primary/10">
+                              {webinar.category}
+                            </Badge>
+                          </div>
+                          
+                          {/* Title */}
+                          <h3 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary line-clamp-2">
+                            {webinar.title}
+                          </h3>
+                          
+                          {/* Speaker */}
+                          <p className="text-xs text-muted-foreground">
+                            {webinar.speaker}
+                          </p>
+                          
+                          {/* Price & Duration */}
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-sm font-bold text-foreground">
+                                {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
+                              </span>
+                              {webinar.price > 0 && (
+                                <span className="text-[10px] text-gray-400 line-through">
+                                  ₹{webinar.originalPrice.toLocaleString()}
                                 </span>
-                                {webinar.price > 0 && (
-                                  <>
-                                    <span className="text-[10px] text-gray-400 line-through">
-                                      ₹{webinar.originalPrice.toLocaleString()}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-orange-500">
-                                      {Math.round(((webinar.originalPrice - webinar.price) / webinar.originalPrice) * 100)}% OFF
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              
-                              <Button variant="outline" size="sm" className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-500 transition-colors text-xs h-8">
-                                <Eye className="w-3 h-3 mr-1" />
-                                View Details
-                              </Button>
+                              )}
                             </div>
-                          </CardContent>
-                        </Card>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-0 -translate-x-1/2 shadow-lg border-2 border-purple-300/30 bg-white/95 w-12 h-12" />
-                  <CarouselNext className="right-0 translate-x-1/2 shadow-lg border-2 border-purple-300/30 bg-white/95 w-12 h-12" />
-                </Carousel>
-              </div>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {webinar.duration}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
             </section>
           )}
           
@@ -360,138 +369,139 @@ export default function WebinarsPage() {
             const statusWebinars = applyFilters(webinars.filter((w: any) => w.status === status));
             
             if (statusWebinars.length === 0) return null;
+
+            const statusColor = status === 'Live' ? 'text-red-600' : 
+                               status === 'Upcoming' ? 'text-blue-600' : 'text-green-600';
+            const statusBg = status === 'Live' ? 'bg-red-100' : 
+                            status === 'Upcoming' ? 'bg-blue-100' : 'bg-green-100';
             
             return (
-              <section key={status} className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-3xl -z-10" />
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl border-2 border-primary/10 shadow-xl p-8 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
-                        <Video className="w-6 h-6 text-white" />
+              <section key={status} className="space-y-4">
+                <Carousel opts={{ align: "start" }} className="w-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${statusBg} ${statusColor}`}>
+                          <Video className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-foreground">{statusLabels[status]}</h2>
+                          <p className="text-sm text-muted-foreground">{statusWebinars.length} webinars available</p>
+                        </div>
                       </div>
-                      <div>
-                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{statusLabels[status]}</h2>
-                        <p className="text-sm text-muted-foreground mt-1">{statusWebinars.length} webinars available</p>
+                      <div className="flex items-center gap-2">
+                        <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                        <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
+                    <Button 
+                      variant="ghost" 
+                      className="text-primary hover:bg-blue-50"
                       onClick={() => setSelectedStatus(status)}
-                      className="hidden md:flex items-center gap-2"
                     >
                       View All
-                      <ArrowLeft className="w-4 h-4 rotate-180" />
+                      <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                     </Button>
                   </div>
-                  
-                  <Carousel
-                    opts={{
-                      align: "start",
-                    }}
-                    className="w-full"
-                  >
-                    <CarouselContent className="-ml-2 md:-ml-4">
-                      {statusWebinars.slice(0, 12).map((webinar: any) => (
-                        <CarouselItem key={webinar.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                          <Card 
-                            className="cursor-pointer transition-colors duration-300 hover:border-primary border-2 group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 h-full flex flex-col"
-                            onClick={() => setSelectedWebinar(webinar)}
-                          >
-                            {/* Image Section */}
-                            <div className="relative h-36 w-full overflow-hidden bg-gray-100 rounded-t-xl">
-                              {webinar.speakerImage ? (
-                                <img 
-                                  src={webinar.speakerImage} 
-                                  alt={webinar.title}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                                  <Video className="w-10 h-10" />
-                                </div>
-                              )}
-                              
-                              {/* Status Badge */}
-                              <div className="absolute top-2 left-2">
-                                <Badge className={`${statusColors[webinar.status]} font-semibold text-xs`}>
-                                  {webinar.status === 'Live' ? '● LIVE' : webinar.status}
+
+                  <CarouselContent className="-ml-4">
+                    {statusWebinars.slice(0, 10).map((webinar: any) => (
+                      <CarouselItem key={webinar.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                        <div 
+                          className="group cursor-pointer space-y-2"
+                          onClick={() => setSelectedWebinar(webinar)}
+                        >
+                          {/* Thumbnail - 4:3 aspect ratio */}
+                          <div className={`relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gradient-to-br ${statusBg} shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1`}>
+                            {webinar.speakerImage ? (
+                              <img 
+                                src={webinar.speakerImage} 
+                                alt={webinar.title}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${statusBg}`}>
+                                <Video className={`w-16 h-16 ${statusColor} opacity-50`} />
+                              </div>
+                            )}
+                            
+                            {/* Views Count - Bottom Left */}
+                            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-card/90 dark:bg-card/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>{webinar.views}</span>
+                            </div>
+                            
+                            {/* Play Button - Bottom Right */}
+                            <div className="absolute bottom-3 right-3">
+                              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                                <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                              </div>
+                            </div>
+                            
+                            {/* Status Badge - Top Left */}
+                            {webinar.status === 'Live' && (
+                              <div className="absolute top-3 left-3">
+                                <Badge className="bg-red-600 text-white font-semibold text-xs animate-pulse">
+                                  ● LIVE
                                 </Badge>
                               </div>
-
-                              {/* Play Button for Recorded */}
-                              {webinar.status === 'Recorded' && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-                                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                                    <Play className="w-4 h-4 text-primary ml-0.5" fill="currentColor" />
-                                  </div>
+                            )}
+                            
+                            {/* Registered Badge - Minimal */}
+                            {isRegistered(webinar.id) && (
+                              <div className="absolute top-3 right-3" title="Registered">
+                                <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center shadow-md cursor-help">
+                                  <CheckCircle className="w-4 h-4 text-white" />
                                 </div>
-                              )}
-
-                              {/* Registered Badge */}
-                              {isRegistered(webinar.id) && (
-                                <div className="absolute top-2 right-2">
-                                  <Badge className="bg-green-600 text-white text-xs">
-                                    <CheckCircle className="w-3 h-3 mr-1" />
-                                    Registered
-                                  </Badge>
-                                </div>
-                              )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="space-y-1.5">
+                            {/* Language & Category Pills */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-muted-foreground">
+                                {webinar.language}
+                              </span>
+                              <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-primary bg-primary/10">
+                                {webinar.category}
+                              </Badge>
                             </div>
-
-                            <CardContent className="flex flex-col p-4 flex-1">
-                              <div className="flex-1 space-y-2">
-                                <div className="flex items-start justify-between gap-2">
-                                  <h3 className="text-sm font-bold line-clamp-2 flex-1">{webinar.title}</h3>
-                                </div>
-
-
-                                <div className="space-y-0.5">
-                                  <p className="text-[11px] text-muted-foreground font-medium">
-                                    {webinar.date}
-                                  </p>
-                                  <p className="text-[11px] text-muted-foreground">
-                                    {webinar.duration} • {webinar.language}
-                                  </p>
-                                </div>
-                              </div>
-                              
-                              <div className="mt-3 pt-3 border-t space-y-2">
-                                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                  <Users className="w-3 h-3" />
-                                  <span className="truncate">{webinar.speaker}</span>
-                                </div>
-
-                                <div className="flex items-baseline gap-2">
-                                  <span className="text-base font-bold text-gray-900 dark:text-white">
-                                    {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
+                            
+                            {/* Title */}
+                            <h3 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary line-clamp-2">
+                              {webinar.title}
+                            </h3>
+                            
+                            {/* Speaker */}
+                            <p className="text-xs text-muted-foreground">
+                              {webinar.speaker}
+                            </p>
+                            
+                            {/* Price & Duration */}
+                            <div className="flex items-center justify-between pt-1">
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-sm font-bold text-foreground">
+                                  {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
+                                </span>
+                                {webinar.price > 0 && (
+                                  <span className="text-[10px] text-gray-400 line-through">
+                                    ₹{webinar.originalPrice.toLocaleString()}
                                   </span>
-                                  {webinar.price > 0 && (
-                                    <>
-                                      <span className="text-[10px] text-gray-400 line-through">
-                                        ₹{webinar.originalPrice.toLocaleString()}
-                                      </span>
-                                      <span className="text-[10px] font-bold text-orange-500">
-                                        {Math.round(((webinar.originalPrice - webinar.price) / webinar.originalPrice) * 100)}% OFF
-                                      </span>
-                                    </>
-                                  )}
-                                </div>
-                                
-                                <Button variant="outline" size="sm" className="w-full hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary transition-colors text-xs h-8">
-                                  <Eye className="w-3 h-3 mr-1" />
-                                  View Details
-                                </Button>
+                                )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-0 -translate-x-1/2 shadow-lg border-2 border-primary/20 bg-white/95 w-12 h-12" />
-                    <CarouselNext className="right-0 translate-x-1/2 shadow-lg border-2 border-primary/20 bg-white/95 w-12 h-12" />
-                  </Carousel>
-                </div>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {webinar.duration}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
               </section>
             );
           })}
@@ -506,7 +516,7 @@ export default function WebinarsPage() {
                 setSelectedStatus(null);
                 setSearchQuery("");
               }}
-              className="group hover:bg-primary/10"
+              className="group hover:bg-blue-50"
             >
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Overview
@@ -521,7 +531,7 @@ export default function WebinarsPage() {
           </div>
 
           {/* Filter Bar */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border-2 border-gray-200/50 shadow-lg p-4">
+          <div className="bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-2xl border-2 border-border/50 shadow-lg p-4">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="relative flex-1">
@@ -530,7 +540,7 @@ export default function WebinarsPage() {
                   placeholder="Search webinars..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
+                  className="pl-10 h-10 bg-card border-border focus:border-primary rounded-xl"
                 />
               </div>
 
@@ -546,7 +556,7 @@ export default function WebinarsPage() {
                     }
                   }}
                 >
-                  <SelectTrigger className="h-10 rounded-xl border-gray-200 focus:border-primary">
+                  <SelectTrigger className="h-10 rounded-xl border-border focus:border-primary">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -591,7 +601,7 @@ export default function WebinarsPage() {
                     {webinar.speakerImage ? (
                       <img src={webinar.speakerImage} alt={webinar.title} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
                         <Video className="w-12 h-12" />
                       </div>
                     )}
@@ -619,7 +629,7 @@ export default function WebinarsPage() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-3 flex-1 flex flex-col">
+                  <CardContent className="space-y-2 flex-1 flex flex-col">
                     <Separator />
                     <p className="text-sm text-muted-foreground line-clamp-2">{webinar.description}</p>
                     
@@ -633,9 +643,9 @@ export default function WebinarsPage() {
                       <span>{webinar.date}</span>
                     </div>
 
-                    <div className="mt-auto pt-3 border-t">
-                      <div className="flex items-baseline gap-2 mb-3">
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    <div className="mt-auto pt-2 border-t">
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="text-lg font-bold text-foreground">
                           {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
                         </span>
                         {webinar.price > 0 && (
@@ -648,7 +658,7 @@ export default function WebinarsPage() {
                         )}
                       </div>
 
-                      <Button variant="outline" size="sm" className="w-full hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary transition-colors">
+                      <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-primary transition-colors text-xs h-7">
                         <Eye className="w-3 h-3 mr-2" />
                         View Details
                       </Button>
@@ -680,7 +690,7 @@ export default function WebinarsPage() {
 
         {/* Right Sidebar */}
         <aside className="w-full lg:w-80 flex-shrink-0">
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border-2 border-gray-200/50 shadow-lg p-6 sticky top-24">
+          <div className="bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-2xl border-2 border-border/50 shadow-lg p-6 sticky top-24">
             {/* Tabs */}
             <div className="flex gap-2 mb-6">
               <button
@@ -688,7 +698,7 @@ export default function WebinarsPage() {
                 className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${
                   sidebarTab === 'live'
                     ? 'bg-primary text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
                 Live
@@ -698,7 +708,7 @@ export default function WebinarsPage() {
                 className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${
                   sidebarTab === 'popular'
                     ? 'bg-primary text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
                 Popular
@@ -708,74 +718,103 @@ export default function WebinarsPage() {
                 className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${
                   sidebarTab === 'registered'
                     ? 'bg-primary text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
                 Registered
               </button>
             </div>
 
-            {/* Sidebar Content */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+            {/* Sidebar Content - Scrollable */}
+            <div className="space-y-3 min-h-[90vh] max-h-[90vh] overflow-y-auto pr-1 scrollbar-thin">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide sticky top-0 bg-card/80 dark:bg-card/80 backdrop-blur-sm py-2 -mt-2">
                 {sidebarTab === 'live' ? 'Top Live' : sidebarTab === 'popular' ? 'Most Popular' : 'My Registered'}
               </h3>
 
               {(sidebarTab === 'live' ? liveWebinars : sidebarTab === 'popular' ? popularWebinars : registeredWebinars).map((webinar: any) => (
                 <div
                   key={webinar.id}
-                  className="flex gap-3 p-3 rounded-xl border-2 border-gray-100 dark:border-border hover:border-primary hover:shadow-md transition-all cursor-pointer group"
+                  className="group cursor-pointer space-y-2"
                   onClick={() => setSelectedWebinar(webinar)}
                 >
-                  {/* Thumbnail */}
-                  <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  {/* Thumbnail - Similar to main cards */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-0.5">
                     {webinar.speakerImage ? (
                       <img
                         src={webinar.speakerImage}
                         alt={webinar.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <Video className="w-8 h-8" />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Video className="w-10 h-10 text-blue-300" />
                       </div>
                     )}
+                    
+                    {/* Views Count - Bottom Left */}
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-card/90 dark:bg-card/90 px-2 py-0.5 text-[10px] font-medium text-foreground shadow-sm backdrop-blur-sm">
+                      <Eye className="w-3 h-3" />
+                      <span>{webinar.views}</span>
+                    </div>
+                    
+                    {/* Play Button - Bottom Right */}
+                    <div className="absolute bottom-2 right-2">
+                      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-md transition-transform group-hover:scale-110">
+                        <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                      </div>
+                    </div>
+                    
+                    {/* Status Badge - Top Left */}
                     {sidebarTab === 'live' && (
-                      <div className="absolute top-1 left-1">
-                        <Badge className="bg-red-600 text-white text-[10px] px-1.5 py-0.5">
+                      <div className="absolute top-2 left-2">
+                        <Badge className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 animate-pulse">
                           ● LIVE
                         </Badge>
                       </div>
                     )}
-                    {sidebarTab === 'registered' && (
-                      <div className="absolute top-1 left-1">
-                        <Badge className="bg-green-600 text-white text-[10px] px-1.5 py-0.5">
-                          <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
-                        </Badge>
+                    
+                    {/* Registered Badge - Top Right */}
+                    {isRegistered(webinar.id) && (
+                      <div className="absolute top-2 right-2" title="Registered">
+                        <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center shadow-sm">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
                       </div>
                     )}
                   </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">
+                  
+                  {/* Content */}
+                  <div className="space-y-1">
+                    {/* Language & Category */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {webinar.language}
+                      </span>
+                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-semibold text-primary bg-primary/10">
+                        {webinar.category}
+                      </Badge>
+                    </div>
+                    
+                    {/* Title */}
+                    <h4 className="text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                       {webinar.title}
                     </h4>
-                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                    
+                    {/* Speaker */}
+                    <p className="text-[10px] text-muted-foreground truncate">
                       {webinar.speaker}
                     </p>
-                    {sidebarTab === 'popular' && (
-                      <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                        <Eye className="w-3 h-3" />
-                        <span>{webinar.views} views</span>
-                      </div>
-                    )}
-                    {sidebarTab === 'registered' && (
-                      <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                        <Calendar className="w-3 h-3" />
-                        <span>{webinar.date}</span>
-                      </div>
-                    )}
+                    
+                    {/* Price & Duration */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground">
+                        {webinar.price === 0 ? 'Free' : `₹${webinar.price.toLocaleString()}`}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <Clock className="w-2.5 h-2.5" />
+                        {webinar.duration}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -797,7 +836,7 @@ export default function WebinarsPage() {
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                   <Video className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -823,7 +862,7 @@ export default function WebinarsPage() {
             <div className="space-y-6 mt-4 animate-in fade-in duration-500">
               {/* Speaker Info */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                   <CardTitle className="text-base">Speaker</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
@@ -831,7 +870,7 @@ export default function WebinarsPage() {
                     {selectedWebinar.speakerImage ? (
                       <img src={selectedWebinar.speakerImage} alt={selectedWebinar.speaker} className="w-16 h-16 rounded-full object-cover" />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
                         <Users className="w-8 h-8 text-primary" />
                       </div>
                     )}
@@ -846,7 +885,7 @@ export default function WebinarsPage() {
               {/* Description */}
               {selectedWebinar.description && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                     <CardTitle className="text-base">About this Session</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -858,7 +897,7 @@ export default function WebinarsPage() {
               {/* Topics */}
               {selectedWebinar.topics && selectedWebinar.topics.length > 0 && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                  <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                     <CardTitle className="text-base">What You'll Learn</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -876,7 +915,7 @@ export default function WebinarsPage() {
 
               {/* Session Details */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-background to-gray-50">
                   <CardTitle className="text-base">Session Details</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">
@@ -912,7 +951,7 @@ export default function WebinarsPage() {
               <div className="flex gap-3 pt-4 border-t">
                 <div className="flex-1">
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-3xl font-bold text-gray-900">
+                    <span className="text-3xl font-bold text-foreground">
                       {selectedWebinar.price === 0 ? 'Free' : `₹${selectedWebinar.price.toLocaleString()}`}
                     </span>
                     {selectedWebinar.price > 0 && (

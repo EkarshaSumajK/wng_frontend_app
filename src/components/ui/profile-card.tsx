@@ -109,7 +109,7 @@ export const ProfileCard = ({ therapist, onClick, getDoctorImage }: ProfileCardP
 
 
             <div className="pt-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 delay-75">
-              <button className="w-full py-1.5 text-sm bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-colors shadow-lg active:scale-[0.98] transform duration-200">
+              <button className="w-full py-1.5 text-sm bg-card text-card-foreground border border-border font-bold rounded-xl hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg active:scale-[0.98] transform duration-200">
                 View Profile
               </button>
             </div>

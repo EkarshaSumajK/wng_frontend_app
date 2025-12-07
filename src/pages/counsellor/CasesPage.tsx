@@ -1025,7 +1025,7 @@ export default function CasesPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                 <FileText className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                 Case Management
               </h1>
             </div>
@@ -1046,10 +1046,10 @@ export default function CasesPage() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
         <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+          <div className="bg-card dark:bg-card rounded-2xl p-6 shadow-sm border border-border sticky top-24">
             <div className="flex items-center gap-2 mb-6">
               <Filter className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+              <h3 className="font-bold text-lg text-foreground">Filters</h3>
             </div>
             
             <FilterSection 
@@ -1092,7 +1092,7 @@ export default function CasesPage() {
               placeholder="Search cases by student name or summary..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white border-gray-200 focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-card border-border focus:border-primary rounded-xl"
             />
           </div>
 

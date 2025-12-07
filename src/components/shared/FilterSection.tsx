@@ -14,14 +14,14 @@ export const FilterSection = ({ title, options, selected, setSelected }: FilterS
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="py-4 border-b border-gray-100 last:border-0">
+    <div className="py-4 border-b border-border last:border-0">
       <div 
         className="flex items-center justify-between mb-2 cursor-pointer group select-none"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">{title}</h4>
+        <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{title}</h4>
         <ChevronRight 
-          className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
+          className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
         />
       </div>
       
@@ -50,7 +50,7 @@ export const FilterSection = ({ title, options, selected, setSelected }: FilterS
                   />
                   <label
                     htmlFor={`${title}-${option}`}
-                    className="text-sm text-gray-600 cursor-pointer hover:text-gray-900 select-none"
+                    className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none"
                   >
                     {option}
                   </label>

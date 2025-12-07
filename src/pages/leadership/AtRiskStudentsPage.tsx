@@ -95,7 +95,7 @@ export default function AtRiskStudentsPage() {
               >
                 <AlertTriangle className="w-6 h-6 text-white" />
               </motion.div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 At-Risk Students
               </h1>
             </div>

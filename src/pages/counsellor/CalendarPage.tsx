@@ -302,7 +302,7 @@ export default function CalendarPage() {
         </TabsList>
 
         <TabsContent value="today">
-          <Card className="border border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
+          <Card className="border border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
             <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -338,7 +338,7 @@ export default function CalendarPage() {
                     todaysEvents.map((event) => (
                       <div
                         key={event.id}
-                        className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-gray-100 dark:border-border rounded-xl hover:border-blue-100 hover:shadow-md transition-all duration-300 cursor-pointer gap-3 sm:gap-0"
+                        className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-300 cursor-pointer gap-3 sm:gap-0"
                         onClick={() => handleEditEvent(event)}
                       >
                         <div className="flex-1 w-full sm:w-auto">
@@ -354,7 +354,7 @@ export default function CalendarPage() {
                               {event.status}
                             </Badge>
                             {event.related_student_id && (
-                              <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300">
+                              <Badge variant="outline" className="text-xs bg-card border-border text-muted-foreground">
                                 Wellness Check
                               </Badge>
                             )}
@@ -379,7 +379,7 @@ export default function CalendarPage() {
         </TabsContent>
 
         <TabsContent value="upcoming">
-          <Card className="border border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
+          <Card className="border border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
@@ -394,7 +394,7 @@ export default function CalendarPage() {
                     upcomingEvents.map((event: any) => (
                       <div
                         key={event.id}
-                        className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-gray-100 dark:border-border rounded-xl hover:border-blue-100 hover:shadow-md transition-all duration-300 gap-3 sm:gap-0"
+                        className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-300 gap-3 sm:gap-0"
                       >
                         <div className="flex-1 w-full sm:w-auto">
                           <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -407,7 +407,7 @@ export default function CalendarPage() {
                               {event.status}
                             </Badge>
                             {event.related_student_id && (
-                              <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300">
+                              <Badge variant="outline" className="text-xs bg-card border-border text-muted-foreground">
                                 Wellness Check
                               </Badge>
                             )}
@@ -460,7 +460,7 @@ export default function CalendarPage() {
         </TabsContent>
 
         <TabsContent value="completed">
-          <Card className="border border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
+          <Card className="border border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5" />
@@ -475,7 +475,7 @@ export default function CalendarPage() {
                     completedEvents.map((event: any) => (
                       <div
                         key={event.id}
-                        className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-gray-100 dark:border-border rounded-xl hover:border-blue-100 hover:shadow-md transition-all duration-300 gap-3 sm:gap-0"
+                        className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-300 gap-3 sm:gap-0"
                       >
                         <div className="flex-1 w-full sm:w-auto">
                           <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -484,7 +484,7 @@ export default function CalendarPage() {
                               COMPLETED
                             </Badge>
                             {event.related_student_id && (
-                              <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300">
+                              <Badge variant="outline" className="text-xs bg-card border-border text-muted-foreground">
                                 Wellness Check
                               </Badge>
                             )}

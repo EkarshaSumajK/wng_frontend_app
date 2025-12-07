@@ -170,8 +170,8 @@ export function ViewStudentProfileModal({ open, onOpenChange, student }: ViewStu
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-500/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-gray-500" />
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground mb-1">Student ID</p>

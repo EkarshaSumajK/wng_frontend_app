@@ -1,4 +1,4 @@
-import { Search, HelpCircle, LogOut, Home, User, Building2, Bell } from "lucide-react";
+import { Search, HelpCircle, LogOut, Home, User, Building2, Bell, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,12 +12,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/useTheme";
 
 export function TopBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   if (!user) return null;
 
@@ -84,6 +85,21 @@ export function TopBar() {
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-destructive rounded-full ring-2 ring-background" />
+          </Button>
+
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9 rounded-md hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground transition-colors duration-200"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 transition-transform duration-200 rotate-0 scale-100" />
+            ) : (
+              <Moon className="w-4 h-4 transition-transform duration-200 rotate-0 scale-100" />
+            )}
           </Button>
 
           <DropdownMenu>

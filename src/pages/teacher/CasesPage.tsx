@@ -117,7 +117,7 @@ export default function TeacherCasesPage() {
       <div className="flex flex-col lg:flex-row gap-8 relative z-10">
         {/* Sidebar */}
         <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
-          <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-border sticky top-24">
+          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border sticky top-24">
             <div className="flex items-center gap-2 mb-6">
               <Filter className="w-5 h-5 text-primary" />
               <h3 className="font-bold text-lg text-gray-900 dark:text-white">Filters</h3>
@@ -141,7 +141,7 @@ export default function TeacherCasesPage() {
 
             <Button 
               variant="outline" 
-              className="w-full mt-6 text-gray-500 hover:text-primary border-dashed"
+              className="w-full mt-6 text-muted-foreground hover:text-primary border-dashed"
               onClick={() => {
                 setSelectedRiskLevels([]);
                 setSelectedStatuses([]);
@@ -162,7 +162,7 @@ export default function TeacherCasesPage() {
               placeholder="Search by student name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-card border-border focus:border-primary rounded-xl"
             />
           </div>
 

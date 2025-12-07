@@ -96,7 +96,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4 border-b border-border/30">
         <div className="flex items-center gap-3 group">
           {user.school_logo_url ? (
-            <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-105 bg-white">
+            <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-105 bg-card">
               <img src={user.school_logo_url} alt={user.school_name} className="w-full h-full object-cover" />
             </div>
           ) : (

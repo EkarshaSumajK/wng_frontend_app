@@ -17,7 +17,9 @@ import {
   TrendingUp,
   Tag,
   X,
-  Users
+  Users,
+  Send,
+  Calendar
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +45,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useAssignActivity } from '@/hooks/useActivityAssignments';
+import { useTeacherClasses } from '@/hooks/useTeachers';
+import { toast } from 'sonner';
 
 const activityTypeLabels: Record<string, string> = {
   PHYSICAL_DEVELOPMENT: 'Physical Development',
@@ -78,7 +83,7 @@ const diagnosisColors: Record<string, string> = {
   INTELLECTUAL_DISABILITIES: 'bg-purple-100 text-purple-800 border-purple-200',
   LEARNING_DISABILITIES: 'bg-pink-100 text-pink-800 border-pink-200',
   ANXIETY_DISORDERS: 'bg-orange-100 text-orange-800 border-orange-200',
-  DEPRESSION: 'bg-gray-100 text-gray-800 border-gray-200',
+  DEPRESSION: 'bg-muted text-muted-foreground border-border',
   ADHD: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   TRAUMA_PTSD: 'bg-red-100 text-red-800 border-red-200',
   AUTISM_SPECTRUM_DISORDER: 'bg-teal-100 text-teal-800 border-teal-200',
@@ -139,10 +144,18 @@ export default function ActivitiesPage() {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [viewAllType, setViewAllType] = useState<'featured' | 'quick_relief' | 'quick_sessions' | 'grades' | 'diagnosis' | 'teamwork' | null>(null);
+  
+  // Assign to class state
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [dueDate, setDueDate] = useState<string>('');
 
   const { data: activities = [], isLoading } = useActivities({
     school_id: user?.school_id,
   });
+  
+  // Fetch teacher's classes and assign activity mutation
+  const { data: teacherClasses = [] } = useTeacherClasses(user?.id);
+  const assignActivityMutation = useAssignActivity();
 
   // Filter activities based on all selected filters
   const filteredActivities = useMemo(() => {
@@ -275,8 +288,8 @@ export default function ActivitiesPage() {
                       Featured
                     </h3>
                     <div className="flex items-center gap-2">
-                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                     </div>
                  </div>
                  <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('featured')}>View All</Button>
@@ -338,11 +351,11 @@ export default function ActivitiesPage() {
                         <circle cx="12" cy="12" r="1" fill="#16A34A"/>
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Quick Sessions (5-10 min)</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Sessions (5-10 min)</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('quick_sessions')}>View All</Button>
@@ -414,11 +427,11 @@ export default function ActivitiesPage() {
                         <path d="M6 12V17C6 17.5523 6.44772 18 7 18H17C17.5523 18 18 17.5523 18 17V12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 2"/>
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Browse by Grade</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Browse by Grade</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('grades')}>View All</Button>
@@ -473,11 +486,11 @@ export default function ActivitiesPage() {
                     <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
                       <Users className="w-6 h-6 text-indigo-600" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Teamwork Activities</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Teamwork Activities</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('teamwork')}>View All</Button>
@@ -551,11 +564,11 @@ export default function ActivitiesPage() {
                         <path d="M15 8C15 8 16 9 17 8" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Special Diagnosis</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Special Diagnosis</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('diagnosis')}>View All</Button>
@@ -615,8 +628,8 @@ export default function ActivitiesPage() {
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Browse
             </Button>
-            <div className="h-8 w-px bg-gray-200" />
-            <h2 className="text-2xl font-bold text-gray-900 capitalize">
+            <div className="h-8 w-px bg-border" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
               {selectedGrade ? `Grade ${selectedGrade} Activities` : 
                selectedDiagnosis ? `${diagnosisLabels[selectedDiagnosis]} Activities` : 
                viewAllType === 'featured' ? 'Featured Activities' :
@@ -898,10 +911,10 @@ export default function ActivitiesPage() {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                       <Search className="w-8 h-8 text-gray-400" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">No activities found</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">No activities found</h3>
                     <p className="text-muted-foreground mt-1">
                       Try adjusting your search or filters to find what you're looking for.
                     </p>
@@ -1027,17 +1040,23 @@ export default function ActivitiesPage() {
               <div className="space-y-6">
                 {selectedActivity.instructions && selectedActivity.instructions.length > 0 && (
                   <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-gray-50">
-                      <CardTitle className="text-base">Step-by-Step Instructions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <Carousel
-                        opts={{
-                          align: "start",
-                          loop: true,
-                        }}
-                        className="w-full"
-                      >
+                    <Carousel
+                      opts={{
+                        align: "start",
+                        loop: true,
+                      }}
+                      className="w-full"
+                    >
+                      <CardHeader className="bg-gradient-to-r from-background to-gray-50">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base">Step-by-Step Instructions</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <CarouselPrevious className="static translate-y-0 h-8 w-8 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                            <CarouselNext className="static translate-y-0 h-8 w-8 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-4">
                         <CarouselContent>
                           {selectedActivity.instructions.map((instruction: string, idx: number) => (
                             <CarouselItem key={idx}>
@@ -1061,12 +1080,93 @@ export default function ActivitiesPage() {
                             </CarouselItem>
                           ))}
                         </CarouselContent>
-                        <CarouselPrevious className="left-0 -translate-x-12" />
-                        <CarouselNext className="right-0 translate-x-12" />
-                      </Carousel>
-                    </CardContent>
+                      </CardContent>
+                    </Carousel>
                   </Card>
                 )}
+
+                {/* Assign to Class Section */}
+                <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Send className="w-4 h-4 text-primary" />
+                      Assign to Class
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-1">
+                        <Select 
+                          value={selectedClassId} 
+                          onValueChange={setSelectedClassId}
+                        >
+                          <SelectTrigger className="h-10 w-full">
+                            <SelectValue placeholder="Select a class" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {teacherClasses.length === 0 ? (
+                              <SelectItem value="none" disabled>No classes available</SelectItem>
+                            ) : (
+                              teacherClasses.map((cls: any) => (
+                                <SelectItem key={cls.class_id} value={cls.class_id}>
+                                  {cls.name || cls.class_name || `Class ${cls.class_id.slice(0, 8)}`}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="w-full sm:w-48">
+                        <Input
+                          type="date"
+                          value={dueDate}
+                          onChange={(e) => setDueDate(e.target.value)}
+                          className="h-10"
+                          placeholder="Due date (optional)"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => {
+                          if (!selectedClassId) {
+                            toast.error('Please select a class');
+                            return;
+                          }
+                          assignActivityMutation.mutate(
+                            {
+                              activityId: selectedActivity.activity_id,
+                              classId: selectedClassId,
+                              dueDate: dueDate || undefined,
+                            },
+                            {
+                              onSuccess: () => {
+                                toast.success('Activity assigned to class successfully!');
+                                setSelectedClassId('');
+                                setDueDate('');
+                              },
+                              onError: (error: any) => {
+                                toast.error(error?.response?.data?.detail || 'Failed to assign activity');
+                              },
+                            }
+                          );
+                        }}
+                        disabled={!selectedClassId || assignActivityMutation.isPending}
+                        className="h-10 px-6"
+                      >
+                        {assignActivityMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Assigning...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Assign
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
             </div>
           </DialogContent>
         </Dialog>

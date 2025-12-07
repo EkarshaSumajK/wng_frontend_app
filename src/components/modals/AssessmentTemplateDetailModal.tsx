@@ -87,7 +87,7 @@ export function AssessmentTemplateDetailModal({
                 key={option.option_id || optIndex}
                 className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border hover:border-primary/30 transition-all group"
               >
-                <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-lg bg-card dark:bg-card shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                   <span className="text-sm font-bold text-primary">{optIndex + 1}</span>
                 </div>
                 <div className="flex-1">

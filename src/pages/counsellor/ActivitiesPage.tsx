@@ -269,8 +269,8 @@ export default function ActivitiesPage() {
                       Featured
                     </h3>
                     <div className="flex items-center gap-2">
-                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                     </div>
                  </div>
                  <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('featured')}>View All</Button>
@@ -332,11 +332,11 @@ export default function ActivitiesPage() {
                         <circle cx="12" cy="12" r="1" fill="#16A34A"/>
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Quick Sessions (5-10 min)</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Sessions (5-10 min)</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('quick_sessions')}>View All</Button>
@@ -408,11 +408,11 @@ export default function ActivitiesPage() {
                         <path d="M6 12V17C6 17.5523 6.44772 18 7 18H17C17.5523 18 18 17.5523 18 17V12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 2"/>
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Browse by Grade</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Browse by Grade</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('grades')}>View All</Button>
@@ -467,11 +467,11 @@ export default function ActivitiesPage() {
                     <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
                       <Users className="w-6 h-6 text-indigo-600" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Teamwork Activities</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Teamwork Activities</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('teamwork')}>View All</Button>
@@ -545,11 +545,11 @@ export default function ActivitiesPage() {
                         <path d="M15 8C15 8 16 9 17 8" stroke="#9333EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Special Diagnosis</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Special Diagnosis</h2>
                   </div>
                   <div className="flex items-center gap-2">
-                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                     <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                     <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                   </div>
                 </div>
                 <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('diagnosis')}>View All</Button>
@@ -609,7 +609,7 @@ export default function ActivitiesPage() {
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Browse
             </Button>
-            <div className="h-8 w-px bg-gray-200" />
+            <div className="h-8 w-px bg-border" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
               {selectedGrade ? `Grade ${selectedGrade} Activities` : 
                selectedDiagnosis ? `${diagnosisLabels[selectedDiagnosis]} Activities` : 

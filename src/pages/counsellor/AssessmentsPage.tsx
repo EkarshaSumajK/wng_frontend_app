@@ -444,7 +444,7 @@ export default function AssessmentsPage() {
               placeholder="Search assessments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white dark:bg-card border-gray-200 dark:border-border focus:border-primary rounded-xl"
+              className="pl-10 h-10 bg-card border-border focus:border-primary rounded-xl"
             />
           </div>
 

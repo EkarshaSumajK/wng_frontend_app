@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Book, Search, ExternalLink, Video, Music, FileText, Eye, Calendar, User, Tag, ArrowLeft, Sparkles, Filter, Clock, GraduationCap, Star } from 'lucide-react';
+import { Book, Search, ExternalLink, Video, Music, FileText, Eye, Calendar, User, Tag, ArrowLeft, Sparkles, Filter, Clock, GraduationCap, Star, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { CustomYouTubePlayer } from '@/components/shared/CustomYouTubePlayer';
 
 // Helper function to convert YouTube/Vimeo URLs to embed format
 const getEmbedUrl = (url: string): string => {
@@ -117,11 +118,11 @@ export default function ResourcesPage() {
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
       {/* Header with modern design */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-3xl blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-100/50 to-transparent rounded-3xl blur-3xl -z-10" />
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                 <Book className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
@@ -152,21 +153,21 @@ export default function ResourcesPage() {
                          Featured Resources
                        </h3>
                        <div className="flex items-center gap-2">
-                         <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                         <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                         <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                         <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                        </div>
                     </div>
                     <Button variant="ghost" className="text-primary" onClick={() => setViewAllType('featured')}>View All</Button>
                  </div>
                  <CarouselContent className="-ml-4">
                    {featuredResources.map((resource: any) => (
-                     <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                     <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                        <div 
-                         className="group cursor-pointer space-y-3"
+                         className="group cursor-pointer space-y-2"
                          onClick={() => setViewingResource(resource)}
                        >
-                         {/* Thumbnail */}
-                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                         {/* Thumbnail - 4:3 aspect ratio */}
+                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                            {resource.thumbnail_url ? (
                              <img 
                                src={resource.thumbnail_url} 
@@ -174,26 +175,59 @@ export default function ResourcesPage() {
                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                              />
                            ) : (
-                             <div className="flex h-full w-full items-center justify-center bg-amber-50">
-                               <Sparkles className="w-12 h-12 text-amber-300" />
+                             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100">
+                               <Sparkles className="w-16 h-16 text-amber-300" />
                              </div>
                            )}
-                           {/* Type Badge */}
-                           <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                             {resourceTypeLabels[resource.type]}
+                           
+                           {/* Views Count - Bottom Left */}
+                           <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-card/90 dark:bg-card/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
+                             <Eye className="w-3.5 h-3.5" />
+                             <span>{resource.view_count || 0}</span>
+                           </div>
+                           
+                           {/* Play Button - Bottom Right */}
+                           <div className="absolute bottom-3 right-3">
+                             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                               <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                             </div>
+                           </div>
+                           
+                           {/* Featured Badge */}
+                           <div className="absolute top-3 left-3">
+                             <Badge className="bg-amber-500 text-white font-semibold text-xs shadow-md">
+                               ★ Featured
+                             </Badge>
                            </div>
                          </div>
+                         
                          {/* Content */}
-                         <div className="space-y-1">
-                           <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
+                         <div className="space-y-1.5">
+                           {/* Category Badge */}
+                           <div className="flex items-center gap-2">
+                             <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-primary bg-primary/10">
+                               {resource.category || resourceTypeLabels[resource.type]}
+                             </Badge>
+                           </div>
+                           
+                           {/* Title */}
+                           <h3 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary line-clamp-2">
                              {resource.title}
                            </h3>
-                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                             <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                               {resource.category}
+                           
+                           {/* Author */}
+                           <p className="text-xs text-muted-foreground">
+                             {resource.author_name || 'WellNest'}
+                           </p>
+                           
+                           {/* Price & Type */}
+                           <div className="flex items-center justify-between pt-1">
+                             <span className="text-sm font-bold text-gray-900 dark:text-white">
+                               {resource.is_free ? 'Free' : `$${resource.price || 0}`}
                              </span>
-                             <span>•</span>
-                             <span>{resource.author_name || 'WellNest'}</span>
+                             <span className="text-xs text-muted-foreground">
+                               {resourceTypeLabels[resource.type]}
+                             </span>
                            </div>
                          </div>
                        </div>
@@ -215,19 +249,20 @@ export default function ResourcesPage() {
                       Free Resources
                     </h3>
                     <div className="flex items-center gap-2">
-                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                     </div>
                   </div>
                 </div>
                 <CarouselContent className="-ml-4">
                   {resources.filter((r: any) => r.is_free).slice(0, 12).map((resource: any) => (
-                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                       <div 
-                        className="group cursor-pointer space-y-3"
+                        className="group cursor-pointer space-y-2"
                         onClick={() => setViewingResource(resource)}
                       >
-                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                        {/* Thumbnail - 4:3 aspect ratio */}
+                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                           {resource.thumbnail_url ? (
                             <img 
                               src={resource.thumbnail_url} 
@@ -235,27 +270,52 @@ export default function ResourcesPage() {
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-emerald-50">
-                              <Sparkles className="w-12 h-12 text-emerald-300" />
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-100 to-green-100">
+                              <Sparkles className="w-16 h-16 text-emerald-300" />
                             </div>
                           )}
-                          <div className="absolute top-2 right-2 rounded-lg bg-emerald-500 px-2 py-1 text-xs font-bold text-white shadow-md">
-                            FREE
+                          
+                          {/* Views Count - Bottom Left */}
+                          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{resource.view_count || 0}</span>
                           </div>
-                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                            {resourceTypeLabels[resource.type]}
+                          
+                          {/* Play Button - Bottom Right */}
+                          <div className="absolute bottom-3 right-3">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                              <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                            </div>
                           </div>
                         </div>
-                        <div className="space-y-1">
-                          <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
+                        
+                        {/* Content */}
+                        <div className="space-y-1.5">
+                          {/* Category Badge */}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-primary bg-primary/10">
+                              {resource.category || resourceTypeLabels[resource.type]}
+                            </Badge>
+                          </div>
+                          
+                          {/* Title */}
+                          <h3 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary line-clamp-2">
                             {resource.title}
                           </h3>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                              {resource.category}
+                          
+                          {/* Author */}
+                          <p className="text-xs text-muted-foreground">
+                            {resource.author_name || 'WellNest'}
+                          </p>
+                          
+                          {/* Price & Type */}
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-sm font-bold text-emerald-600">
+                              Free
                             </span>
-                            <span>•</span>
-                            <span>{resource.author_name || 'WellNest'}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {resourceTypeLabels[resource.type]}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -277,19 +337,20 @@ export default function ResourcesPage() {
                       Premium Resources
                     </h3>
                     <div className="flex items-center gap-2">
-                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
-                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white shadow-sm hover:bg-gray-50 border-gray-200" />
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                     </div>
                   </div>
                 </div>
                 <CarouselContent className="-ml-4">
                   {resources.filter((r: any) => !r.is_free).slice(0, 12).map((resource: any) => (
-                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                       <div 
-                        className="group cursor-pointer space-y-3"
+                        className="group cursor-pointer space-y-2"
                         onClick={() => setViewingResource(resource)}
                       >
-                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1 border-2 border-amber-200">
+                        {/* Thumbnail - 4:3 aspect ratio */}
+                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 border-2 border-amber-200">
                           {resource.thumbnail_url ? (
                             <img 
                               src={resource.thumbnail_url} 
@@ -297,27 +358,59 @@ export default function ResourcesPage() {
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
-                              <Star className="w-12 h-12 text-amber-300" />
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100">
+                              <Star className="w-16 h-16 text-amber-300" />
                             </div>
                           )}
-                          <div className="absolute top-2 right-2 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                            ${resource.price || '0'}
+                          
+                          {/* Views Count - Bottom Left */}
+                          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{resource.view_count || 0}</span>
                           </div>
-                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                            {resourceTypeLabels[resource.type]}
+                          
+                          {/* Play Button - Bottom Right */}
+                          <div className="absolute bottom-3 right-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                              <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                            </div>
+                          </div>
+                          
+                          {/* Premium Badge */}
+                          <div className="absolute top-3 left-3">
+                            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-md">
+                              ★ Premium
+                            </Badge>
                           </div>
                         </div>
-                        <div className="space-y-1">
-                          <h3 className="font-semibold leading-tight text-foreground group-hover:text-amber-600 line-clamp-1">
+                        
+                        {/* Content */}
+                        <div className="space-y-1.5">
+                          {/* Category Badge */}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-amber-600 bg-amber-100">
+                              {resource.category || resourceTypeLabels[resource.type]}
+                            </Badge>
+                          </div>
+                          
+                          {/* Title */}
+                          <h3 className="font-bold text-sm leading-tight text-foreground group-hover:text-amber-600 line-clamp-2">
                             {resource.title}
                           </h3>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="uppercase tracking-wider text-[10px] font-medium text-amber-600">
-                              {resource.category}
+                          
+                          {/* Author */}
+                          <p className="text-xs text-muted-foreground">
+                            {resource.author_name || 'WellNest'}
+                          </p>
+                          
+                          {/* Price & Type */}
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-sm font-bold text-amber-600">
+                              ${resource.price || '0'}
                             </span>
-                            <span>•</span>
-                            <span>{resource.author_name || 'WellNest'}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {resourceTypeLabels[resource.type]}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -363,13 +456,13 @@ export default function ResourcesPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-card shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-border" />
-                          <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-white dark:bg-card shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-border" />
+                          <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                          <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
                         </div>
                       </div>
                       <Button 
                         variant="ghost" 
-                        className="text-primary hover:bg-primary/10"
+                        className="text-primary hover:bg-blue-50"
                         onClick={() => setSelectedResourceType(type)}
                       >
                         View All
@@ -379,13 +472,16 @@ export default function ResourcesPage() {
 
                     <CarouselContent className="-ml-4">
                       {typeResources.slice(0, 10).map((resource: any) => (
-                        <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                        <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                           <div 
-                            className="group cursor-pointer space-y-3"
+                            className="group cursor-pointer space-y-2"
                             onClick={() => setViewingResource(resource)}
                           >
-                            {/* Thumbnail / App Icon Style */}
-                            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                            {/* Thumbnail - 4:3 aspect ratio */}
+                            <div className={cn(
+                              "relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1",
+                              typeBg
+                            )}>
                               {resource.thumbnail_url ? (
                                 <img 
                                   src={resource.thumbnail_url} 
@@ -393,41 +489,70 @@ export default function ResourcesPage() {
                                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                               ) : (
+                                <div className="flex h-full w-full items-center justify-center">
+                                  <TypeIcon className={cn("w-16 h-16", typeColor)} />
+                                </div>
+                              )}
+                              
+                              {/* Views Count - Bottom Left */}
+                              <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>{resource.view_count || 0}</span>
+                              </div>
+                              
+                              {/* Play Button - Bottom Right */}
+                              <div className="absolute bottom-3 right-3">
                                 <div className={cn(
-                                  "flex h-full w-full items-center justify-center",
-                                  resource.type === 'VIDEO' && "bg-blue-50",
-                                  resource.type === 'AUDIO' && "bg-purple-50",
-                                  resource.type === 'ARTICLE' && "bg-green-50",
-                                  resource.type === 'RESEARCH_PAPER' && "bg-slate-50",
-                                  resource.type === 'SPECIAL' && "bg-orange-50",
+                                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                                  type === 'VIDEO' ? 'bg-blue-600' : 
+                                  type === 'AUDIO' ? 'bg-purple-600' : 
+                                  type === 'ARTICLE' ? 'bg-green-600' :
+                                  type === 'RESEARCH_PAPER' ? 'bg-slate-600' : 'bg-orange-600'
                                 )}>
-                                  {resource.type === 'VIDEO' && <Video className="w-12 h-12 text-blue-300" />}
-                                  {resource.type === 'AUDIO' && <Music className="w-12 h-12 text-purple-300" />}
-                                  {resource.type === 'ARTICLE' && <FileText className="w-12 h-12 text-green-300" />}
-                                  {resource.type === 'RESEARCH_PAPER' && <GraduationCap className="w-12 h-12 text-slate-300" />}
-                                  {resource.type === 'SPECIAL' && <Star className="w-12 h-12 text-orange-300" />}
+                                  <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
                                 </div>
-                              )}
-                              {/* Duration Badge for Video/Audio */}
-                              {(resource.type === 'VIDEO' || resource.type === 'AUDIO' || resource.type === 'SPECIAL') && resource.duration_seconds && (
-                                <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm flex items-center gap-1">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                                  {Math.floor(resource.duration_seconds / 60)}:{String(resource.duration_seconds % 60).padStart(2, '0')}
-                                </div>
-                              )}
+                              </div>
+                              
+                              {/* Type Badge */}
+                              <div className="absolute top-3 left-3">
+                                <Badge className={cn("text-white font-semibold text-xs shadow-md", 
+                                  type === 'VIDEO' ? 'bg-blue-600' : 
+                                  type === 'AUDIO' ? 'bg-purple-600' : 
+                                  type === 'ARTICLE' ? 'bg-green-600' :
+                                  type === 'RESEARCH_PAPER' ? 'bg-slate-600' : 'bg-orange-600'
+                                )}>
+                                  {typeLabel}
+                                </Badge>
+                              </div>
                             </div>
-
+                            
                             {/* Content */}
-                            <div className="space-y-1">
-                              <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
+                            <div className="space-y-1.5">
+                              {/* Category Badge */}
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className={cn("text-[10px] px-2 py-0 h-5 font-semibold", typeColor, typeBg)}>
+                                  {resource.category || typeLabel}
+                                </Badge>
+                              </div>
+                              
+                              {/* Title */}
+                              <h3 className={cn("font-bold text-sm leading-tight text-foreground line-clamp-2 group-hover:text-primary")}>
                                 {resource.title}
                               </h3>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                                  {resource.category}
+                              
+                              {/* Author */}
+                              <p className="text-xs text-muted-foreground">
+                                {resource.author_name || 'WellNest'}
+                              </p>
+                              
+                              {/* Price & Type */}
+                              <div className="flex items-center justify-between pt-1">
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  {resource.is_free ? 'Free' : `$${resource.price || 0}`}
                                 </span>
-                                <span>•</span>
-                                <span>{resource.author_name || 'WellNest'}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {typeLabel}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -451,12 +576,12 @@ export default function ResourcesPage() {
                   setSearchQuery("");
                   setSelectedCategory(null);
                 }}
-                className="group hover:bg-primary/10"
+                className="group hover:bg-blue-50"
               >
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                 Back to Browse
               </Button>
-              <div className="h-8 w-px bg-gray-200" />
+              <div className="h-8 w-px bg-border" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white capitalize flex items-center gap-2">
                 {selectedResourceType === 'VIDEO' && <Video className="w-6 h-6 text-blue-500" />}
                 {selectedResourceType === 'AUDIO' && <Music className="w-6 h-6 text-purple-500" />}
@@ -515,12 +640,12 @@ export default function ResourcesPage() {
                 filteredResources.map((resource: any, index: number) => (
                   <div
                     key={resource.resource_id}
-                    className="group cursor-pointer space-y-3"
+                    className="group cursor-pointer space-y-2"
                     onClick={() => setViewingResource(resource)}
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Thumbnail / App Icon Style */}
-                    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
+                    {/* Thumbnail - 4:3 aspect ratio */}
+                    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                       {resource.thumbnail_url ? (
                         <img 
                           src={resource.thumbnail_url} 
@@ -543,33 +668,73 @@ export default function ResourcesPage() {
                           {resource.type === 'SPECIAL' && <Star className="w-12 h-12 text-orange-300" />}
                         </div>
                       )}
-                      {/* Duration Badge for Video/Audio */}
-                      {(resource.type === 'VIDEO' || resource.type === 'AUDIO' || resource.type === 'SPECIAL') && resource.duration_seconds && (
-                        <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm flex items-center gap-1">
-                          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                          {Math.floor(resource.duration_seconds / 60)}:{String(resource.duration_seconds % 60).padStart(2, '0')}
+                      
+                      {/* Views Count - Bottom Left */}
+                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{resource.view_count || 0}</span>
+                      </div>
+                      
+                      {/* Play Button - Bottom Right */}
+                      <div className="absolute bottom-3 right-3">
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                          resource.type === 'VIDEO' ? 'bg-blue-600' : 
+                          resource.type === 'AUDIO' ? 'bg-purple-600' : 
+                          resource.type === 'ARTICLE' ? 'bg-green-600' :
+                          resource.type === 'RESEARCH_PAPER' ? 'bg-slate-600' : 'bg-orange-600'
+                        )}>
+                          <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
                         </div>
-                      )}
+                      </div>
+                      
+                      {/* Type Badge */}
+                      <div className="absolute top-3 left-3">
+                        <Badge className={cn("text-white font-semibold text-xs shadow-md", 
+                          resource.type === 'VIDEO' ? 'bg-blue-600' : 
+                          resource.type === 'AUDIO' ? 'bg-purple-600' : 
+                          resource.type === 'ARTICLE' ? 'bg-green-600' :
+                          resource.type === 'RESEARCH_PAPER' ? 'bg-slate-600' : 'bg-orange-600'
+                        )}>
+                          {resourceTypeLabels[resource.type]}
+                        </Badge>
+                      </div>
                     </div>
 
                     {/* Content */}
-                    <div className="space-y-1">
-                      <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
+                    <div className="space-y-1.5">
+                      {/* Category Badge */}
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-primary bg-primary/10">
+                          {resource.category || resourceTypeLabels[resource.type]}
+                        </Badge>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="font-bold text-sm leading-tight text-foreground line-clamp-2 group-hover:text-primary">
                         {resource.title}
                       </h3>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                          {resource.category}
+                      
+                      {/* Author */}
+                      <p className="text-xs text-muted-foreground">
+                        {resource.author_name || 'WellNest'}
+                      </p>
+                      
+                      {/* Price & Type */}
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                          {resource.is_free ? 'Free' : `$${resource.price || 0}`}
                         </span>
-                        <span>•</span>
-                        <span>{resource.author_name || 'WellNest'}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {resourceTypeLabels[resource.type]}
+                        </span>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Search className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">No resources found</h3>
@@ -599,23 +764,21 @@ export default function ResourcesPage() {
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-4">
             <DialogHeader className="border-b pb-2">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
                   <Book className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <DialogTitle className="text-2xl font-bold">{viewingResource.title}</DialogTitle>
-                  <DialogDescription className="mt-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={`${resourceTypeColors[viewingResource.type]} font-semibold`}>
-                        {resourceTypeLabels[viewingResource.type]}
+                  <div className="flex items-center gap-2 flex-wrap mt-2">
+                    <Badge className={`${resourceTypeColors[viewingResource.type]} font-semibold`}>
+                      {resourceTypeLabels[viewingResource.type]}
+                    </Badge>
+                    {viewingResource.category && (
+                      <Badge variant="secondary" className="capitalize">
+                        {viewingResource.category}
                       </Badge>
-                      {viewingResource.category && (
-                        <Badge variant="secondary" className="capitalize">
-                          {viewingResource.category}
-                        </Badge>
-                      )}
-                    </div>
-                  </DialogDescription>
+                    )}
+                  </div>
                 </div>
               </div>
             </DialogHeader>
@@ -624,7 +787,7 @@ export default function ResourcesPage() {
               {/* Description */}
               {viewingResource.description && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
+                  <CardHeader className="bg-gradient-to-r from-background to-muted/50 p-3">
                     <CardTitle className="text-base">Description</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
@@ -635,7 +798,7 @@ export default function ResourcesPage() {
 
               {/* Author & Date */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/50 p-3">
                   <CardTitle className="text-base">Information</CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0 space-y-2">
@@ -657,7 +820,7 @@ export default function ResourcesPage() {
               {/* Tags */}
               {viewingResource.tags && viewingResource.tags.length > 0 && (
                 <Card className="border-2">
-                  <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
+                  <CardHeader className="bg-gradient-to-r from-background to-muted/50 p-3">
                     <CardTitle className="text-base">Tags</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
@@ -674,18 +837,17 @@ export default function ResourcesPage() {
 
               {/* Content Display */}
               <Card className="border-2">
-                <CardHeader className="bg-gradient-to-r from-background to-muted/20 p-3">
+                <CardHeader className="bg-gradient-to-r from-background to-muted/50 p-3">
                   <CardTitle className="text-base">Content</CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
                   <div className="rounded-xl overflow-hidden border-2 border-border shadow-lg bg-background min-h-[500px]">
                     {(viewingResource.type === 'VIDEO' || viewingResource.type === 'video') && viewingResource.video_url && (
-                      <iframe
-                        src={getEmbedUrl(viewingResource.video_url)}
-                        className="w-full h-[500px]"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                      <CustomYouTubePlayer
+                        url={viewingResource.video_url}
+                        thumbnailUrl={viewingResource.thumbnail_url}
                         title={viewingResource.title}
+                        className="h-[500px] w-full"
                       />
                     )}
 
@@ -705,12 +867,42 @@ export default function ResourcesPage() {
                     )}
 
                     {(viewingResource.type === 'ARTICLE' || viewingResource.type === 'article' || viewingResource.type === 'RESEARCH_PAPER' || viewingResource.type === 'SPECIAL') && viewingResource.article_url && (
-                      <iframe
-                        src={viewingResource.article_url}
-                        className="w-full h-[500px]"
-                        title={viewingResource.title}
-                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                      />
+                      <div className="flex flex-col items-center justify-center h-[500px] p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                        <div className="max-w-2xl text-center space-y-6">
+                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center mx-auto shadow-2xl">
+                            {viewingResource.type === 'RESEARCH_PAPER' ? (
+                              <GraduationCap className="w-12 h-12 text-white" />
+                            ) : (
+                              <FileText className="w-12 h-12 text-white" />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-bold text-foreground mb-2">{viewingResource.title}</h3>
+                            {viewingResource.description && (
+                              <p className="text-muted-foreground mb-4">{viewingResource.description}</p>
+                            )}
+                            {viewingResource.category && (
+                              <Badge className="mb-4">{viewingResource.category}</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Click the button below to read the full {viewingResource.type === 'RESEARCH_PAPER' ? 'research paper' : 'article'} in a new tab.
+                          </p>
+                          <Button
+                            size="lg"
+                            onClick={() => window.open(viewingResource.article_url, '_blank')}
+                            className="shadow-lg"
+                          >
+                            <ExternalLink className="mr-2 h-5 w-5" />
+                            Open {viewingResource.type === 'RESEARCH_PAPER' ? 'Research Paper' : 'Article'}
+                          </Button>
+                          <div className="pt-4 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground">
+                              Source: {new URL(viewingResource.article_url).hostname}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </CardContent>

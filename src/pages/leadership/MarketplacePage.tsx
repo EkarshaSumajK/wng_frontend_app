@@ -439,8 +439,8 @@ export default function MarketplacePage() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-0 -translate-x-1/2 shadow-md bg-white/95 dark:bg-gray-800/95 w-14 h-14 text-lg" />
-                <CarouselNext className="right-0 translate-x-1/2 shadow-md bg-white/95 dark:bg-gray-800/95 w-14 h-14 text-lg" />
+                <CarouselPrevious className="left-0 -translate-x-1/2 shadow-md bg-card/95 dark:bg-card/95 w-14 h-14 text-lg" />
+                <CarouselNext className="right-0 translate-x-1/2 shadow-md bg-card/95 dark:bg-card/95 w-14 h-14 text-lg" />
               </Carousel>
             </section>
           )})}

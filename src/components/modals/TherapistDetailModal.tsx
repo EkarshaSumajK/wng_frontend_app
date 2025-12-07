@@ -106,7 +106,7 @@ export function TherapistDetailModal({
             <Button 
               onClick={() => onBook(therapist)}
               variant="secondary"
-              className="w-fit bg-white text-gray-900 hover:bg-white/90 font-semibold px-6 py-3 rounded-full"
+              className="w-fit bg-card text-foreground hover:bg-card/90 font-semibold px-6 py-3 rounded-full"
             >
               Get In Touch
             </Button>
@@ -176,7 +176,7 @@ export function TherapistDetailModal({
               </div>
 
               {/* About */}
-              <div className="bg-white rounded-lg p-4 border border-border">
+              <div className="bg-card dark:bg-card rounded-lg p-4 border border-border">
                 <h3 className="font-semibold text-foreground text-xl mb-2">About</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {therapist.about || "No description available."}
@@ -184,7 +184,7 @@ export function TherapistDetailModal({
               </div>
 
               {/* Expertise */}
-              <div className="bg-white rounded-lg p-4 border border-border">
+              <div className="bg-card dark:bg-card rounded-lg p-4 border border-border">
                 <h3 className="font-semibold text-foreground text-xl mb-3">Expertise</h3>
                 <div className="flex flex-wrap gap-2">
                   {therapist.expertise?.map((item: string) => (
