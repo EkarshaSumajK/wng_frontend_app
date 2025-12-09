@@ -95,7 +95,10 @@ export default function ResourcesPage() {
 
   // Recommended/Featured resources (random selection)
   const featuredResources = useMemo(() => {
-    return [...resources].sort(() => 0.5 - Math.random()).slice(0, 6);
+    return [...resources]
+      .filter((r: any) => r.author_name !== 'Sandra Sudheer Kumar')
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 6);
   }, [resources]);
 
   const uniqueCategories = useMemo(() => 

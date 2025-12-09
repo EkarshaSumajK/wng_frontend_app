@@ -10,7 +10,7 @@ interface TherapistDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onBook: (therapist: Therapist) => void;
-  getDoctorImage: (id: string | number) => string;
+  getDoctorImage: (id: string | number, name?: string) => string;
   children?: React.ReactNode;
 }
 
@@ -84,7 +84,7 @@ export function TherapistDetailModal({
           <div className="space-y-6">
             <div className="w-44 h-44 rounded-3xl overflow-hidden border border-white/15 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
               <img 
-                src={getDoctorImage(therapist.id)}
+                src={getDoctorImage(therapist.id, therapist.name)}
                 alt={therapist.name}
                 className="w-full h-full object-cover"
               />

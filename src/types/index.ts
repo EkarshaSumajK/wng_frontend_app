@@ -134,16 +134,30 @@ export interface AIRecommendation {
 
 export interface Activity {
   id: string;
+  activity_id?: string;
   title: string;
   description: string;
-  type: 'mindfulness' | 'social-skills' | 'emotional-regulation' | 'academic-support' | 'team-building';
+  type: 'PHYSICAL_DEVELOPMENT' | 'COGNITIVE_DEVELOPMENT' | 'SOCIAL_EMOTIONAL_DEVELOPMENT' | 'LANGUAGE_COMMUNICATION_DEVELOPMENT';
   duration: number;
   targetGrade: string[];
+  target_grades?: string[];
   materials: string[];
   instructions: string[];
   objectives: string[];
   createdBy: string;
+  created_by?: string;
   createdAt: string;
+  created_at?: string;
+  updated_at?: string;
+  // New fields from backend
+  diagnosis?: string[];
+  theme?: string[];
+  location?: 'IN_CLASS' | 'AT_HOME' | 'OTHER';
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
+  skill_level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  thumbnail_url?: string;
+  is_counselor_only?: boolean;
+  flashcards?: Record<string, string>;
 }
 
 export interface AssessmentTemplate {

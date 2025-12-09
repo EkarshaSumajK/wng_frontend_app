@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Tag,
   X,
-  Users
+  Users,
+  Loader2
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { LoadingState } from "@/components/shared/LoadingState";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { useActivities } from '@/hooks/useActivities';
+import { useActivities, useActivityWithFlashcards } from '@/hooks/useActivities';
 import {
   Dialog,
   DialogContent,
@@ -136,49 +137,73 @@ export default function ActivitiesPage() {
   const [selectedRiskLevel, setSelectedRiskLevel] = useState<string | null>(null);
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [viewAllType, setViewAllType] = useState<'featured' | 'quick_relief' | 'quick_sessions' | 'grades' | 'diagnosis' | 'teamwork' | null>(null);
 
-  const { data: activities = [], isLoading } = useActivities({
-    school_id: user?.school_id,
+  const { data: activitiesResponse, isLoading } = useActivities({
+    diagnosis: selectedDiagnosis || undefined,
+    themes: selectedTheme || undefined,
   });
+
+  // Fetch selected activity with flashcards
+  const { data: selectedActivity, isLoading: isLoadingActivity } = useActivityWithFlashcards(selectedActivityId || '');
+
+  // Extract activities from new API response format
+  const activities = activitiesResponse?.activities || [];
 
   // Filter activities based on all selected filters
   const filteredActivities = useMemo(() => {
     return activities.filter((activity: any) => {
       const matchesSearch = !searchQuery || 
-        activity.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        activity.activity_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         activity.description?.toLowerCase().includes(searchQuery.toLowerCase());
       
+      // Since new API doesn't have type field, we skip type filtering for now
       const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => {
         if (type === 'TEAMWORK') {
-             return activity.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
-                    activity.title?.toLowerCase().includes('team') || 
+             return activity.activity_name?.toLowerCase().includes('team') || 
                     activity.description?.toLowerCase().includes('team') ||
-                    activity.title?.toLowerCase().includes('group') ||
+                    activity.activity_name?.toLowerCase().includes('group') ||
                     activity.description?.toLowerCase().includes('group');
         }
-        return activity.type === type;
+        // Map themes to types loosely
+        const themesLower = activity.themes?.map((t: string) => t.toLowerCase()).join(' ') || '';
+        if (type === 'COGNITIVE_DEVELOPMENT') return themesLower.includes('cognitive') || themesLower.includes('learning');
+        if (type === 'SOCIAL_EMOTIONAL_DEVELOPMENT') return themesLower.includes('social') || themesLower.includes('emotional');
+        if (type === 'PHYSICAL_DEVELOPMENT') return themesLower.includes('motor') || themesLower.includes('physical');
+        return true;
       });
 
-      const matchesGrade = !selectedGrade || (activity.target_grades && activity.target_grades.includes(selectedGrade));
-      const matchesDiagnosis = !selectedDiagnosis || activity.diagnosis?.includes(selectedDiagnosis);
-      const matchesLocation = !selectedLocation || activity.location === selectedLocation;
-      const matchesRisk = !selectedRiskLevel || activity.risk_level === selectedRiskLevel;
-      const matchesSkill = !selectedSkillLevel || activity.skill_level === selectedSkillLevel;
-      const matchesTheme = !selectedTheme || activity.theme?.includes(selectedTheme);
+      // Age-based grade matching (age 6 = grade 1, age 7 = grade 2, etc.)
+      const matchesGrade = !selectedGrade || (activity.age && (activity.age - 5).toString() === selectedGrade);
+      
+      // Diagnosis is now a string, not an array
+      const matchesDiagnosis = !selectedDiagnosis || 
+        activity.diagnosis?.toLowerCase().includes(selectedDiagnosis.toLowerCase());
+      
+      const matchesLocation = !selectedLocation || activity.setting?.toLowerCase().includes(selectedLocation.toLowerCase());
+      const matchesRisk = !selectedRiskLevel || activity.risk_level?.toLowerCase() === selectedRiskLevel.toLowerCase();
+      const matchesSkill = !selectedSkillLevel || activity.skill_level?.toLowerCase() === selectedSkillLevel.toLowerCase();
+      
+      // Themes is now an array
+      const matchesTheme = !selectedTheme || activity.themes?.some((t: string) => 
+        t.toLowerCase().includes(selectedTheme.toLowerCase())
+      );
       
       let matchesViewAll = true;
       if (viewAllType === 'quick_relief') {
-        matchesViewAll = (activity.duration && parseInt(activity.duration) <= 15) || !activity.duration;
+        // Parse duration strings like "5-10 mins", "30+ mins", etc.
+        const durStr = activity.duration || '';
+        const durNum = parseInt(durStr) || 0;
+        matchesViewAll = durNum <= 15 || durStr.toLowerCase().includes('n/a');
       } else if (viewAllType === 'quick_sessions') {
-        const dur = activity.duration ? parseInt(activity.duration) : 0;
-        matchesViewAll = dur >= 5 && dur <= 10;
+        const durStr = activity.duration || '';
+        const durNum = parseInt(durStr) || 0;
+        matchesViewAll = durNum >= 5 && durNum <= 10;
       } else if (viewAllType === 'teamwork') {
-        matchesViewAll = activity.type === 'SOCIAL_EMOTIONAL_DEVELOPMENT' || 
-                         activity.title?.toLowerCase().includes('team') || 
+        matchesViewAll = activity.activity_name?.toLowerCase().includes('team') || 
                          activity.description?.toLowerCase().includes('team') ||
-                         activity.title?.toLowerCase().includes('group') ||
+                         activity.activity_name?.toLowerCase().includes('group') ||
                          activity.description?.toLowerCase().includes('group');
       }
       
@@ -280,14 +305,14 @@ export default function ActivitiesPage() {
                   <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                     <div 
                       className="group cursor-pointer space-y-3"
-                      onClick={() => setSelectedActivity(activity)}
+                      onClick={() => setSelectedActivityId(activity.activity_id)}
                     >
                       {/* Thumbnail / App Icon Style */}
                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
                         {activity.thumbnail_url ? (
                           <img 
                             src={activity.thumbnail_url} 
-                            alt={activity.title}
+                            alt={activity.activity_name}
                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         ) : (
@@ -304,11 +329,11 @@ export default function ActivitiesPage() {
                       {/* Content */}
                       <div className="space-y-1">
                         <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
-                          {activity.title}
+                          {activity.activity_name}
                         </h3>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                            {activityTypeLabels[activity.type] || activity.type}
+                            {activity.themes?.[0] || activity.diagnosis || 'Activity'}
                           </span>
                         </div>
                       </div>
@@ -352,14 +377,14 @@ export default function ActivitiesPage() {
                   <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                      <div 
                        className="group cursor-pointer space-y-3"
-                       onClick={() => setSelectedActivity(activity)}
+                       onClick={() => setSelectedActivityId(activity.activity_id)}
                      >
                        {/* Thumbnail / App Icon Style */}
                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
                          {activity.thumbnail_url ? (
                            <img 
                              src={activity.thumbnail_url} 
-                             alt={activity.title}
+                             alt={activity.activity_name}
                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                            />
                          ) : (
@@ -376,7 +401,7 @@ export default function ActivitiesPage() {
                        {/* Content */}
                        <div className="space-y-1">
                          <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
-                           {activity.title}
+                           {activity.activity_name}
                          </h3>
                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                            <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
@@ -490,14 +515,14 @@ export default function ActivitiesPage() {
                   <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
                      <div 
                        className="group cursor-pointer space-y-3"
-                       onClick={() => setSelectedActivity(activity)}
+                       onClick={() => setSelectedActivityId(activity.activity_id)}
                      >
                        {/* Thumbnail / App Icon Style */}
                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
                          {activity.thumbnail_url ? (
                            <img 
                              src={activity.thumbnail_url} 
-                             alt={activity.title}
+                             alt={activity.activity_name}
                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                            />
                          ) : (
@@ -514,7 +539,7 @@ export default function ActivitiesPage() {
                        {/* Content */}
                        <div className="space-y-1">
                          <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary">
-                           {activity.title}
+                           {activity.activity_name}
                          </h3>
                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                            <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
@@ -829,7 +854,7 @@ export default function ActivitiesPage() {
                     <div
                       key={activity.activity_id}
                       className="group cursor-pointer space-y-3"
-                      onClick={() => setSelectedActivity(activity)}
+                      onClick={() => setSelectedActivityId(activity.activity_id)}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Thumbnail / App Icon Style */}
@@ -837,7 +862,7 @@ export default function ActivitiesPage() {
                         {activity.thumbnail_url ? (
                           <img 
                             src={activity.thumbnail_url} 
-                            alt={activity.title}
+                            alt={activity.activity_name}
                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         ) : (
@@ -854,11 +879,11 @@ export default function ActivitiesPage() {
                       {/* Content */}
                       <div className="space-y-1">
                         <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary line-clamp-1">
-                          {activity.title}
+                          {activity.activity_name}
                         </h3>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="uppercase tracking-wider text-[10px] font-medium text-primary">
-                            {activityTypeLabels[activity.type] || activity.type}
+                            {activity.themes?.[0] || activity.diagnosis || 'Activity'}
                           </span>
                         </div>
                       </div>
@@ -893,24 +918,36 @@ export default function ActivitiesPage() {
 
       {/* Activity Detail Modal */}
       {selectedActivity && (
-        <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-3">
-            <DialogHeader className="border-b pb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md">
-                  <Sparkles className="w-5 h-5 text-white" />
+        <Dialog open={!!selectedActivityId} onOpenChange={() => setSelectedActivityId(null)}>
+          <DialogContent className="w-full max-w-[95vw] md:w-fit md:max-w-[90vw] lg:max-w-[85vw] max-h-[90vh] overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
+            <DialogHeader className="border-b pb-2 sm:pb-3">
+              <div className="flex items-start sm:items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md flex-shrink-0">
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <div>
-                  <DialogTitle className="text-xl font-bold">{selectedActivity.title}</DialogTitle>
-                  <DialogDescription className="mt-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={`${activityTypeColors[selectedActivity.type]} font-semibold text-xs`}>
-                        {activityTypeLabels[selectedActivity.type]}
-                      </Badge>
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="text-lg sm:text-xl font-bold truncate">{selectedActivity.activity_name}</DialogTitle>
+                  <DialogDescription className="mt-1" asChild>
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                      {selectedActivity.themes?.[0] && (
+                        <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold text-[10px] sm:text-xs">
+                          {selectedActivity.themes[0]}
+                        </Badge>
+                      )}
+                      {selectedActivity.diagnosis && (
+                        <Badge variant="outline" className="text-[10px] sm:text-xs">
+                          {selectedActivity.diagnosis}
+                        </Badge>
+                      )}
                       {selectedActivity.duration && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-xs">
-                          <Clock className="w-3 h-3" />
-                          {selectedActivity.duration} min
+                        <Badge variant="outline" className="flex items-center gap-1 text-[10px] sm:text-xs">
+                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          {selectedActivity.duration}
+                        </Badge>
+                      )}
+                      {selectedActivity.age && (
+                        <Badge variant="outline" className="text-[10px] sm:text-xs">
+                          Age {selectedActivity.age}
                         </Badge>
                       )}
                     </div>
@@ -919,81 +956,99 @@ export default function ActivitiesPage() {
               </div>
             </DialogHeader>
 
-            <div className="space-y-3 mt-3 animate-in fade-in duration-500">
+            {/* Single Column Layout */}
+            <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4 animate-in fade-in duration-500">
                 {/* Description */}
                 {selectedActivity.description && (
                   <Card className="border-2">
                     <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
-                      <CardTitle className="text-sm font-semibold">Description</CardTitle>
+                      <CardTitle className="text-xs sm:text-sm font-semibold">Description</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-2 pb-3">
-                      <p className="text-sm text-muted-foreground leading-relaxed">{selectedActivity.description}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{selectedActivity.description}</p>
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Objectives */}
-                {selectedActivity.objectives && selectedActivity.objectives.length > 0 && (
-                  <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
-                      <CardTitle className="text-sm font-semibold">Learning Objectives</CardTitle>
+                {/* Therapy Goal */}
+                {selectedActivity.therapy_goal && (
+                  <Card className="border-2 border-green-200 dark:border-green-800">
+                    <CardHeader className="bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 py-2">
+                      <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
+                        Therapy Goal
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-2 pb-3">
-                      <ul className="space-y-1.5">
-                        {selectedActivity.objectives.map((obj: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-2">
-                            <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-xs font-semibold text-primary">{idx + 1}</span>
-                            </span>
-                            <span className="text-sm text-muted-foreground flex-1">{obj}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{selectedActivity.therapy_goal}</p>
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Target Grades */}
-                {selectedActivity.target_grades && selectedActivity.target_grades.length > 0 && (
-                  <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
-                      <CardTitle className="text-sm font-semibold">Target Grades</CardTitle>
+                {/* Learning Goal */}
+                {selectedActivity.learning_goal && (
+                  <Card className="border-2 border-blue-200 dark:border-blue-800">
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 py-2">
+                      <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                        Learning Goal
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-2 pb-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {selectedActivity.target_grades.map((grade: string, idx: number) => (
-                          <Badge key={idx} variant="secondary" className="text-xs px-2 py-0.5">
-                            Grade {grade}
-                          </Badge>
-                        ))}
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{selectedActivity.learning_goal}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Activity Details */}
+                <Card className="border-2">
+                  <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
+                    <CardTitle className="text-xs sm:text-sm font-semibold">Activity Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2 pb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                      {selectedActivity.setting && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground truncate">{selectedActivity.setting}</span>
+                        </div>
+                      )}
+                      {selectedActivity.supervision && (
+                        <div className="flex items-center gap-2">
+                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground truncate">{selectedActivity.supervision}</span>
+                        </div>
+                      )}
+                      {selectedActivity.risk_level && (
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground truncate">Risk: {selectedActivity.risk_level}</span>
+                        </div>
+                      )}
+                      {selectedActivity.skill_level && (
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground truncate">Skill: {selectedActivity.skill_level}</span>
+                        </div>
+                      )}
+                    </div>
+                    {selectedActivity.themes && selectedActivity.themes.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                          {selectedActivity.themes.map((theme: string, idx: number) => (
+                            <Badge key={idx} variant="outline" className="text-[10px] sm:text-xs">
+                              {theme}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    )}
+                  </CardContent>
+                </Card>
 
-                {/* Materials */}
-                {selectedActivity.materials && selectedActivity.materials.length > 0 && (
-                  <Card className="border-2">
-                    <CardHeader className="bg-gradient-to-r from-background to-muted/20 py-2">
-                      <CardTitle className="text-sm font-semibold">Materials Needed</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-2 pb-3">
-                      <ul className="space-y-1.5">
-                        {selectedActivity.materials.map((material: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
-                            <span className="text-sm text-muted-foreground flex-1">{material}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-
-              {/* Right Column - Instructions Flashcards */}
-              <div className="space-y-3">
-                {selectedActivity.instructions && selectedActivity.instructions.length > 0 && (
+                {/* Instructions */}
+                {selectedActivity.instructions && Array.isArray(selectedActivity.instructions) && selectedActivity.instructions.length > 0 && (
                   <Carousel
                     opts={{
                       align: "start",
@@ -1003,29 +1058,89 @@ export default function ActivitiesPage() {
                   >
                     <Card className="border-2">
                       <CardHeader className="bg-gradient-to-r from-background to-muted/20 flex flex-row items-center justify-between space-y-0 py-2">
-                        <CardTitle className="text-sm font-semibold">Step-by-Step Instructions</CardTitle>
+                        <CardTitle className="text-xs sm:text-sm font-semibold">Step-by-Step Instructions</CardTitle>
                         <div className="flex items-center gap-1">
-                          <CarouselPrevious className="static translate-y-0 translate-x-0 h-7 w-7" />
-                          <CarouselNext className="static translate-y-0 translate-x-0 h-7 w-7" />
+                          <CarouselPrevious className="static translate-y-0 translate-x-0 h-6 w-6 sm:h-7 sm:w-7" />
+                          <CarouselNext className="static translate-y-0 translate-x-0 h-6 w-6 sm:h-7 sm:w-7" />
                         </div>
                       </CardHeader>
                       <CardContent className="pt-2 pb-3">
                         <CarouselContent>
-                          {selectedActivity.instructions.map((instruction: string, idx: number) => (
+                          {(selectedActivity.instructions as string[]).map((instruction: string, idx: number) => (
                             <CarouselItem key={idx}>
                               <div className="p-0.5">
                                 <Card className="border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5 dark:from-gray-800 dark:to-primary/10">
-                                  <CardContent className="flex flex-col items-center justify-center p-6 min-h-[220px] text-center">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md mb-4">
-                                      <span className="text-xl font-bold text-white">
+                                  <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 min-h-[180px] sm:min-h-[220px] text-center">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-md mb-3 sm:mb-4">
+                                      <span className="text-lg sm:text-xl font-bold text-white">
                                         {idx + 1}
                                       </span>
                                     </div>
-                                    <p className="text-sm text-foreground leading-relaxed">
+                                    <p className="text-xs sm:text-sm text-foreground leading-relaxed">
                                       {instruction}
                                     </p>
-                                    <div className="mt-4 text-xs text-muted-foreground">
-                                      Step {idx + 1} of {selectedActivity.instructions.length}
+                                    <div className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-muted-foreground">
+                                      Step {idx + 1} of {(selectedActivity.instructions as string[]).length}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                      </CardContent>
+                    </Card>
+                  </Carousel>
+                )}
+
+                {/* Flashcards from S3 */}
+                {isLoadingActivity && selectedActivityId && (
+                  <Card className="border-2 border-amber-200 dark:border-amber-800">
+                    <CardContent className="flex items-center justify-center py-8 sm:py-12">
+                      <div className="flex flex-col items-center gap-2 sm:gap-3">
+                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-amber-500" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">Loading flashcards...</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {!isLoadingActivity && selectedActivity?.flashcards && Object.keys(selectedActivity.flashcards).length > 0 && (
+                  <Carousel
+                    opts={{
+                      align: "start",
+                      loop: true,
+                    }}
+                    className="w-full"
+                  >
+                    <Card className="border-2 border-amber-200 dark:border-amber-800">
+                      <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 flex flex-row items-center justify-between space-y-0 py-2">
+                        <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2">
+                          <span className="text-amber-600">📸</span>
+                          Visual Flashcards
+                        </CardTitle>
+                        <div className="flex items-center gap-1">
+                          <CarouselPrevious className="static translate-y-0 translate-x-0 h-6 w-6 sm:h-7 sm:w-7" />
+                          <CarouselNext className="static translate-y-0 translate-x-0 h-6 w-6 sm:h-7 sm:w-7" />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-2 pb-3">
+                        <CarouselContent>
+                          {Object.entries(selectedActivity.flashcards).map(([stepName, base64Image], idx: number) => (
+                            <CarouselItem key={stepName}>
+                              <div className="p-0.5">
+                                <Card className="border-2 border-amber-100 dark:border-amber-900/50 overflow-hidden">
+                                  <CardContent className="p-0">
+                                    <div className="relative">
+                                      <img 
+                                        src={`data:image/png;base64,${base64Image}`}
+                                        alt={`Flashcard ${idx + 1}`}
+                                        className="w-full h-auto max-h-[250px] sm:max-h-[400px] object-contain bg-white dark:bg-gray-900"
+                                      />
+                                    </div>
+                                    <div className="p-2 sm:p-3 bg-amber-50/50 dark:bg-amber-900/10 text-center">
+                                      <span className="text-[10px] sm:text-xs text-muted-foreground">
+                                        Card {idx + 1} of {Object.keys(selectedActivity.flashcards!).length}
+                                      </span>
                                     </div>
                                   </CardContent>
                                 </Card>

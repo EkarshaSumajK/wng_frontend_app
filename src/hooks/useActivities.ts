@@ -1,91 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { activitiesApi, CreateActivityData, UpdateActivityData } from '@/services/activities';
-import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import { activitiesApi, GetActivitiesParams } from '@/services/activities';
 
-export const useActivities = (params?: {
-  school_id?: string;
-  activity_type?: string;
-}) => {
+export const useActivities = (params?: GetActivitiesParams) => {
   return useQuery({
     queryKey: ['activities', params],
     queryFn: () => activitiesApi.getAll(params),
   });
 };
 
-export const useActivity = (id: string) => {
+export const useActivity = (id: string, includeFlashcards: boolean = false) => {
   return useQuery({
-    queryKey: ['activities', id],
-    queryFn: () => activitiesApi.getById(id),
+    queryKey: ['activities', id, { includeFlashcards }],
+    queryFn: () => activitiesApi.getById(id, includeFlashcards),
     enabled: !!id,
   });
 };
 
-export const useCreateActivity = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: (data: CreateActivityData) => activitiesApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast({
-        title: 'Success',
-        description: 'Activity created successfully',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
+export const useActivityWithFlashcards = (id: string) => {
+  return useQuery({
+    queryKey: ['activities', id, 'flashcards'],
+    queryFn: () => activitiesApi.getById(id, true),
+    enabled: !!id,
   });
 };
 
-export const useUpdateActivity = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateActivityData }) =>
-      activitiesApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast({
-        title: 'Success',
-        description: 'Activity updated successfully',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-};
-
-export const useDeleteActivity = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: (id: string) => activitiesApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast({
-        title: 'Success',
-        description: 'Activity deleted successfully',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-};

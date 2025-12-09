@@ -75,8 +75,9 @@ export default function MarketplacePage() {
     });
   }, [therapists, searchQuery, locationFilter, ratingFilter, languageFilter, availabilityFilter]);
 
-  const getDoctorImage = (id: string | number) => {
+  const getDoctorImage = (id: string | number, name?: string) => {
     const images = [
+      // Doctors / Medical Professionals
       "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop",
@@ -85,19 +86,53 @@ export default function MarketplacePage() {
       "https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1614608682850-e04872df23e3?w=400&h=400&fit=crop",
+
+      // Professional Headshots - Women
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1527613426441-4da17471b66d?w=400&h=400&fit=crop",
+      // More Women
+      "https://images.unsplash.com/photo-1605462863863-10d9e47e15ee?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=400&h=400&fit=crop",
+      
+      // Professional Headshots - Men
+      "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=400&h=400&fit=crop",
+       // More Men
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
     ];
     
     let index = 0;
-    if (typeof id === 'number') {
-      index = id;
-    } else if (typeof id === 'string') {
-      // Simple hash for string
-      for (let i = 0; i < id.length; i++) {
-        index += id.charCodeAt(i);
-      }
+    
+    // Hash based on name if available (preferred for uniqueness)
+    // Fallback to ID if name not provided
+    const stringToHash = name ? `${id}-${name}` : String(id);
+    
+    for (let i = 0; i < stringToHash.length; i++) {
+        const char = stringToHash.charCodeAt(i);
+        index = ((index << 5) - index) + char;
+        index = index & index; // Convert to 32bit integer
     }
     
-    return images[index % images.length];
+    return images[Math.abs(index) % images.length];
   };
 
   const availableLanguages = useMemo(() => {
@@ -409,22 +444,28 @@ export default function MarketplacePage() {
 
             return (
             <section key={key} className="space-y-4">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${accent} text-white flex items-center justify-center shadow-lg`}>
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-semibold">{title}</h2>
-                    <p className="text-muted-foreground text-sm">{description}</p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="px-4 py-1 text-sm">
-                  {data.length} specialists
-                </Badge>
-              </div>
-
               <Carousel opts={{ align: "start" }} className="w-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${accent} text-white flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-semibold">{title}</h2>
+                        <p className="text-muted-foreground text-sm">{description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="px-4 py-1 text-sm hidden md:flex">
+                    {data.length} specialists
+                  </Badge>
+                </div>
+
                 <CarouselContent className="-ml-3 md:-ml-4">
                   {displayedTherapists.map((therapist) => (
                     <CarouselItem
@@ -439,11 +480,9 @@ export default function MarketplacePage() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-0 -translate-x-1/2 shadow-md bg-card/95 dark:bg-card/95 w-14 h-14 text-lg" />
-                <CarouselNext className="right-0 translate-x-1/2 shadow-md bg-card/95 dark:bg-card/95 w-14 h-14 text-lg" />
               </Carousel>
             </section>
-          )})}
+          )})},
         </div>
       )}
 

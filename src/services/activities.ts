@@ -1,47 +1,52 @@
 import { apiClient } from './api';
-import type { Activity } from '@/types';
 
-export interface CreateActivityData {
-  school_id?: string;
-  title: string;
-  description?: string;
-  type: 'MINDFULNESS' | 'SOCIAL_SKILLS' | 'EMOTIONAL_REGULATION' | 'ACADEMIC_SUPPORT' | 'TEAM_BUILDING';
-  duration?: number;
-  target_grades?: string[];
-  materials?: string[];
-  instructions?: string[];
-  objectives?: string[];
+// Activity from the activity database (different structure)
+export interface ActivityResponse {
+  activity_id: string;
+  activity_name: string;
+  description: string | null;
+  therapy_goal: string | null;
+  learning_goal: string | null;
+  age: number | null;
+  themes: string[];
+  diagnosis: string | null;
+  framework: string | null;
+  setting: string | null;
+  supervision: string | null;
+  duration: string | null;
+  risk_level: string | null;
+  skill_level: string | null;
+  cognitive: string | null;
+  sensory: string | null;
+  instructions: string[] | Record<string, unknown>;
+  flashcards: Record<string, string> | null;
 }
 
-export interface UpdateActivityData {
-  title?: string;
-  description?: string;
-  type?: 'MINDFULNESS' | 'SOCIAL_SKILLS' | 'EMOTIONAL_REGULATION' | 'ACADEMIC_SUPPORT' | 'TEAM_BUILDING';
-  duration?: number;
-  target_grades?: string[];
-  materials?: string[];
-  instructions?: string[];
-  objectives?: string[];
+export interface ActivitiesListResponse {
+  filters: {
+    age: number | null;
+    diagnosis: string | null;
+    themes: string[] | null;
+  };
+  count: number;
+  activities: ActivityResponse[];
+}
+
+export interface GetActivitiesParams {
+  age?: number;
+  diagnosis?: string;
+  themes?: string;  // Comma-separated
+  include_flashcards?: boolean;
+  skip?: number;
+  limit?: number;
 }
 
 export const activitiesApi = {
-  getAll: (params?: { 
-    school_id?: string; 
-    activity_type?: string;
-    skip?: number; 
-    limit?: number;
-  }) =>
-    apiClient.get<Activity[]>('/activities/', params),
+  getAll: (params?: GetActivitiesParams) =>
+    apiClient.get<ActivitiesListResponse>('/activities/', params),
 
-  getById: (id: string) =>
-    apiClient.get<Activity>(`/activities/${id}`),
-
-  create: (data: CreateActivityData) =>
-    apiClient.post<Activity>('/activities/', data),
-
-  update: (id: string, data: UpdateActivityData) =>
-    apiClient.put<Activity>(`/activities/${id}`, data),
-
-  delete: (id: string) =>
-    apiClient.delete(`/activities/${id}`),
+  getById: (id: string, includeFlashcards: boolean = false) =>
+    apiClient.get<ActivityResponse>(`/activities/${id}`, { include_flashcards: includeFlashcards }),
 };
+
+

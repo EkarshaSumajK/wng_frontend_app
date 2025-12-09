@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface ProfileCardProps {
   therapist: Therapist;
   onClick?: () => void;
-  getDoctorImage: (id: string | number) => string;
+  getDoctorImage: (id: string | number, name?: string) => string;
 }
 
 export const ProfileCard = ({ therapist, onClick, getDoctorImage }: ProfileCardProps) => {
@@ -38,7 +38,7 @@ export const ProfileCard = ({ therapist, onClick, getDoctorImage }: ProfileCardP
         <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer tinder-card group shadow-md">
           {/* Full Background Image */}
           <img 
-            src={getDoctorImage(therapist.id)}
+            src={getDoctorImage(therapist.id, therapist.name)}
             alt={therapist.name} 
             className="absolute inset-0 w-full h-full  object-cover image-scale"
           />
