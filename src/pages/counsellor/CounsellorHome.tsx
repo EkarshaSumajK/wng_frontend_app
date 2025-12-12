@@ -15,9 +15,17 @@ export default function CounsellorHome() {
       title: "Dashboard", 
       icon: BarChart3, 
       url: "/counsellor/dashboard", 
-      description: "View analytics & insights", 
+      description: "View overview & stats", 
       gradient: "from-cyan-500 to-blue-500",
-      badge: "Analytics"
+      badge: "Overview"
+    },
+    { 
+      title: "Analytics", 
+      icon: BarChart3, 
+      url: "/counsellor/analytics", 
+      description: "Detailed student analytics", 
+      gradient: "from-violet-500 to-purple-500",
+      badge: "Insights"
     },
     { 
       title: "Cases", 

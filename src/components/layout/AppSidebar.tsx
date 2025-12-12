@@ -10,7 +10,8 @@ import {
   AlertTriangle,
   ShoppingBag,
   Video,
-  Home
+  Home,
+  TrendingUp
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -33,6 +34,7 @@ const navigationItems = {
   counsellor: [
     { title: "Home", url: "/counsellor", icon: Home },
     { title: "Dashboard", url: "/counsellor/dashboard", icon: BarChart3 },
+    { title: "Analytics", url: "/counsellor/analytics", icon: Brain },
     { title: "Cases", url: "/counsellor/cases", icon: FileText },
     { title: "Assessments", url: "/counsellor/assessments", icon: ClipboardList },
     { title: "Activities", url: "/counsellor/activities", icon: Users },
@@ -43,6 +45,7 @@ const navigationItems = {
   teacher: [
     { title: "Home", url: "/teacher", icon: Home },
     { title: "Dashboard", url: "/teacher/students", icon: BarChart3 },
+    { title: "Analytics", url: "/teacher/analytics", icon: TrendingUp },
     { title: "Cases", url: "/teacher/cases", icon: FileText },
     { title: "Activities", url: "/teacher/activities", icon: UserPlus },
     { title: "Activity Monitoring", url: "/teacher/activity-monitoring", icon: ClipboardList },
@@ -53,6 +56,7 @@ const navigationItems = {
   leadership: [
     { title: "Home", url: "/leadership", icon: Home },
     { title: "Dashboard", url: "/leadership/dashboard", icon: BarChart3 },
+    { title: "Analytics", url: "/leadership/analytics", icon: TrendingUp },
     { title: "Onboarding", url: "/leadership/onboarding", icon: UserPlus },
     { title: "At-Risk Students", url: "/leadership/at-risk-students", icon: AlertTriangle },
     { title: "Grade Analysis", url: "/leadership/grade-analysis", icon: Users },

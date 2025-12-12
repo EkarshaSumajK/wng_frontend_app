@@ -17,6 +17,7 @@ import { useTeacherClassesInsights } from '@/hooks/useTeachers';
 import { Separator } from '@/components/ui/separator';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { AssessmentTemplateDetailModal } from '@/components/modals/AssessmentTemplateDetailModal';
+import { AssessmentAnalyticsDashboard } from '@/components/shared/AssessmentAnalyticsDashboard';
 
 export default function TeacherAssessmentsPage() {
   const { user } = useAuth();
@@ -166,6 +167,24 @@ export default function TeacherAssessmentsPage() {
           </div>
         </div>
 
+        {/* Tabs for Details and Analytics */}
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="analytics">
+            <AssessmentAnalyticsDashboard 
+              assessmentId={selectedAssessment.assessment_id} 
+              studentResults={selectedAssessment.student_results}
+            />
+          </TabsContent>
+
+          <TabsContent value="details">
         {/* Assessment Details */}
         <div className="grid lg:grid-cols-3 gap-6 relative z-10">
           <div className="lg:col-span-2 space-y-6">
@@ -366,6 +385,8 @@ export default function TeacherAssessmentsPage() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     );
   }

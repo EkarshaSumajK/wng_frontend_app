@@ -223,11 +223,8 @@ export default function ResourcesPage() {
                              {resource.author_name || 'WellNest'}
                            </p>
                            
-                           {/* Price & Type */}
-                           <div className="flex items-center justify-between pt-1">
-                             <span className="text-sm font-bold text-gray-900 dark:text-white">
-                               {resource.is_free ? 'Free' : `$${resource.price || 0}`}
-                             </span>
+                           {/* Type */}
+                           <div className="flex items-center justify-end pt-1">
                              <span className="text-xs text-muted-foreground">
                                {resourceTypeLabels[resource.type]}
                              </span>
@@ -311,106 +308,8 @@ export default function ResourcesPage() {
                             {resource.author_name || 'WellNest'}
                           </p>
                           
-                          {/* Price & Type */}
-                          <div className="flex items-center justify-between pt-1">
-                            <span className="text-sm font-bold text-emerald-600">
-                              Free
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {resourceTypeLabels[resource.type]}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </section>
-
-            {/* Premium Resources Section */}
-            <section className="space-y-4">
-              <Carousel opts={{ align: "start" }} className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <h3 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                        <Star className="w-5 h-5 text-white" />
-                      </div>
-                      Premium Resources
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <CarouselPrevious className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
-                      <CarouselNext className="static rounded-sm h-12 w-12 translate-y-0 bg-card dark:bg-card shadow-sm hover:bg-accent dark:hover:bg-accent border-border" />
-                    </div>
-                  </div>
-                </div>
-                <CarouselContent className="-ml-4">
-                  {resources.filter((r: any) => !r.is_free).slice(0, 12).map((resource: any) => (
-                    <CarouselItem key={resource.resource_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <div 
-                        className="group cursor-pointer space-y-2"
-                        onClick={() => setViewingResource(resource)}
-                      >
-                        {/* Thumbnail - 4:3 aspect ratio */}
-                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 border-2 border-amber-200">
-                          {resource.thumbnail_url ? (
-                            <img 
-                              src={resource.thumbnail_url} 
-                              alt={resource.title}
-                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100">
-                              <Star className="w-16 h-16 text-amber-300" />
-                            </div>
-                          )}
-                          
-                          {/* Views Count - Bottom Left */}
-                          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>{resource.view_count || 0}</span>
-                          </div>
-                          
-                          {/* Play Button - Bottom Right */}
-                          <div className="absolute bottom-3 right-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
-                              <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
-                            </div>
-                          </div>
-                          
-                          {/* Premium Badge */}
-                          <div className="absolute top-3 left-3">
-                            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-md">
-                              ★ Premium
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="space-y-1.5">
-                          {/* Category Badge */}
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5 font-semibold text-amber-600 bg-amber-100">
-                              {resource.category || resourceTypeLabels[resource.type]}
-                            </Badge>
-                          </div>
-                          
-                          {/* Title */}
-                          <h3 className="font-bold text-sm leading-tight text-foreground group-hover:text-amber-600 line-clamp-2">
-                            {resource.title}
-                          </h3>
-                          
-                          {/* Author */}
-                          <p className="text-xs text-muted-foreground">
-                            {resource.author_name || 'WellNest'}
-                          </p>
-                          
-                          {/* Price & Type */}
-                          <div className="flex items-center justify-between pt-1">
-                            <span className="text-sm font-bold text-amber-600">
-                              ${resource.price || '0'}
-                            </span>
+                          {/* Type */}
+                          <div className="flex items-center justify-end pt-1">
                             <span className="text-xs text-muted-foreground">
                               {resourceTypeLabels[resource.type]}
                             </span>
@@ -548,11 +447,8 @@ export default function ResourcesPage() {
                                 {resource.author_name || 'WellNest'}
                               </p>
                               
-                              {/* Price & Type */}
-                              <div className="flex items-center justify-between pt-1">
-                                <span className="text-sm font-bold text-gray-900 dark:text-white">
-                                  {resource.is_free ? 'Free' : `$${resource.price || 0}`}
-                                </span>
+                              {/* Type */}
+                              <div className="flex items-center justify-end pt-1">
                                 <span className="text-xs text-muted-foreground">
                                   {typeLabel}
                                 </span>
@@ -723,11 +619,8 @@ export default function ResourcesPage() {
                         {resource.author_name || 'WellNest'}
                       </p>
                       
-                      {/* Price & Type */}
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">
-                          {resource.is_free ? 'Free' : `$${resource.price || 0}`}
-                        </span>
+                      {/* Type */}
+                      <div className="flex items-center justify-end pt-1">
                         <span className="text-xs text-muted-foreground">
                           {resourceTypeLabels[resource.type]}
                         </span>

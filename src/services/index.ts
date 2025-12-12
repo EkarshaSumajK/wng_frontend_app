@@ -13,3 +13,4 @@ export * from './cases';
 export * from './observations';
 export * from './assessments';
 export * from './resources';
+export * from './analytics';

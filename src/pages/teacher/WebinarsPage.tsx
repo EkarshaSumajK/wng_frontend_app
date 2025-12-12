@@ -1,13 +1,18 @@
 import { useState, useMemo } from 'react';
-import { Search, Calendar, Video, Users, Clock, Award, X, Play, BookOpen, CheckCircle, Eye, ArrowLeft, Share2, Target } from 'lucide-react';
+import { Search, Calendar, Video, Users, Clock, Award, Play, CheckCircle, Eye, ArrowLeft, Share2, School, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useWebinars, useMyWebinarRegistrations, useRegisterWebinar, useUnregisterWebinar } from '@/hooks/useWebinars';
+import { useClasses } from '@/hooks/useClasses';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
   Carousel,
@@ -32,16 +37,26 @@ const statusColors: Record<string, string> = {
 };
 
 export default function WebinarsPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedWebinar, setSelectedWebinar] = useState<any>(null);
   const [sidebarTab, setSidebarTab] = useState<'live' | 'popular' | 'registered'>('live');
+  
+  // Registration modal state
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [webinarToRegister, setWebinarToRegister] = useState<any>(null);
+  const [registrationType, setRegistrationType] = useState<'school' | 'class'>('class');
+  const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
 
   const { data: webinarsData, isLoading } = useWebinars({});
   const { data: registrationsData } = useMyWebinarRegistrations();
   const registerMutation = useRegisterWebinar();
   const unregisterMutation = useUnregisterWebinar();
+  
+  // Fetch classes for registration modal (teacher's assigned classes)
+  const { data: classesData } = useClasses({ school_id: user?.school_id, teacher_id: user?.id });
 
   // Get registered webinar IDs
   const registeredWebinarIds = useMemo(() => {
@@ -78,19 +93,63 @@ export default function WebinarsPage() {
   // Check if registered
   const isRegistered = (webinarId: number) => registeredWebinarIds.has(webinarId);
 
-  // Handle registration
+  // Open registration modal
+  const openRegistrationModal = (webinar: any) => {
+    setWebinarToRegister(webinar);
+    setRegistrationType('class');
+    setSelectedClassIds([]);
+    setShowRegistrationModal(true);
+  };
+
+  // Handle registration with type selection
   const handleRegister = async (webinar: any) => {
-    try {
-      if (isRegistered(webinar.id)) {
+    if (isRegistered(webinar.id)) {
+      // Unregister directly
+      try {
         await unregisterMutation.mutateAsync(webinar.id);
         toast.success('Unregistered successfully');
-      } else {
-        await registerMutation.mutateAsync(webinar.id);
-        toast.success('Registered successfully');
+      } catch (error) {
+        toast.error('Failed to unregister. Please try again.');
       }
-    } catch (error) {
-      toast.error('Action failed. Please try again.');
+    } else {
+      // Open modal for registration type selection
+      openRegistrationModal(webinar);
     }
+  };
+
+  // Confirm registration with selected type
+  const confirmRegistration = async () => {
+    if (!webinarToRegister) return;
+    
+    try {
+      await registerMutation.mutateAsync({
+        webinarId: webinarToRegister.id,
+        request: {
+          registration_type: registrationType,
+          class_ids: registrationType === 'class' ? selectedClassIds : undefined,
+          notify_students: true,
+        },
+      });
+      
+      const message = registrationType === 'school' 
+        ? 'Registered for entire school successfully!' 
+        : `Registered for ${selectedClassIds.length} class(es) successfully!`;
+      toast.success(message);
+      
+      setShowRegistrationModal(false);
+      setWebinarToRegister(null);
+    } catch (error) {
+      toast.error('Registration failed. Please try again.');
+    }
+  };
+
+  // Toggle class selection
+  const toggleClassSelection = (classId: string) => {
+    setSelectedClassIds(prev => 
+      prev.includes(classId) 
+        ? prev.filter(id => id !== classId)
+        : [...prev, classId]
+    );
   };
 
   // Filter webinars
@@ -990,6 +1049,153 @@ export default function WebinarsPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Registration Modal */}
+      <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
+                <Video className="w-5 h-5 text-white" />
+              </div>
+              Register for Webinar
+            </DialogTitle>
+            <DialogDescription>
+              {webinarToRegister?.title}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Registration Type Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">Registration Type</Label>
+              <RadioGroup
+                value={registrationType}
+                onValueChange={(value) => {
+                  setRegistrationType(value as 'school' | 'class');
+                  if (value === 'school') {
+                    setSelectedClassIds([]);
+                  }
+                }}
+                className="grid grid-cols-2 gap-4"
+              >
+                <div className={`relative flex items-center space-x-3 rounded-xl border-2 p-4 cursor-pointer transition-all ${registrationType === 'school' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                  <RadioGroupItem value="school" id="school" />
+                  <Label htmlFor="school" className="flex items-center gap-2 cursor-pointer">
+                    <School className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="font-semibold">School-wide</p>
+                      <p className="text-xs text-muted-foreground">All students</p>
+                    </div>
+                  </Label>
+                </div>
+                <div className={`relative flex items-center space-x-3 rounded-xl border-2 p-4 cursor-pointer transition-all ${registrationType === 'class' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                  <RadioGroupItem value="class" id="class" />
+                  <Label htmlFor="class" className="flex items-center gap-2 cursor-pointer">
+                    <GraduationCap className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="font-semibold">My Classes</p>
+                      <p className="text-xs text-muted-foreground">Select classes</p>
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Class Selection (only when class-wise is selected) */}
+            {registrationType === 'class' && (
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Select Your Classes</Label>
+                <div className="max-h-48 overflow-y-auto space-y-2 border rounded-xl p-3 bg-muted/30">
+                  {classesData && classesData.length > 0 ? (
+                    classesData.map((cls: any) => (
+                      <div
+                        key={cls.class_id}
+                        className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all ${
+                          selectedClassIds.includes(cls.class_id)
+                            ? 'bg-primary/10 border border-primary'
+                            : 'bg-card hover:bg-muted border border-transparent'
+                        }`}
+                        onClick={() => toggleClassSelection(cls.class_id)}
+                      >
+                        <Checkbox
+                          checked={selectedClassIds.includes(cls.class_id)}
+                          onCheckedChange={() => toggleClassSelection(cls.class_id)}
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{cls.name}</p>
+                          {cls.grade && cls.section && (
+                            <p className="text-xs text-muted-foreground">
+                              Grade {cls.grade} - Section {cls.section}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No classes assigned to you
+                    </p>
+                  )}
+                </div>
+                {selectedClassIds.length > 0 && (
+                  <p className="text-sm text-primary font-medium">
+                    {selectedClassIds.length} class(es) selected
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Summary */}
+            <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Registration Type:</span>
+                <Badge variant="secondary">
+                  {registrationType === 'school' ? 'School-wide' : 'My Classes'}
+                </Badge>
+              </div>
+              {registrationType === 'class' && selectedClassIds.length > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Classes Selected:</span>
+                  <span className="font-semibold">{selectedClassIds.length}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowRegistrationModal(false);
+                setWebinarToRegister(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmRegistration}
+              disabled={
+                registerMutation.isPending ||
+                (registrationType === 'class' && selectedClassIds.length === 0)
+              }
+              className="gap-2"
+            >
+              {registerMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Confirm Registration
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

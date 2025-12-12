@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Eye, Play, Users, Clock, CheckCircle, AlertCircle, Trash2, ClipboardList, Filter, Search } from 'lucide-react';
+import { Plus, Eye, Play, Users, Clock, CheckCircle, AlertCircle, Trash2, ClipboardList, Filter, Search, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Assessment, AssessmentResponse } from '@/types';
 import { Input } from '@/components/ui/input';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { AssessmentTemplateDetailModal } from '@/components/modals/AssessmentTemplateDetailModal';
+import { AssessmentAnalyticsDashboard } from '@/components/shared/AssessmentAnalyticsDashboard';
 
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -257,6 +258,24 @@ export default function AssessmentsPage() {
           </div>
         </div>
 
+        {/* Tabs for Details and Analytics */}
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="analytics">
+            <AssessmentAnalyticsDashboard 
+              assessmentId={selectedAssessment.assessment_id} 
+              studentResults={selectedAssessment.student_results}
+            />
+          </TabsContent>
+
+          <TabsContent value="details">
         {/* Assessment Details */}
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -411,6 +430,8 @@ export default function AssessmentsPage() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     );
   }

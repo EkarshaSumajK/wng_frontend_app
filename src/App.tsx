@@ -34,6 +34,7 @@ const AIInsightsPage = lazy(() => import("./pages/counsellor/AIInsightsPage"));
 const CalendarPage = lazy(() => import("./pages/counsellor/CalendarPage"));
 const ResourcesPage = lazy(() => import("./pages/counsellor/ResourcesPage"));
 const WebinarsPage = lazy(() => import("./pages/counsellor/WebinarsPage"));
+const CounsellorAnalyticsPage = lazy(() => import("./pages/counsellor/AnalyticsPage"));
 
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const HelpSupportPage = lazy(() => import("./pages/HelpSupportPage"));
@@ -48,6 +49,7 @@ const TeacherActivitiesPage = lazy(() => import("./pages/teacher/ActivitiesPage"
 const ActivityMonitoringPage = lazy(() => import("./pages/teacher/ActivityMonitoringPage"));
 const StudentMonitoringPage = lazy(() => import("./pages/teacher/StudentMonitoringPage"));
 const TeacherWebinarsPage = lazy(() => import("./pages/teacher/WebinarsPage"));
+const TeacherAnalyticsPage = lazy(() => import("./pages/teacher/AnalyticsPage"));
 
 const LeadershipHome = lazy(() => import("./pages/leadership/LeadershipHome"));
 const LeadershipDashboard = lazy(() => import("./pages/leadership/LeadershipDashboard"));
@@ -118,6 +120,7 @@ const App = () => (
               <Route path="/counsellor/calendar" element={<CalendarPage />} />
               <Route path="/counsellor/resources" element={<ResourcesPage />} />
               <Route path="/counsellor/webinars" element={<WebinarsPage />} />
+              <Route path="/counsellor/analytics" element={<CounsellorAnalyticsPage />} />
               <Route path="/counsellor/profile" element={<ProfilePage />} />
               <Route path="/counsellor/help" element={<HelpSupportPage />} />
               
@@ -132,6 +135,7 @@ const App = () => (
               <Route path="/teacher/resources" element={<TeacherResourcesPage />} />
               <Route path="/teacher/calendar" element={<TeacherCalendarPage />} />
               <Route path="/teacher/webinars" element={<TeacherWebinarsPage />} />
+              <Route path="/teacher/analytics" element={<TeacherAnalyticsPage />} />
               <Route path="/teacher/profile" element={<ProfilePage />} />
               <Route path="/teacher/help" element={<HelpSupportPage />} />
               

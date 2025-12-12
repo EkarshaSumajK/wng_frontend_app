@@ -190,8 +190,12 @@ export default function Login() {
         
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary/50 text-primary mb-4">
-            <Building2 className="w-6 h-6" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img 
+              src="/logo.png" 
+              alt="Wellnest Connect Logo" 
+              className="w-24 h-24 rounded-2xl shadow-lg"
+            />
           </div>
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
             Wellnest Connect <br></br>School Mental Wellness Platform
@@ -203,7 +207,7 @@ export default function Login() {
 
         <div className="max-w-md mx-auto space-y-8">
           {/* Login Card */}
-          <Card className="border-none shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm ring-1 ring-gray-200/50 dark:ring-gray-700/50">
+          <Card className="border border-border/50 shadow-lg hover:shadow-xl bg-white/90 dark:bg-card/95 backdrop-blur-md ring-1 ring-black/5 dark:ring-white/10 transition-shadow duration-300">
             <CardContent className="p-6">
               <Tabs defaultValue="email" className="w-full" onValueChange={(val) => { setActiveTab(val); setError(null); }}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -509,7 +513,7 @@ export default function Login() {
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                className="h-11 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border-gray-200 dark:border-gray-700"
+                className="h-11 bg-card hover:bg-accent border-border hover:border-primary/30 transition-all duration-200"
                 onClick={() => navigate('/school-onboarding')}
               >
                 <Building2 className="w-4 h-4 mr-2" />
@@ -517,7 +521,7 @@ export default function Login() {
               </Button>
               <Button
                 variant="outline"
-                className="h-11 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border-gray-200 dark:border-gray-700"
+                className="h-11 bg-card hover:bg-accent border-border hover:border-primary/30 transition-all duration-200"
                 onClick={() => navigate('/school-selection')}
               >
                 <CheckCircle2 className="w-4 h-4 mr-2" />

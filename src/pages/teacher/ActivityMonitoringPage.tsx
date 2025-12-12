@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   ArrowLeft, Send, CheckCircle, XCircle, Clock, Eye, FileText, 
-  User, Search, Calendar, BookOpen, Loader2, Sparkles, GraduationCap
+  User, Search, Calendar, BookOpen, Loader2, Sparkles, GraduationCap, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,8 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LoadingState } from '@/components/shared/LoadingState';
+import { ActivityAnalyticsDashboard } from '@/components/shared/ActivityAnalyticsDashboard';
 import { 
   useTeacherAssignments, 
   useAssignmentSubmissions,
@@ -521,6 +523,24 @@ export default function ActivityMonitoringPage() {
             </Badge>
           </div>
 
+          {/* Tabs for Submissions and Analytics */}
+          <Tabs defaultValue="submissions" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="submissions">Submissions</TabsTrigger>
+              <TabsTrigger value="analytics" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="analytics">
+              <ActivityAnalyticsDashboard 
+                activityId={selectedAssignment.activity?.activity_id || selectedAssignment.activity_id} 
+                submissions={submissions}
+              />
+            </TabsContent>
+
+            <TabsContent value="submissions">
             {submissionsLoading ? (
               <div className="p-8">
                 <LoadingState message="Loading submissions..." />
@@ -749,6 +769,8 @@ export default function ActivityMonitoringPage() {
               </div>
             </>
           )}
+            </TabsContent>
+          </Tabs>
         </div>
       )}
 

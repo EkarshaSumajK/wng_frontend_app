@@ -20,6 +20,14 @@ export default function TeacherHome() {
       badge: "Monitor"
     },
     {
+      title: "Analytics",
+      icon: BarChart3,
+      url: "/teacher/analytics",
+      description: "Class & student analytics",
+      gradient: "from-violet-500 to-purple-500",
+      badge: "Insights"
+    },
+    {
       title: "Cases",
       icon: FileText,
       url: "/teacher/cases",

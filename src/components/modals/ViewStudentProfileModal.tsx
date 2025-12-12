@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Student } from "@/types";
-import { Heart, AlertTriangle, FileText, Loader2, User, Mail, Phone, Calendar, GraduationCap, Users } from "lucide-react";
+import { Heart, AlertTriangle, FileText, Loader2, User, Mail, Phone, Calendar, GraduationCap, Users, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { studentsApi } from "@/services/students";
 import { useObservations } from "@/hooks/useObservations";
 import { useStudentAssessments } from "@/hooks/useAssessments";
 import { getRiskLevelColor, formatRiskLevel } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { StudentAnalyticsDashboard } from "@/components/shared/StudentAnalyticsDashboard";
 
 interface ViewStudentProfileModalProps {
   open: boolean;
@@ -17,6 +20,8 @@ interface ViewStudentProfileModalProps {
 }
 
 export function ViewStudentProfileModal({ open, onOpenChange, student }: ViewStudentProfileModalProps) {
+  const [activeTab, setActiveTab] = useState("profile");
+
   // Fetch full student details from API
   const { data: fullStudentData, isLoading: isLoadingStudent } = useQuery({
     queryKey: ['student', student?.id],
@@ -66,6 +71,23 @@ export function ViewStudentProfileModal({ open, onOpenChange, student }: ViewStu
             </div>
           </div>
         ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="analytics" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="analytics" className="mt-4">
+              <StudentAnalyticsDashboard 
+                studentId={student.id} 
+                studentName={studentData.name} 
+              />
+            </TabsContent>
+
+            <TabsContent value="profile">
           <div className="space-y-6 animate-in fade-in duration-500">
           {/* Basic Info */}
           <Card className="border-2 shadow-lg">
@@ -384,6 +406,8 @@ export function ViewStudentProfileModal({ open, onOpenChange, student }: ViewStu
             </Card>
           )}
         </div>
+            </TabsContent>
+          </Tabs>
         )}
       </DialogContent>
     </Dialog>

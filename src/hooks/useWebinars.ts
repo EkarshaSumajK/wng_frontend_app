@@ -1,6 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { webinarAnalyticsApi, RegistrationRequest } from "@/services/webinarAnalytics";
 
 // Types
 export interface Webinar {
@@ -14,8 +15,8 @@ export interface Webinar {
   date: string;
   duration_minutes: number;
   category: string;
-  status: 'Upcoming' | 'Live' | 'Recorded' | 'Cancelled';
-  level: 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels';
+  status: "Upcoming" | "Live" | "Recorded" | "Cancelled";
+  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels";
   price: number;
   topics?: string[];
   video_url?: string;
@@ -31,7 +32,7 @@ export interface WebinarRegistration {
   registration_id: string;
   webinar_id: string;
   user_id: string;
-  status: 'Registered' | 'Attended' | 'Cancelled';
+  status: "Registered" | "Attended" | "Cancelled";
   registered_at: string;
   attended_at?: string;
   cancelled_at?: string;
@@ -48,9 +49,9 @@ interface WebinarsParams {
 // Fetch all webinars with filters
 export const useWebinars = (params?: WebinarsParams) => {
   return useQuery({
-    queryKey: ['webinars', params],
+    queryKey: ["webinars", params],
     queryFn: async () => {
-      const response = await api.get('/webinars', { params });
+      const response = await api.get("/webinars", { params });
       return response.data;
     },
   });
@@ -59,7 +60,7 @@ export const useWebinars = (params?: WebinarsParams) => {
 // Fetch single webinar
 export const useWebinar = (webinarId: string) => {
   return useQuery({
-    queryKey: ['webinar', webinarId],
+    queryKey: ["webinar", webinarId],
     queryFn: async () => {
       const response = await api.get(`/webinars/${webinarId}`);
       return response.data;
@@ -71,43 +72,48 @@ export const useWebinar = (webinarId: string) => {
 // Fetch user's webinar registrations
 export const useMyWebinarRegistrations = () => {
   const { user } = useAuth();
-  
+
   return useQuery({
-    queryKey: ['my-webinar-registrations', user?.school_id],
+    queryKey: ["my-webinar-registrations", user?.school_id],
     queryFn: async () => {
       if (!user?.school_id) {
-        throw new Error('No school ID available');
+        throw new Error("No school ID available");
       }
-      const response = await api.get('/webinars/my-registrations', {
-        params: { school_id: user.school_id }
-      });
-      return response.data;
+      return webinarAnalyticsApi.getMyRegistrations(user.school_id, { include_analytics: true });
     },
-    enabled: !!user?.school_id, // Only run query if school_id is available
+    enabled: !!user?.school_id,
   });
 };
 
-// Register for a webinar
+// Register for a webinar with school/class selection
 export const useRegisterWebinar = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  
+
   return useMutation({
-    mutationFn: async (webinarId: string) => {
+    mutationFn: async ({
+      webinarId,
+      request,
+    }: {
+      webinarId: string;
+      request?: RegistrationRequest;
+    }) => {
       if (!user?.school_id || !user?.id) {
-        throw new Error('User authentication required');
+        throw new Error("User authentication required");
       }
-      const response = await api.post(`/webinars/${webinarId}/register`, null, {
-        params: { 
-          school_id: user.school_id,
-          user_id: user.id
-        }
-      });
-      return response.data;
+      return webinarAnalyticsApi.registerWebinar(
+        webinarId,
+        user.school_id,
+        user.id,
+        request || { registration_type: "school" }
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webinars'] });
-      queryClient.invalidateQueries({ queryKey: ['my-webinar-registrations'] });
+      queryClient.invalidateQueries({ queryKey: ["webinars"] });
+      queryClient.invalidateQueries({ queryKey: ["my-webinar-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["my-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["registered-analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["webinar-analytics"] });
     },
   });
 };
@@ -115,15 +121,21 @@ export const useRegisterWebinar = () => {
 // Unregister from a webinar
 export const useUnregisterWebinar = () => {
   const queryClient = useQueryClient();
-  
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (webinarId: string) => {
-      const response = await api.post(`/webinars/${webinarId}/unregister`);
-      return response.data;
+      if (!user?.school_id) {
+        throw new Error("User authentication required");
+      }
+      return webinarAnalyticsApi.unregisterWebinar(webinarId, user.school_id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webinars'] });
-      queryClient.invalidateQueries({ queryKey: ['my-webinar-registrations'] });
+      queryClient.invalidateQueries({ queryKey: ["webinars"] });
+      queryClient.invalidateQueries({ queryKey: ["my-webinar-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["my-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["registered-analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["webinar-analytics"] });
     },
   });
 };
@@ -131,14 +143,14 @@ export const useUnregisterWebinar = () => {
 // Create webinar (admin only)
 export const useCreateWebinar = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (webinarData: Partial<Webinar>) => {
-      const response = await api.post('/webinars', webinarData);
+      const response = await api.post("/webinars", webinarData);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webinars'] });
+      queryClient.invalidateQueries({ queryKey: ["webinars"] });
     },
   });
 };
@@ -146,14 +158,14 @@ export const useCreateWebinar = () => {
 // Update webinar (admin only)
 export const useUpdateWebinar = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ webinarId, data }: { webinarId: string; data: Partial<Webinar> }) => {
       const response = await api.put(`/webinars/${webinarId}`, data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webinars'] });
+      queryClient.invalidateQueries({ queryKey: ["webinars"] });
     },
   });
 };
@@ -161,14 +173,14 @@ export const useUpdateWebinar = () => {
 // Delete webinar (admin only)
 export const useDeleteWebinar = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (webinarId: string) => {
       const response = await api.delete(`/webinars/${webinarId}`);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webinars'] });
+      queryClient.invalidateQueries({ queryKey: ["webinars"] });
     },
   });
 };

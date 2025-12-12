@@ -470,7 +470,7 @@ export default function MarketplacePage() {
                   {displayedTherapists.map((therapist) => (
                     <CarouselItem
                       key={`${key}-${therapist.id}`}
-                      className="pl-3 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                      className="pl-3 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/5"
                     >
                       <ProfileCard
                         therapist={therapist}
@@ -544,7 +544,7 @@ export default function MarketplacePage() {
               <p className="text-muted-foreground">Try adjusting your filters or search query.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               {paginatedTherapists.map((therapist) => (
                 <ProfileCard
                   key={`grid-${therapist.id}`}

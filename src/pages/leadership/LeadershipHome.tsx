@@ -15,9 +15,17 @@ export default function LeadershipHome() {
       title: "Dashboard", 
       icon: BarChart3, 
       url: "/leadership/dashboard", 
-      description: "School-wide analytics", 
+      description: "School-wide overview", 
       gradient: "from-cyan-500 to-blue-500",
       badge: "Overview"
+    },
+    { 
+      title: "Analytics", 
+      icon: BarChart3, 
+      url: "/leadership/analytics", 
+      description: "Detailed student analytics", 
+      gradient: "from-violet-500 to-purple-500",
+      badge: "Insights"
     },
     { 
       title: "Onboarding", 
@@ -41,7 +49,7 @@ export default function LeadershipHome() {
       url: "/leadership/grade-analysis", 
       description: "Grade-level insights", 
       gradient: "from-green-500 to-emerald-500",
-      badge: "Insights"
+      badge: "Analysis"
     },
     { 
       title: "Marketplace", 
