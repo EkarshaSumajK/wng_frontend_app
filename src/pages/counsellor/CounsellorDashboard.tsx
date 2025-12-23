@@ -104,7 +104,7 @@ export default function CounsellorDashboard() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
                 <Activity className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                 Good morning, {user?.name || 'Counsellor'}
               </h1>
             </div>

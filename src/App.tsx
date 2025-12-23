@@ -34,7 +34,9 @@ const AIInsightsPage = lazy(() => import("./pages/counsellor/AIInsightsPage"));
 const CalendarPage = lazy(() => import("./pages/counsellor/CalendarPage"));
 const ResourcesPage = lazy(() => import("./pages/counsellor/ResourcesPage"));
 const WebinarsPage = lazy(() => import("./pages/counsellor/WebinarsPage"));
-const CounsellorAnalyticsPage = lazy(() => import("./pages/counsellor/AnalyticsPage"));
+const CounsellorEngagementAnalyticsPage = lazy(
+  () => import("./pages/counsellor/EngagementAnalyticsPage")
+);
 
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const HelpSupportPage = lazy(() => import("./pages/HelpSupportPage"));
@@ -49,13 +51,17 @@ const TeacherActivitiesPage = lazy(() => import("./pages/teacher/ActivitiesPage"
 const ActivityMonitoringPage = lazy(() => import("./pages/teacher/ActivityMonitoringPage"));
 const StudentMonitoringPage = lazy(() => import("./pages/teacher/StudentMonitoringPage"));
 const TeacherWebinarsPage = lazy(() => import("./pages/teacher/WebinarsPage"));
-const TeacherAnalyticsPage = lazy(() => import("./pages/teacher/AnalyticsPage"));
+const TeacherEngagementAnalyticsPage = lazy(
+  () => import("./pages/teacher/EngagementAnalyticsPage")
+);
 
 const LeadershipHome = lazy(() => import("./pages/leadership/LeadershipHome"));
 const LeadershipDashboard = lazy(() => import("./pages/leadership/LeadershipDashboard"));
 const OnboardingPage = lazy(() => import("./pages/leadership/OnboardingPage"));
 const SchoolOverviewPage = lazy(() => import("./pages/leadership/SchoolOverviewPage"));
-const AnalyticsPage = lazy(() => import("./pages/leadership/AnalyticsPage"));
+const EngagementAnalyticsPage = lazy(
+  () => import("./pages/leadership/EngagementAnalyticsPage")
+);
 const RiskManagementPage = lazy(() => import("./pages/leadership/RiskManagementPage"));
 const GovernancePage = lazy(() => import("./pages/leadership/GovernancePage"));
 const ReportsPage = lazy(() => import("./pages/leadership/ReportsPage"));
@@ -120,7 +126,7 @@ const App = () => (
               <Route path="/counsellor/calendar" element={<CalendarPage />} />
               <Route path="/counsellor/resources" element={<ResourcesPage />} />
               <Route path="/counsellor/webinars" element={<WebinarsPage />} />
-              <Route path="/counsellor/analytics" element={<CounsellorAnalyticsPage />} />
+              <Route path="/counsellor/analytics" element={<CounsellorEngagementAnalyticsPage />} />
               <Route path="/counsellor/profile" element={<ProfilePage />} />
               <Route path="/counsellor/help" element={<HelpSupportPage />} />
               
@@ -135,7 +141,7 @@ const App = () => (
               <Route path="/teacher/resources" element={<TeacherResourcesPage />} />
               <Route path="/teacher/calendar" element={<TeacherCalendarPage />} />
               <Route path="/teacher/webinars" element={<TeacherWebinarsPage />} />
-              <Route path="/teacher/analytics" element={<TeacherAnalyticsPage />} />
+              <Route path="/teacher/analytics" element={<TeacherEngagementAnalyticsPage />} />
               <Route path="/teacher/profile" element={<ProfilePage />} />
               <Route path="/teacher/help" element={<HelpSupportPage />} />
               
@@ -144,7 +150,7 @@ const App = () => (
               <Route path="/leadership/dashboard" element={<LeadershipDashboard />} />
               <Route path="/leadership/onboarding" element={<OnboardingPage />} />
               <Route path="/leadership/overview" element={<SchoolOverviewPage />} />
-              <Route path="/leadership/analytics" element={<AnalyticsPage />} />
+              <Route path="/leadership/analytics" element={<EngagementAnalyticsPage />} />
               <Route path="/leadership/risk" element={<RiskManagementPage />} />
               <Route path="/leadership/at-risk-students" element={<AtRiskStudentsPage />} />
               <Route path="/leadership/grade-analysis" element={<GradeLevelAnalysisPage />} />
@@ -163,7 +169,7 @@ const App = () => (
               <Route path="/principal/dashboard" element={<LeadershipDashboard />} />
               <Route path="/principal/onboarding" element={<OnboardingPage />} />
               <Route path="/principal/overview" element={<SchoolOverviewPage />} />
-              <Route path="/principal/analytics" element={<AnalyticsPage />} />
+              <Route path="/principal/analytics" element={<EngagementAnalyticsPage />} />
               <Route path="/principal/risk" element={<RiskManagementPage />} />
               <Route path="/principal/at-risk-students" element={<AtRiskStudentsPage />} />
               <Route path="/principal/grade-analysis" element={<GradeLevelAnalysisPage />} />
