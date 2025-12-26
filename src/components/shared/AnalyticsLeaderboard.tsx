@@ -30,6 +30,15 @@ import {
   AlertTriangle,
   User,
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export interface LeaderboardEntry {
   id: string;
@@ -287,28 +296,58 @@ export function AnalyticsLeaderboard({
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-                <div className="text-sm text-muted-foreground">
-                    Showing {(page - 1) * itemsPerPage + 1} to {Math.min(page * itemsPerPage, processedData.length)} of {processedData.length} students
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
+            <div className="mt-4">
+               <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                    <PaginationPrevious 
                         onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-1" /> Previous
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
+                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                       // Simple logic for small number of pages, can be enhanced for large datasets
+                       if (
+                           totalPages > 7 && 
+                           (pageNum < page - 1 || pageNum > page + 1) && 
+                           pageNum !== 1 && 
+                           pageNum !== totalPages
+                       ) {
+                           if (pageNum === page - 2 || pageNum === page + 2) {
+                               return (
+                                   <PaginationItem key={pageNum}>
+                                       <PaginationEllipsis />
+                                   </PaginationItem>
+                               )
+                           }
+                           return null;
+                       }
+
+                       return (
+                        <PaginationItem key={pageNum}>
+                            <PaginationLink 
+                                isActive={pageNum === page}
+                                onClick={() => setPage(pageNum)}
+                                className="cursor-pointer"
+                            >
+                            {pageNum}
+                            </PaginationLink>
+                        </PaginationItem>
+                       )
+                    })}
+
+                    <PaginationItem>
+                    <PaginationNext 
                         onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                    >
-                        Next <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                </div>
+                        className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                    </PaginationItem>
+                </PaginationContent>
+               </Pagination>
+               <div className="text-center text-xs text-muted-foreground mt-2">
+                    Showing {(page - 1) * itemsPerPage + 1} to {Math.min(page * itemsPerPage, processedData.length)} of {processedData.length} students
+               </div>
             </div>
         )}
       </CardContent>

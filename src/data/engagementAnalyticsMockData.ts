@@ -1159,15 +1159,15 @@ export const mockStudentDetailedProfiles: Record<string, StudentDetailedProfile>
     ],
     
     recentAssessments: [
-      { id: "a1", title: "Emotional Intelligence Assessment", type: "Self-Assessment", status: "submitted", score: 94, maxScore: 100, submittedAt: "2024-12-16", dueDate: "2024-12-20", timeSpent: 18, attempts: 1 },
-      { id: "a2", title: "Stress Management Quiz", type: "Quiz", status: "submitted", score: 88, maxScore: 100, submittedAt: "2024-12-15", dueDate: "2024-12-18", timeSpent: 12, attempts: 1 },
-      { id: "a3", title: "Social Skills Evaluation", type: "Peer Assessment", status: "submitted", score: 92, maxScore: 100, submittedAt: "2024-12-14", dueDate: "2024-12-22", timeSpent: 25, attempts: 1 },
+      { id: "assess-1", title: "Emotional Intelligence Assessment", type: "Self-Assessment", status: "submitted", score: 94, maxScore: 100, submittedAt: "2024-12-16", dueDate: "2024-12-20", timeSpent: 18, attempts: 1 },
+      { id: "assess-2", title: "Stress Management Quiz", type: "Quiz", status: "submitted", score: 88, maxScore: 100, submittedAt: "2024-12-15", dueDate: "2024-12-18", timeSpent: 12, attempts: 1 },
+      { id: "assess-3", title: "Social Skills Evaluation", type: "Peer Assessment", status: "submitted", score: 92, maxScore: 100, submittedAt: "2024-12-14", dueDate: "2024-12-22", timeSpent: 25, attempts: 1 },
     ],
     
     recentActivities: [
-      { id: "act1", title: "Daily Gratitude Journal", category: "Mindfulness", status: "completed", completedAt: "2024-12-17", timeSpent: 10, progress: 100 },
-      { id: "act2", title: "Breathing Exercises", category: "Stress Relief", status: "completed", completedAt: "2024-12-16", timeSpent: 15, progress: 100 },
-      { id: "act3", title: "Peer Support Circle", category: "Social Skills", status: "completed", completedAt: "2024-12-15", timeSpent: 35, progress: 100 },
+      { id: "activity-1", title: "Daily Gratitude Journal", category: "Mindfulness", status: "completed", completedAt: "2024-12-17", timeSpent: 10, progress: 100 },
+      { id: "activity-2", title: "Breathing Exercises", category: "Stress Relief", status: "completed", completedAt: "2024-12-16", timeSpent: 15, progress: 100 },
+      { id: "activity-3", title: "Peer Support Circle", category: "Social Skills", status: "completed", completedAt: "2024-12-15", timeSpent: 35, progress: 100 },
     ],
     
     recentWebinars: [
@@ -1230,15 +1230,15 @@ export const mockStudentDetailedProfiles: Record<string, StudentDetailedProfile>
     ],
     
     recentAssessments: [
-      { id: "a1", title: "Emotional Intelligence Assessment", type: "Self-Assessment", status: "pending", maxScore: 100, dueDate: "2024-12-20", attempts: 0 },
-      { id: "a2", title: "Stress Management Quiz", type: "Quiz", status: "overdue", maxScore: 100, dueDate: "2024-12-18", attempts: 0 },
-      { id: "a3", title: "Social Skills Evaluation", type: "Peer Assessment", status: "pending", maxScore: 100, dueDate: "2024-12-22", attempts: 0 },
+      { id: "assess-1", title: "Emotional Intelligence Assessment", type: "Self-Assessment", status: "pending", maxScore: 100, dueDate: "2024-12-20", attempts: 0 },
+      { id: "assess-2", title: "Stress Management Quiz", type: "Quiz", status: "overdue", maxScore: 100, dueDate: "2024-12-18", attempts: 0 },
+      { id: "assess-3", title: "Social Skills Evaluation", type: "Peer Assessment", status: "pending", maxScore: 100, dueDate: "2024-12-22", attempts: 0 },
     ],
     
     recentActivities: [
-      { id: "act1", title: "Daily Gratitude Journal", category: "Mindfulness", status: "not_started", progress: 0 },
-      { id: "act2", title: "Breathing Exercises", category: "Stress Relief", status: "in_progress", timeSpent: 5, progress: 25 },
-      { id: "act3", title: "Peer Support Circle", category: "Social Skills", status: "not_started", progress: 0 },
+      { id: "activity-1", title: "Daily Gratitude Journal", category: "Mindfulness", status: "not_started", progress: 0 },
+      { id: "activity-2", title: "Breathing Exercises", category: "Stress Relief", status: "in_progress", timeSpent: 5, progress: 25 },
+      { id: "activity-3", title: "Peer Support Circle", category: "Social Skills", status: "not_started", progress: 0 },
     ],
     
     recentWebinars: [
@@ -1278,6 +1278,7 @@ export interface AssessmentStudentSubmission {
   attempts: number;
   grade?: string;
   feedback?: string;
+  submissionImage?: string;
 }
 
 // Detailed Assessment View
@@ -1410,12 +1411,12 @@ export const mockAssessmentDetailedViews: Record<string, AssessmentDetailedView>
     ],
     
     submissions: [
-      { studentId: "student-1", studentName: "Emma Thompson", className: "Grade 6 - Section A", rollNumber: "6A01", status: "submitted", submittedAt: "2024-12-16T10:30:00", score: 94, maxScore: 100, timeSpent: 22, attempts: 1, grade: "A", feedback: "Excellent understanding of emotional concepts" },
+      { studentId: "student-1", studentName: "Emma Thompson", className: "Grade 6 - Section A", rollNumber: "6A01", status: "submitted", submittedAt: "2024-12-16T10:30:00", score: 94, maxScore: 100, timeSpent: 22, attempts: 1, grade: "A", feedback: "Excellent understanding of emotional concepts", submissionImage: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60" },
       { studentId: "student-2", studentName: "Liam Anderson", className: "Grade 6 - Section A", rollNumber: "6A02", status: "submitted", submittedAt: "2024-12-15T14:20:00", score: 78, maxScore: 100, timeSpent: 25, attempts: 1, grade: "B", feedback: "Good effort, needs work on empathy section" },
       { studentId: "student-3", studentName: "Sophia Martinez", className: "Grade 6 - Section A", rollNumber: "6A03", status: "submitted", submittedAt: "2024-12-16T09:15:00", score: 88, maxScore: 100, timeSpent: 20, attempts: 1, grade: "A", feedback: "Strong performance overall" },
       { studentId: "student-4", studentName: "Noah Williams", className: "Grade 6 - Section B", rollNumber: "6B01", status: "pending", maxScore: 100, attempts: 0 },
       { studentId: "student-5", studentName: "Olivia Johnson", className: "Grade 7 - Section A", rollNumber: "7A01", status: "submitted", submittedAt: "2024-12-14T11:45:00", score: 96, maxScore: 100, timeSpent: 18, attempts: 1, grade: "A+", feedback: "Outstanding performance" },
-      { studentId: "student-6", studentName: "Ethan Brown", className: "Grade 7 - Section A", rollNumber: "7A02", status: "submitted", submittedAt: "2024-12-15T16:30:00", score: 82, maxScore: 100, timeSpent: 24, attempts: 1, grade: "B+", feedback: "Good understanding" },
+      { studentId: "student-6", studentName: "Ethan Brown", className: "Grade 7 - Section A", rollNumber: "7A02", status: "submitted", submittedAt: "2024-12-15T16:30:00", score: 82, maxScore: 100, timeSpent: 24, attempts: 1, grade: "B+", feedback: "Good understanding", submissionImage: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=60" },
       { studentId: "student-7", studentName: "Ava Davis", className: "Grade 7 - Section B", rollNumber: "7B01", status: "submitted", submittedAt: "2024-12-16T08:00:00", score: 75, maxScore: 100, timeSpent: 28, attempts: 2, grade: "B", feedback: "Improved on second attempt" },
       { studentId: "student-8", studentName: "Mason Garcia", className: "Grade 8 - Section A", rollNumber: "8A01", status: "submitted", submittedAt: "2024-12-13T13:20:00", score: 92, maxScore: 100, timeSpent: 19, attempts: 1, grade: "A", feedback: "Excellent work" },
       { studentId: "student-9", studentName: "Isabella Wilson", className: "Grade 8 - Section A", rollNumber: "8A02", status: "submitted", submittedAt: "2024-12-14T15:10:00", score: 85, maxScore: 100, timeSpent: 21, attempts: 1, grade: "A-", feedback: "Very good performance" },
@@ -2060,6 +2061,36 @@ export const mockAssessmentQuestions: Record<string, AssessmentQuestionsData> = 
         ]
       },
     ]
+  },
+  "assess-3": {
+    assessmentId: "assess-3",
+    questions: [
+      { id: "q1", questionNumber: 1, question: "How comfortable are you initiating conversations with new people?", type: "rating_scale", options: ["1 - Very Uncomfortable", "2 - Uncomfortable", "3 - Neutral", "4 - Comfortable", "5 - Very Comfortable"], points: 5, category: "Social Confidence" },
+      { id: "q2", questionNumber: 2, question: "Active listening is key to good communication.", type: "true_false", options: ["True", "False"], correctAnswer: "True", points: 5, category: "Communication" },
+      { id: "q3", questionNumber: 3, question: "Which of these is a positive social skill?", type: "multiple_choice", options: ["A) Interrupting others", "B) Maintaining eye contact", "C) Looking at your phone", "D) Ignoring questions"], correctAnswer: "B) Maintaining eye contact", points: 5, category: "Social Etiquette" },
+      { id: "q4", questionNumber: 4, question: "Rate your ability to work in a team.", type: "rating_scale", options: ["1 - Poor", "2 - Fair", "3 - Good", "4 - Very Good", "5 - Excellent"], points: 5, category: "Teamwork" },
+      { id: "q5", questionNumber: 5, question: "Conflict is always bad and should be avoided.", type: "true_false", options: ["True", "False"], correctAnswer: "False", points: 5, category: "Conflict Resolution" },
+    ],
+    studentResponses: [
+      {
+        studentId: "student-1",
+        studentName: "Emma Thompson",
+        className: "Grade 6 - Section A",
+        rollNumber: "6A01",
+        submittedAt: "2024-12-14T10:00:00",
+        totalScore: 92,
+        maxScore: 100,
+        percentage: 92,
+        timeSpent: 15,
+        responses: [
+          { questionId: "q1", studentAnswer: "4 - Comfortable", pointsEarned: 4, timeSpent: 30 },
+          { questionId: "q2", studentAnswer: "True", isCorrect: true, pointsEarned: 5, timeSpent: 15 },
+          { questionId: "q3", studentAnswer: "B) Maintaining eye contact", isCorrect: true, pointsEarned: 5, timeSpent: 25 },
+          { questionId: "q4", studentAnswer: "5 - Excellent", pointsEarned: 5, timeSpent: 20 },
+          { questionId: "q5", studentAnswer: "False", isCorrect: true, pointsEarned: 5, timeSpent: 18 },
+        ]
+      },
+    ]
   }
 };
 
@@ -2106,7 +2137,7 @@ export interface ActivityTasksData {
 }
 
 // Mock activity tasks data
-export const mockActivityTasks: Record<string, ActivityTasksData> = {
+export const mockActivityTasks: Record<string, ActivityTasksData & { studentResponses: { submissionImage?: string; comments?: { sender: string; message: string; timestamp: string }[] }[] }> = {
   "activity-1": {
     activityId: "activity-1",
     tasks: [
@@ -2127,6 +2158,11 @@ export const mockActivityTasks: Record<string, ActivityTasksData> = {
         progress: 100,
         totalTasks: 5,
         completedTasks: 5,
+        submissionImage: "https://images.unsplash.com/photo-1544367563-12123d8959c9?w=800&auto=format&fit=crop&q=60",
+        comments: [
+          { sender: "Teacher", message: "Great reflection, Emma! I love your positivity.", timestamp: "2024-12-17T09:00:00" },
+          { sender: "Emma Thompson", message: "Thank you! I really enjoyed this activity.", timestamp: "2024-12-17T09:15:00" }
+        ],
         responses: [
           { taskId: "t1", status: "completed", response: "1. My supportive family who always encourages me\n2. My best friend who makes me laugh\n3. The beautiful sunrise I saw this morning", completedAt: "2024-12-17T08:10:00", timeSpent: 6, rating: 5, feedback: "This exercise helps me start my day positively!" },
           { taskId: "t2", status: "completed", completedAt: "2024-12-17T08:15:00", timeSpent: 3, rating: 4 },
@@ -2191,6 +2227,34 @@ export const mockActivityTasks: Record<string, ActivityTasksData> = {
           { taskId: "t3", status: "completed", response: "Before: I felt anxious about my upcoming test.\nAfter: I feel much calmer and more focused. My heart rate slowed down and I feel ready to study.", completedAt: "2024-11-16T14:18:00", timeSpent: 5, rating: 5 },
           { taskId: "t4", status: "completed", completedAt: "2024-12-10T14:55:00", timeSpent: 5, rating: 4 },
           { taskId: "t5", status: "completed", response: "The 4-7-8 technique works best for me because it's easy to remember and I can do it anywhere. I use it before tests and when I feel stressed.", completedAt: "2024-12-10T15:00:00", timeSpent: 6, rating: 5 },
+        ]
+      },
+    ]
+  },
+  "activity-3": {
+    activityId: "activity-3",
+    tasks: [
+      { id: "t1", taskNumber: 1, title: "Identifying Support Networks", description: "List people you can turn to for support.", type: "exercise", duration: 10, points: 15, isRequired: true },
+      { id: "t2", taskNumber: 2, title: "Role Play Video", description: "Watch a video on how to offer support to a friend.", type: "video", duration: 5, points: 10, isRequired: true },
+      { id: "t3", taskNumber: 3, title: "Practice Listening", description: "Practice active listening with a partner.", type: "exercise", duration: 15, points: 20, isRequired: true },
+      { id: "t4", taskNumber: 4, title: "Reflection Journal", description: "Reflect on a time you helped someone.", type: "journal", duration: 5, points: 10, isRequired: true },
+    ],
+    studentResponses: [
+      {
+        studentId: "student-1",
+        studentName: "Emma Thompson",
+        className: "Grade 6 - Section A",
+        rollNumber: "6A01",
+        startedAt: "2024-11-20T14:00:00",
+        completedAt: "2024-12-15T15:00:00",
+        progress: 100,
+        totalTasks: 4,
+        completedTasks: 4,
+        responses: [
+          { taskId: "t1", status: "completed", response: "Parents, Teacher, Best Friend", completedAt: "2024-11-20T14:10:00", timeSpent: 8, rating: 5 },
+          { taskId: "t2", status: "completed", completedAt: "2024-11-20T14:20:00", timeSpent: 5, rating: 4 },
+          { taskId: "t3", status: "completed", completedAt: "2024-11-20T14:40:00", timeSpent: 15, rating: 5, feedback: "Good practice!" },
+          { taskId: "t4", status: "completed", response: "I helped my sibling with homework...", completedAt: "2024-12-15T15:00:00", timeSpent: 6, rating: 5 },
         ]
       },
     ]

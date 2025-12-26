@@ -34,6 +34,7 @@ import {
   Sparkles,
   Target,
   Zap,
+  Send,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -477,6 +478,8 @@ function MyClassesView({
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedWebinarId, setSelectedWebinarId] = useState<string | null>(null);
+  const [detailsSearchQuery, setDetailsSearchQuery] = useState("");
+  const [detailsClassFilter, setDetailsClassFilter] = useState("all");
   
   // Show detailed assessment view if selected
   if (selectedAssessmentId && type === "assessments") {
@@ -520,7 +523,39 @@ function MyClassesView({
     };
   });
 
-  const StatCard = ({ title, value, icon: Icon, gradient, trend }: any) => (
+  // Trend Data Logic
+  const timePeriod = "30"; // Default or props if available
+  const trendData = type === "webinars" 
+    ? mockEngagementTrends.monthly 
+    : mockEngagementTrends.daily; // Defaulting to daily for now as per Counsellor logic fallback
+
+  const trendKey = type === "webinars" ? "month" : "date";
+
+  // Details Table Logic
+  const details = type === "assessments" ? mockAssessmentDetails :
+    type === "activities" ? mockActivityDetails : mockWebinarDetails;
+
+  // Filter details
+  const filteredDetails = details.filter((item: any) => {
+    const matchesSearch = item.title.toLowerCase().includes(detailsSearchQuery.toLowerCase()) ||
+      (item.type && item.type.toLowerCase().includes(detailsSearchQuery.toLowerCase())) ||
+      (item.category && item.category.toLowerCase().includes(detailsSearchQuery.toLowerCase()));
+    return matchesSearch;
+  });
+
+  // Summary Metrics Calculation
+  const totalItemCount = details.length;
+  // Calculate specific metrics for Teacher's students (or fallback to global mocks if per-class data isn't mapped in details yet)
+  // For UI consistency, we'll use the derived totals from `teacherTotals` where applicable, or item averages
+  
+  // In Counsellor, these are "Avg Students per item". 
+  // For Teacher, let's show Total Completions across all classes, or Avg per Item.
+  // Using "Avg Students" aligns with the UI labels.
+  
+  const avgStudentsCompleted = Math.round(engagementData.done / Math.max(totalItemCount, 1));
+  const avgStudentsPending = Math.round((engagementData.total - engagementData.done) / Math.max(totalItemCount, 1));
+
+  const StatCard = ({ title, value, subtext, icon: Icon, gradient, trend }: any) => (
     <Card className={`relative overflow-hidden border-0 shadow-lg bg-gradient-to-br ${gradient} group hover:scale-[1.02] transition-transform duration-300`}>
       <CardContent className="pt-6 relative z-10">
         <div className="absolute right-4 top-4 p-2 bg-white/10 rounded-xl backdrop-blur-sm">
@@ -528,6 +563,7 @@ function MyClassesView({
         </div>
         <p className="text-3xl font-bold text-foreground dark:text-white mb-1 tracking-tight">{value}</p>
         <p className="text-sm font-medium text-muted-foreground dark:text-white/70">{title}</p>
+        {subtext && <p className="text-xs text-muted-foreground/80 dark:text-white/50 mt-2">{subtext}</p>}
         {trend && (
           <div className="flex items-center gap-1 mt-2">
             <TrendingUp className="w-3 h-3 text-green-500" />
@@ -540,44 +576,54 @@ function MyClassesView({
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Summary Cards - 5 Card Layout matching Counsellor */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard
-          title="My Classes"
-          value={teacherClasses.length}
+          title="Total Students"
+          value={teacherTotals.totalStudents}
           icon={Users}
           gradient={COLORS.cardGradients.violet}
         />
         <StatCard
-          title="Total Students"
-          value={teacherTotals.totalStudents}
-          icon={User}
+          title={`Total ${type === "assessments" ? "Assessments" : type === "activities" ? "Activities" : "Webinars"}`}
+          value={totalItemCount}
+          subtext="Available items"
+          icon={type === "assessments" ? ClipboardList : type === "activities" ? Activity : Video}
           gradient={COLORS.cardGradients.blue}
         />
         <StatCard
-          title={labels.done}
-          value={engagementData.done.toLocaleString()}
+          title={`Avg Students ${labels.done}`}
+          value={avgStudentsCompleted.toLocaleString()}
+          subtext="Per item"
           icon={CheckCircle}
           gradient={COLORS.cardGradients.green}
-          trend="+3.5% this week"
+          trend="+5.2% from last month"
+        />
+        <StatCard
+          title={`Avg Students ${labels.pending}`}
+          value={avgStudentsPending.toLocaleString()}
+          subtext="Per item"
+          icon={Clock}
+          gradient={COLORS.cardGradients.orange}
         />
         <StatCard
           title="Avg Rate"
           value={`${engagementData.rate.toFixed(1)}%`}
+          subtext={type === "assessments" ? "Submission" : type === "activities" ? "Completion" : "Attendance"}
           icon={TrendingUp}
-          gradient={COLORS.cardGradients.orange}
+          gradient="from-cyan-500/10 via-sky-500/10 to-blue-500/10"
         />
       </div>
 
-      {/* Charts Row */}
+      {/* Charts Row - Pie + Trend (Matching Counsellor) */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary" />
-              Overall Status
+              {type.charAt(0).toUpperCase() + type.slice(1)} Status
             </CardTitle>
-            <CardDescription>Across all your classes</CardDescription>
+            <CardDescription>Overall completion breakdown</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
@@ -585,7 +631,7 @@ function MyClassesView({
                 done: { label: labels.done, color: COLORS.success },
                 pending: { label: labels.pending, color: COLORS.warning },
               } satisfies ChartConfig}
-              className="h-[250px]"
+              className="h-[280px]"
             >
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -593,8 +639,8 @@ function MyClassesView({
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={95}
+                  innerRadius={70}
+                  outerRadius={110}
                   paddingAngle={5}
                   dataKey="value"
                   nameKey="name"
@@ -614,6 +660,41 @@ function MyClassesView({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
+              {type === "webinars" ? "Monthly" : "Daily"} Trend
+            </CardTitle>
+            <CardDescription>Engagement rate over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={{
+                [type]: { label: type.charAt(0).toUpperCase() + type.slice(1), color: COLORS.primary },
+              } satisfies ChartConfig}
+              className="h-[280px]"
+            >
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey={trendKey} tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} domain={[0, 100]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line
+                  type="monotone"
+                  dataKey={type}
+                  stroke={COLORS.primary}
+                  strokeWidth={3}
+                  dot={{ fill: COLORS.primary, strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Class Comparison Chart (Teacher Specific - Kept for utility but moved below) */}
+      <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
               Class Comparison
             </CardTitle>
             <CardDescription>Completion rate by class</CardDescription>
@@ -650,33 +731,93 @@ function MyClassesView({
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Class Leaderboard */}
-      <div className="grid gap-6">
-        <AnalyticsLeaderboard
-          title="Class Performance Leaderboard"
-          description={`Ranking based on ${type} performance`}
-          students={teacherClasses.map((cls) => { // Changed from filteredClasses to teacherClasses
-             const data = type === "assessments" ? cls.assessments : type === "activities" ? cls.activities : cls.webinars;
-             const pending = data.total - data.done;
-             const riskLevel: "high" | "medium" | "low" = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
+      {/* Details Table (Added to match Counsellor) */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-primary" />
+                {type === "assessments" ? "Assessment" : type === "activities" ? "Activity" : "Webinar"} Details
+              </CardTitle>
+              <CardDescription>
+                How many students {type === "assessments" ? "submitted" : type === "activities" ? "completed" : "attended"} each {type.slice(0, -1)}
+              </CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder={`Search ${type}...`}
+                  value={detailsSearchQuery}
+                  onChange={(e) => setDetailsSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>{type === "webinars" ? "Date" : "Type/Category"}</TableHead>
+                <TableHead className="text-center">
+                  <div className="flex flex-col">
+                    <span>Students</span>
+                    <span className="text-xs text-muted-foreground">Assigned (Global)</span>
+                  </div>
+                </TableHead>
+                <TableHead className="text-center">Rate</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredDetails.map((item: any) => {
+                // Approximate teacher-specific data from mock (since specific class data mapping is complex without backend)
+                // For now, we display global stats from mock to populate the UI structure
+                const rate = item.submissionRate || item.completionRate || item.attendanceRate || 0;
+                return (
+                  <TableRow 
+                    key={item.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      if (type === "assessments") setSelectedAssessmentId(item.id);
+                      else if (type === "activities") setSelectedActivityId(item.id);
+                      else if (type === "webinars") setSelectedWebinarId(item.id);
+                    }}
+                  >
+                    <TableCell className="font-medium max-w-[200px]">
+                      <div className="truncate">{item.title}</div>
+                      {item.dueDate && item.dueDate !== "Ongoing" && (
+                        <div className="text-xs text-muted-foreground">Due: {item.dueDate}</div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{item.type || item.category || item.date}</Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="font-semibold">{item.totalStudentsAssigned || 120}</span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className={`font-bold ${rate >= 80 ? "text-green-500" : rate >= 60 ? "text-yellow-500" : "text-red-500"}`}>
+                        {rate.toFixed(0)}%
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                        <Badge variant={rate >= 50 ? "default" : "secondary"}>Active</Badge>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-             return {
-                id: cls.id,
-                name: cls.name, // Class name as student name
-                className: `Grade ${cls.grade}`, // Grade as class name
-                score: data.rate,
-                scoreLabel: "Completion Rate",
-                streak: 0,
-                riskLevel: riskLevel,
-                avatar: undefined,
-             };
-          })}
-        />
-      </div>
-
-      {/* Class Cards */}
+      {/* Class Cards (Kept for Navigation) */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {teacherClasses.map((cls) => {
           const data = type === "assessments" ? cls.assessments :
@@ -733,9 +874,8 @@ function MyClassesView({
             description={`Ranking based on ${type} performance`}
             students={students.map((s) => {
                 const data = type === "assessments" ? s.assessments : type === "activities" ? s.activities : s.webinars;
-                // Calculate pending count for "Needs Attention" check
                 const pending = data.total - data.done;
-                const riskLevel = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
+                const riskLevel: "high" | "medium" | "low" = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
                 
                 return {
                     id: s.id,
@@ -743,9 +883,9 @@ function MyClassesView({
                     className: s.className,
                     score: data.rate,
                     scoreLabel: "Completion Rate",
-                    streak: 0, // Mock data doesn't have streak on summary, could map from mockTopPerformers if needed
+                    streak: 0, 
                     riskLevel: riskLevel,
-                    rank: undefined // Let component calculate
+                    rank: undefined 
                 };
             })}
         />
@@ -837,14 +977,7 @@ function MyClassesView({
                     </div>
                   </div>
                   <div className="flex items-center gap-3 ml-2">
-                    <div className="text-center">
-                      <p className="font-bold text-sm text-primary">{webinar.avgWatchTimePercent}%</p>
-                      <p className="text-xs text-muted-foreground">Watch</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold text-sm">{webinar.questionsAsked}</p>
-                      <p className="text-xs text-muted-foreground">Q&A</p>
-                    </div>
+
                     <div className="text-center">
                       <p className="font-bold text-sm">{webinar.replayViews}</p>
                       <p className="text-xs text-muted-foreground">Replays</p>
@@ -1727,6 +1860,7 @@ function StudentAssessmentResponseView({
 }
 
 // Student Activity Response View - Shows individual student's task responses
+// Student Activity Response View - Shows individual student's task responses
 function StudentActivityResponseView({
   activity,
   studentResponse,
@@ -1734,155 +1868,173 @@ function StudentActivityResponseView({
   onBack,
 }: {
   activity: ActivityDetailedView;
-  studentResponse: { studentId: string; studentName: string; className: string; rollNumber: string; startedAt: string; completedAt?: string; progress: number; totalTasks: number; completedTasks: number; responses: { taskId: string; status: string; response?: string; completedAt?: string; timeSpent?: number; rating?: number; feedback?: string }[] };
+  studentResponse: { 
+    studentId: string; 
+    studentName: string; 
+    className: string; 
+    rollNumber: string; 
+    startedAt: string; 
+    completedAt?: string; 
+    progress: number; 
+    totalTasks: number; 
+    completedTasks: number; 
+    submissionImage?: string;
+    comments?: { sender: string; message: string; timestamp: string }[];
+    responses: { taskId: string; status: string; response?: string; completedAt?: string; timeSpent?: number; rating?: number; feedback?: string }[] 
+  };
   tasks: { id: string; taskNumber: number; title: string; description: string; type: string; duration: number; points: number; isRequired: boolean }[];
   onBack: () => void;
 }) {
-  const getTaskStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed": return <Badge className="bg-green-500 gap-1"><CheckCircle className="w-3 h-3" /> Completed</Badge>;
-      case "in_progress": return <Badge variant="secondary" className="gap-1"><Clock className="w-3 h-3" /> In Progress</Badge>;
-      case "skipped": return <Badge variant="outline" className="gap-1 text-muted-foreground">Skipped</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState(studentResponse.comments || []);
 
-  const getTaskTypeIcon = (type: string) => {
-    switch (type) {
-      case "reflection": return <MessageSquare className="w-4 h-4 text-purple-500" />;
-      case "exercise": return <Activity className="w-4 h-4 text-green-500" />;
-      case "journal": return <BookOpen className="w-4 h-4 text-blue-500" />;
-      case "video": return <Play className="w-4 h-4 text-red-500" />;
-      case "quiz": return <ClipboardList className="w-4 h-4 text-orange-500" />;
-      case "interactive": return <Star className="w-4 h-4 text-amber-500" />;
-      default: return <HelpCircle className="w-4 h-4 text-gray-500" />;
-    }
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    const comment = {
+      sender: "Teacher", // In a real app, this would be the logged-in user's name
+      message: newComment,
+      timestamp: new Date().toISOString()
+    };
+    setComments([...comments, comment]);
+    setNewComment("");
   };
 
   return (
-    <div className="space-y-6">
-      <Button variant="outline" onClick={onBack} className="gap-2">
-        <ChevronRight className="w-4 h-4 rotate-180" />
-        Back to Activity
-      </Button>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Back Button and Header */}
+       <div className="flex items-center gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={onBack}
+          className="group hover:bg-blue-50"
+        >
+          <ChevronRight className="w-4 h-4 mr-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
+          Back to Profile
+        </Button>
+      </div>
 
-      {/* Student Header */}
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-5 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold">
-              {studentResponse.studentName.split(" ").map(n => n[0]).join("")}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column: Student Detail & Summary */}
+        <div className="lg:col-span-1 space-y-6">
+           <Card className="border-2 overflow-hidden">
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-6 text-white text-center">
+               <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold mx-auto mb-4 backdrop-blur-sm">
+                 {studentResponse.studentName.split(" ").map(n => n[0]).join("")}
+               </div>
+               <h2 className="text-xl font-bold">{studentResponse.studentName}</h2>
+               <p className="text-white/80 text-sm mt-1">{studentResponse.className} • {studentResponse.rollNumber}</p>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">{studentResponse.studentName}</h1>
-              <p className="text-white/80">{studentResponse.className} • {studentResponse.rollNumber}</p>
-              <p className="text-white/60 text-sm mt-1">Started: {new Date(studentResponse.startedAt).toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Activity</p>
-              <p className="font-medium">{activity.title}</p>
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <div className="flex items-center gap-2">
-                  <Progress value={studentResponse.progress} className="h-2 w-24" />
-                  <span className={`text-xl font-bold ${studentResponse.progress === 100 ? "text-green-500" : studentResponse.progress >= 50 ? "text-yellow-500" : "text-red-500"}`}>
-                    {studentResponse.progress}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">{studentResponse.completedTasks}/{studentResponse.totalTasks} tasks</p>
+            <CardContent className="pt-6 space-y-4">
+
+              <div className="flex justify-between items-center py-2 border-b">
+                 <span className="text-sm text-muted-foreground">Started On</span>
+                 <span className="font-bold text-sm">{new Date(studentResponse.startedAt).toLocaleDateString()}</span>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tasks and Responses */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-cyan-500" />
-            Tasks & Responses ({tasks.length})
-          </CardTitle>
-          <CardDescription>Review {studentResponse.studentName}'s progress on each task</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {tasks.map((t) => {
-              const response = studentResponse.responses.find(r => r.taskId === t.id);
-              return (
-                <div key={t.id} className="p-4 rounded-xl border bg-muted/30">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center text-cyan-600">
-                      {getTaskTypeIcon(t.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">Task {t.taskNumber}: {t.title}</p>
-                            {t.isRequired && <Badge variant="secondary" className="text-xs">Required</Badge>}
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">{t.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs">{t.type}</Badge>
-                            <span className="text-xs text-muted-foreground">{t.duration} min • {t.points} pts</span>
-                          </div>
-                        </div>
-                        {response ? getTaskStatusBadge(response.status) : <Badge variant="outline">Not Started</Badge>}
-                      </div>
-
-                      {/* Student's response */}
-                      {response?.response && (
-                        <div className="mt-3">
-                          <p className="text-xs text-muted-foreground mb-1">Student's Response:</p>
-                          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                            <p className="text-sm whitespace-pre-wrap">{response.response}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Rating and feedback */}
-                      {response && (
-                        <div className="mt-3 flex items-center gap-4 flex-wrap">
-                          {response.rating && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-muted-foreground">Rating:</span>
-                              <span className="text-amber-500">{"★".repeat(response.rating)}{"☆".repeat(5 - response.rating)}</span>
-                            </div>
-                          )}
-                          {response.timeSpent && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              {response.timeSpent} min
-                            </div>
-                          )}
-                          {response.completedAt && (
-                            <span className="text-xs text-muted-foreground">
-                              Completed: {new Date(response.completedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Student feedback */}
-                      {response?.feedback && (
-                        <div className="mt-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                          <p className="text-xs text-amber-700 dark:text-amber-400 italic">Student feedback: "{response.feedback}"</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+               {studentResponse.completedAt && (
+                <div className="flex justify-between items-center py-2">
+                   <span className="text-sm text-muted-foreground">Completed On</span>
+                   <span className="font-bold text-sm">{new Date(studentResponse.completedAt).toLocaleDateString()}</span>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+               )}
+            </CardContent>
+           </Card>
+        </div>
+
+        {/* Right Column: Submission Image & Comments */}
+        <div className="lg:col-span-2 space-y-6">
+           {/* Submission Image Card */}
+           <Card className="border-2 flex flex-col">
+             <CardHeader className="bg-gradient-to-r from-background to-muted/50 flex-shrink-0">
+               <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
+                   <FileText className="w-5 h-5 text-white" />
+                 </div>
+                 <div>
+                   <CardTitle className="text-lg">{activity.title}</CardTitle>
+                   <CardDescription className="line-clamp-1">Student Submission</CardDescription>
+                 </div>
+               </div>
+             </CardHeader>
+             <CardContent className="p-6 flex flex-col items-center justify-center min-h-[400px] bg-muted/10">
+                {studentResponse.submissionImage ? (
+                  <div className="relative w-full h-full flex flex-col items-center gap-4">
+                    <div className="relative rounded-xl overflow-hidden shadow-xl border-4 border-white dark:border-gray-800 max-h-[500px] w-full">
+                      <img 
+                        src={studentResponse.submissionImage} 
+                        alt="Student Submission" 
+                        className="w-full h-full object-contain bg-black/5"
+                      />
+                    </div>
+                    <Button variant="outline" className="gap-2" onClick={() => window.open(studentResponse.submissionImage, '_blank')}>
+                      <Download className="w-4 h-4" />
+                      Download / Open Original
+                    </Button>
+                  </div>
+                ) : (
+                   <div className="text-center p-12">
+                     <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                       <FileText className="w-8 h-8 text-muted-foreground" />
+                     </div>
+                     <h3 className="font-semibold text-lg">No Submission Image</h3>
+                     <p className="text-muted-foreground">This activity does not have a visual submission.</p>
+                   </div>
+                )}
+             </CardContent>
+           </Card>
+
+           {/* Comments Section */}
+           <Card className="border-2">
+             <CardHeader>
+               <CardTitle className="text-lg flex items-center gap-2">
+                 <MessageSquare className="w-5 h-5" />
+                 Comments
+               </CardTitle>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                 {comments.length > 0 ? (
+                   comments.map((comment, index) => (
+                     <div key={index} className={`flex gap-3 ${comment.sender === "Teacher" ? "flex-row-reverse" : ""}`}>
+                       <Avatar className="w-8 h-8 flex-shrink-0">
+                         <AvatarFallback className={`${comment.sender === "Teacher" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>
+                           {comment.sender[0]}
+                         </AvatarFallback>
+                       </Avatar>
+                       <div className={`flex-1 ${comment.sender === "Teacher" ? "text-right" : ""}`}>
+                         <div className={`inline-block rounded-lg p-3 text-sm ${
+                           comment.sender === "Teacher" 
+                             ? "bg-blue-600 text-white rounded-tr-none" 
+                             : "bg-gray-100 dark:bg-gray-800 rounded-tl-none"
+                         }`}>
+                           <p className="font-semibold text-xs mb-1 opacity-90">{comment.sender}</p>
+                           <p>{comment.message}</p>
+                         </div>
+                         <p className="text-xs text-muted-foreground mt-1">
+                           {new Date(comment.timestamp).toLocaleString()}
+                         </p>
+                       </div>
+                     </div>
+                   ))
+                 ) : (
+                   <p className="text-center text-muted-foreground py-4">No comments yet.</p>
+                 )}
+               </div>
+
+               <div className="flex gap-2 pt-2 border-t">
+                 <Input 
+                   placeholder="Add a comment..." 
+                   value={newComment}
+                   onChange={(e) => setNewComment(e.target.value)}
+                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                 />
+                 <Button onClick={handleAddComment} size="icon">
+                   <Send className="w-4 h-4" />
+                 </Button>
+               </div>
+             </CardContent>
+           </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2208,11 +2360,7 @@ function TeacherStudentProfileView({
                       </div>
                     </div>
                     <div className="text-right ml-3">
-                      {item.watchTime ? (
-                        <p className="font-medium text-sm">{item.watchTime}/{item.totalDuration} min</p>
-                      ) : (
-                        <p className="text-muted-foreground">-</p>
-                      )}
+
                       {item.rating && <span className="text-amber-500 text-sm">{"★".repeat(item.rating)}</span>}
                     </div>
                   </div>
@@ -3237,18 +3385,8 @@ function TeacherWebinarDetailView({
                 </div>
                 <div className="flex items-center gap-4">
                   {getStatusBadge(a.status)}
-                  {a.watchTime !== undefined ? (
-                    <div className="text-right">
-                      <p className="font-medium text-sm">{a.watchTime}/{webinar.duration} min</p>
-                      <p className="text-xs text-muted-foreground">{a.watchPercentage?.toFixed(0)}% watched</p>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                  <div className="flex items-center gap-2 text-xs">
-                    <span title="Questions" className="text-violet-500">💬 {a.questionsAsked}</span>
-                    <span title="Polls" className="text-blue-500">📊 {a.pollsAnswered}</span>
-                  </div>
+
+
                   {a.rating && <span className="text-amber-500 text-sm">{"★".repeat(a.rating)}</span>}
                   <Eye className="w-4 h-4 text-muted-foreground" />
                 </div>

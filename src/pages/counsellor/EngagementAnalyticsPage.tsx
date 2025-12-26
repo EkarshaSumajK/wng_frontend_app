@@ -38,6 +38,8 @@ import {
   Zap,
   GraduationCap,
   Heart,
+  Send,
+  ArrowLeft,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1735,6 +1737,7 @@ function StudentView({
 
 
 // Student Assessment Response View - Shows individual student's answers
+// Student Assessment Response View - Shows individual student's answers
 function StudentAssessmentResponseView({
   assessment,
   studentResponse,
@@ -1742,7 +1745,7 @@ function StudentAssessmentResponseView({
   onBack,
 }: {
   assessment: AssessmentDetailedView;
-  studentResponse: { studentId: string; studentName: string; className: string; rollNumber: string; submittedAt: string; totalScore: number; maxScore: number; percentage: number; timeSpent: number; responses: { questionId: string; studentAnswer: string; isCorrect?: boolean; pointsEarned: number; timeSpent?: number }[] };
+  studentResponse: { studentId: string; studentName: string; className: string; rollNumber: string; submittedAt: string; totalScore: number; maxScore: number; percentage: number; timeSpent: number; submissionImage?: string; responses: { questionId: string; studentAnswer: string; isCorrect?: boolean; pointsEarned: number; timeSpent?: number }[] };
   questions: { id: string; questionNumber: number; question: string; type: string; options?: string[]; correctAnswer?: string; points: number; category: string }[];
   onBack: () => void;
 }) {
@@ -1833,7 +1836,6 @@ function StudentAssessmentResponseView({
                         )}
                       </div>
 
-                      {/* Options for multiple choice */}
                       {q.options && (
                         <div className="mt-3 space-y-1">
                           {q.options.map((opt, optIdx) => {
@@ -1859,7 +1861,6 @@ function StudentAssessmentResponseView({
                         </div>
                       )}
 
-                      {/* Student's answer for non-multiple choice */}
                       {!q.options && response && (
                         <div className="mt-3">
                           <p className="text-xs text-muted-foreground mb-1">Student's Answer:</p>
@@ -1869,7 +1870,6 @@ function StudentAssessmentResponseView({
                         </div>
                       )}
 
-                      {/* Time spent */}
                       {response?.timeSpent && (
                         <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
@@ -1877,7 +1877,6 @@ function StudentAssessmentResponseView({
                         </div>
                       )}
 
-                      {/* No response */}
                       {!response && (
                         <div className="mt-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-muted-foreground text-sm">
                           No response recorded
@@ -1891,6 +1890,7 @@ function StudentAssessmentResponseView({
           </div>
         </CardContent>
       </Card>
+      {/* End Reversion */}
     </div>
   );
 }
@@ -1903,155 +1903,175 @@ function StudentActivityResponseView({
   onBack,
 }: {
   activity: ActivityDetailedView;
-  studentResponse: { studentId: string; studentName: string; className: string; rollNumber: string; startedAt: string; completedAt?: string; progress: number; totalTasks: number; completedTasks: number; responses: { taskId: string; status: string; response?: string; completedAt?: string; timeSpent?: number; rating?: number; feedback?: string }[] };
+  studentResponse: { 
+    studentId: string; 
+    studentName: string; 
+    className: string; 
+    rollNumber: string; 
+    startedAt: string; 
+    completedAt?: string; 
+    progress: number; 
+    totalTasks: number; 
+    completedTasks: number; 
+    submissionImage?: string;
+    comments?: { sender: string; message: string; timestamp: string }[];
+    responses: { taskId: string; status: string; response?: string; completedAt?: string; timeSpent?: number; rating?: number; feedback?: string }[] 
+  };
   tasks: { id: string; taskNumber: number; title: string; description: string; type: string; duration: number; points: number; isRequired: boolean }[];
   onBack: () => void;
 }) {
-  const getTaskStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed": return <Badge className="bg-green-500 gap-1"><CheckCircle className="w-3 h-3" /> Completed</Badge>;
-      case "in_progress": return <Badge variant="secondary" className="gap-1"><Clock className="w-3 h-3" /> In Progress</Badge>;
-      case "skipped": return <Badge variant="outline" className="gap-1 text-muted-foreground">Skipped</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState(studentResponse.comments || []);
 
-  const getTaskTypeIcon = (type: string) => {
-    switch (type) {
-      case "reflection": return <MessageSquare className="w-4 h-4 text-purple-500" />;
-      case "exercise": return <Activity className="w-4 h-4 text-green-500" />;
-      case "journal": return <BookOpen className="w-4 h-4 text-blue-500" />;
-      case "video": return <Play className="w-4 h-4 text-red-500" />;
-      case "quiz": return <ClipboardList className="w-4 h-4 text-orange-500" />;
-      case "interactive": return <Star className="w-4 h-4 text-amber-500" />;
-      default: return <HelpCircle className="w-4 h-4 text-gray-500" />;
-    }
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    const comment = {
+      sender: "Teacher", // In a real app, this would be the logged-in user's name
+      message: newComment,
+      timestamp: new Date().toISOString()
+    };
+    setComments([...comments, comment]);
+    setNewComment("");
   };
 
   return (
-    <div className="space-y-6">
-      <Button variant="outline" onClick={onBack} className="gap-2">
-        <ChevronRight className="w-4 h-4 rotate-180" />
-        Back to Activity
-      </Button>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Back Button and Header */}
+       <div className="flex items-center gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={onBack}
+          className="group hover:bg-blue-50"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Profile
+        </Button>
+      </div>
 
-      {/* Student Header */}
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-5 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold">
-              {studentResponse.studentName.split(" ").map(n => n[0]).join("")}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column: Student Detail & Summary */}
+        <div className="lg:col-span-1 space-y-6">
+           <Card className="border-2 overflow-hidden">
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-6 text-white text-center">
+               <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold mx-auto mb-4 backdrop-blur-sm">
+                 {studentResponse.studentName.split(" ").map(n => n[0]).join("")}
+               </div>
+               <h2 className="text-xl font-bold">{studentResponse.studentName}</h2>
+               <p className="text-white/80 text-sm mt-1">{studentResponse.className} • {studentResponse.rollNumber}</p>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">{studentResponse.studentName}</h1>
-              <p className="text-white/80">{studentResponse.className} • {studentResponse.rollNumber}</p>
-              <p className="text-white/60 text-sm mt-1">Started: {new Date(studentResponse.startedAt).toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Activity</p>
-              <p className="font-medium">{activity.title}</p>
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <div className="flex items-center gap-2">
-                  <Progress value={studentResponse.progress} className="h-2 w-24" />
-                  <span className={`text-xl font-bold ${studentResponse.progress === 100 ? "text-green-500" : studentResponse.progress >= 50 ? "text-yellow-500" : "text-red-500"}`}>
-                    {studentResponse.progress}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">{studentResponse.completedTasks}/{studentResponse.totalTasks} tasks</p>
+            <CardContent className="pt-6 space-y-4">
+
+              <div className="flex justify-between items-center py-2 border-b">
+                 <span className="text-sm text-muted-foreground">Started On</span>
+                 <span className="font-bold text-sm">{new Date(studentResponse.startedAt).toLocaleDateString()}</span>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tasks and Responses */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-cyan-500" />
-            Tasks & Responses ({tasks.length})
-          </CardTitle>
-          <CardDescription>Review {studentResponse.studentName}'s progress on each task</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {tasks.map((t) => {
-              const response = studentResponse.responses.find(r => r.taskId === t.id);
-              return (
-                <div key={t.id} className="p-4 rounded-xl border bg-muted/30">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center text-cyan-600">
-                      {getTaskTypeIcon(t.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">Task {t.taskNumber}: {t.title}</p>
-                            {t.isRequired && <Badge variant="secondary" className="text-xs">Required</Badge>}
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">{t.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs">{t.type}</Badge>
-                            <span className="text-xs text-muted-foreground">{t.duration} min • {t.points} pts</span>
-                          </div>
-                        </div>
-                        {response ? getTaskStatusBadge(response.status) : <Badge variant="outline">Not Started</Badge>}
-                      </div>
-
-                      {/* Student's response */}
-                      {response?.response && (
-                        <div className="mt-3">
-                          <p className="text-xs text-muted-foreground mb-1">Student's Response:</p>
-                          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                            <p className="text-sm whitespace-pre-wrap">{response.response}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Rating and feedback */}
-                      {response && (
-                        <div className="mt-3 flex items-center gap-4 flex-wrap">
-                          {response.rating && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-muted-foreground">Rating:</span>
-                              <span className="text-amber-500">{"★".repeat(response.rating)}{"☆".repeat(5 - response.rating)}</span>
-                            </div>
-                          )}
-                          {response.timeSpent && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              {response.timeSpent} min
-                            </div>
-                          )}
-                          {response.completedAt && (
-                            <span className="text-xs text-muted-foreground">
-                              Completed: {new Date(response.completedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Student feedback */}
-                      {response?.feedback && (
-                        <div className="mt-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                          <p className="text-xs text-amber-700 dark:text-amber-400 italic">Student feedback: "{response.feedback}"</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+               {studentResponse.completedAt && (
+                <div className="flex justify-between items-center py-2">
+                   <span className="text-sm text-muted-foreground">Completed On</span>
+                   <span className="font-bold text-sm">{new Date(studentResponse.completedAt).toLocaleDateString()}</span>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+               )}
+            </CardContent>
+           </Card>
+        </div>
+
+        {/* Right Column: Submission Image & Comments */}
+        <div className="lg:col-span-2 space-y-6">
+           {/* Submission Image Card */}
+           <Card className="border-2 flex flex-col">
+             <CardHeader className="bg-gradient-to-r from-background to-muted/50 flex-shrink-0">
+               <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg">
+                   <FileText className="w-5 h-5 text-white" />
+                 </div>
+                 <div>
+                   <CardTitle className="text-lg">{activity.title}</CardTitle>
+                   <CardDescription className="line-clamp-1">Student Submission</CardDescription>
+                 </div>
+               </div>
+             </CardHeader>
+             <CardContent className="p-6 flex flex-col items-center justify-center min-h-[400px] bg-muted/10">
+                {studentResponse.submissionImage ? (
+                  <div className="relative w-full h-full flex flex-col items-center gap-4">
+                    <div className="relative rounded-xl overflow-hidden shadow-xl border-4 border-white dark:border-gray-800 max-h-[500px] w-full">
+                      <img 
+                        src={studentResponse.submissionImage} 
+                        alt="Student Submission" 
+                        className="w-full h-full object-contain bg-black/5"
+                      />
+                    </div>
+                    <Button variant="outline" className="gap-2" onClick={() => window.open(studentResponse.submissionImage, '_blank')}>
+                      <Download className="w-4 h-4" />
+                      Download / Open Original
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                     <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                       <FileText className="w-8 h-8 text-muted-foreground" />
+                     </div>
+                     <h3 className="text-lg font-medium text-foreground">No Preview Available</h3>
+                     <p className="text-muted-foreground mt-1 max-w-xs mx-auto">
+                       This submission does not contain an image preview or the file type is not supported.
+                     </p>
+                  </div>
+                )}
+             </CardContent>
+           </Card>
+
+           {/* Comments Section */}
+           <Card className="border-2">
+             <CardHeader>
+               <CardTitle className="text-lg flex items-center gap-2">
+                 <MessageSquare className="w-5 h-5" />
+                 Comments
+               </CardTitle>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                 {comments.length > 0 ? (
+                   comments.map((comment, index) => (
+                     <div key={index} className={`flex gap-3 ${comment.sender === "Teacher" ? "flex-row-reverse" : ""}`}>
+                       <Avatar className="w-8 h-8 flex-shrink-0">
+                         <AvatarFallback className={`${comment.sender === "Teacher" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>
+                           {comment.sender[0]}
+                         </AvatarFallback>
+                       </Avatar>
+                       <div className={`flex-1 ${comment.sender === "Teacher" ? "text-right" : ""}`}>
+                         <div className={`inline-block rounded-lg p-3 text-sm ${
+                           comment.sender === "Teacher" 
+                             ? "bg-blue-600 text-white rounded-tr-none" 
+                             : "bg-gray-100 dark:bg-gray-800 rounded-tl-none"
+                         }`}>
+                           <p className="font-semibold text-xs mb-1 opacity-90">{comment.sender}</p>
+                           <p>{comment.message}</p>
+                         </div>
+                         <p className="text-xs text-muted-foreground mt-1">
+                           {new Date(comment.timestamp).toLocaleString()}
+                         </p>
+                       </div>
+                     </div>
+                   ))
+                 ) : (
+                   <p className="text-center text-muted-foreground py-4">No comments yet.</p>
+                 )}
+               </div>
+
+               <div className="flex gap-2 pt-2 border-t">
+                 <Input 
+                   placeholder="Add a comment..." 
+                   value={newComment}
+                   onChange={(e) => setNewComment(e.target.value)}
+                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                 />
+                 <Button onClick={handleAddComment} size="icon">
+                   <Send className="w-4 h-4" />
+                 </Button>
+               </div>
+             </CardContent>
+           </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2066,7 +2086,99 @@ function StudentDetailedProfileView({
   onBack: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<"overview" | "assessments" | "activities" | "webinars">("overview");
-  
+  const [viewResponseId, setViewResponseId] = useState<string | null>(null);
+  const [viewResponseType, setViewResponseType] = useState<"assessment" | "activity" | null>(null);
+
+  // Handle viewing assessment response
+  if (viewResponseType === "assessment" && viewResponseId) {
+    const assessmentData = mockAssessmentQuestions[viewResponseId];
+    if (assessmentData) {
+      const studentResponse = assessmentData.studentResponses.find(sr => sr.studentId === profile.id);
+      
+      // If we found specific response data, show it
+      if (studentResponse) {
+          const assessmentDetail = mockAssessmentDetailedViews[viewResponseId] || {
+              id: viewResponseId,
+              title: "Assessment Details",
+              description: "Details not available",
+              type: "Assessment",
+              category: "General",
+              createdBy: "System",
+              createdAt: new Date().toISOString(),
+              dueDate: new Date().toISOString(),
+              maxScore: 100,
+              totalQuestions: assessmentData.questions.length,
+              avgScore: 0,
+              totalStudentsAssigned: 0,
+              studentsSubmitted: 0,
+              studentsPending: 0,
+              studentsOverdue: 0,
+              passRate: 0,
+              avgTimeSpent: 0,
+              scoreDistribution: [],
+              classWiseStats: [],
+              submissions: []
+          } as AssessmentDetailedView;
+
+          return (
+            <StudentAssessmentResponseView
+              assessment={assessmentDetail}
+              studentResponse={{...studentResponse, studentName: profile.name, className: profile.className, rollNumber: profile.rollNumber}}
+              questions={assessmentData.questions}
+              onBack={() => {
+                  setViewResponseId(null);
+                  setViewResponseType(null);
+              }}
+            />
+          );
+      }
+    }
+  }
+
+  // Handle viewing activity response
+  if (viewResponseType === "activity" && viewResponseId) {
+      const activityData = mockActivityTasks[viewResponseId];
+      if (activityData) {
+          const studentResponse = activityData.studentResponses.find(sr => sr.studentId === profile.id);
+          if (studentResponse) {
+              const activityDetail = mockActivityDetailedViews[viewResponseId] || {
+                  id: viewResponseId,
+                  title: "Activity Details",
+                  description: "Details not available",
+                  category: "Activity",
+                  difficulty: "Medium",
+                  type: "activity",
+                  dueDate: "N/A",
+                  estimatedTime: 0,
+                  createdBy: "System",
+                  createdAt: new Date().toISOString(),
+                  completionRate: 0,
+                  avgRating: 0,
+                  totalStudentsAssigned: 0,
+                  studentsCompleted: 0,
+                  studentsInProgress: 0,
+                  studentsNotStarted: 0,
+                  avgTimeSpent: 0,
+                  progressDistribution: [],
+                  classWiseStats: [],
+                  completions: []
+              } as ActivityDetailedView;
+
+              return (
+                  <StudentActivityResponseView
+                    activity={activityDetail}
+                    studentResponse={{...studentResponse, studentName: profile.name, className: profile.className, rollNumber: profile.rollNumber}}
+                    tasks={activityData.tasks}
+                    onBack={() => {
+                        setViewResponseId(null);
+                        setViewResponseType(null);
+                    }}
+                  />
+              );
+          }
+      }
+  }
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-500";
     if (score >= 60) return "text-yellow-500";
@@ -2350,6 +2462,7 @@ function StudentDetailedProfileView({
                     <TableHead className="text-center">Score</TableHead>
                     <TableHead className="text-center">Time</TableHead>
                     <TableHead>Due Date</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -2365,6 +2478,23 @@ function StudentDetailedProfileView({
                       </TableCell>
                       <TableCell className="text-center">{item.timeSpent ? `${item.timeSpent} min` : "-"}</TableCell>
                       <TableCell className="text-muted-foreground">{new Date(item.dueDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-center">
+                          {item.status === "submitted" && mockAssessmentQuestions[item.id] ? (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={() => {
+                                    setViewResponseId(item.id);
+                                    setViewResponseType("assessment");
+                                }}
+                              >
+                                View Response
+                              </Button>
+                          ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                          )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -2391,6 +2521,7 @@ function StudentDetailedProfileView({
                     <TableHead className="text-center">Status</TableHead>
                     <TableHead className="text-center">Time Spent</TableHead>
                     <TableHead>Completed</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -2402,6 +2533,23 @@ function StudentDetailedProfileView({
                       <TableCell className="text-center">{item.timeSpent ? `${item.timeSpent} min` : "-"}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {item.completedAt ? new Date(item.completedAt).toLocaleDateString() : "-"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                          {(item.status === "completed" || item.status === "in_progress") && mockActivityTasks[item.id] ? (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={() => {
+                                    setViewResponseId(item.id);
+                                    setViewResponseType("activity");
+                                }}
+                              >
+                                View Response
+                              </Button>
+                          ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                          )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -2417,7 +2565,7 @@ function StudentDetailedProfileView({
             <CardHeader>
               <CardTitle>Webinar Attendance</CardTitle>
               <CardDescription>
-                {profile.webinars.done}/{profile.webinars.total} attended • Avg Watch Time: {profile.webinars.avgWatchTime} min
+                {profile.webinars.done}/{profile.webinars.total} attended
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -2427,8 +2575,7 @@ function StudentDetailedProfileView({
                     <TableHead>Webinar</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-center">Watch Time</TableHead>
-                    <TableHead className="text-center">Questions</TableHead>
+
                     <TableHead className="text-center">Rating</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -2438,10 +2585,7 @@ function StudentDetailedProfileView({
                       <TableCell className="font-medium">{item.title}</TableCell>
                       <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
                       <TableCell className="text-center">{getStatusBadge(item.status)}</TableCell>
-                      <TableCell className="text-center">
-                        {item.watchTime ? `${item.watchTime}/${item.totalDuration} min (${item.watchPercentage}%)` : "-"}
-                      </TableCell>
-                      <TableCell className="text-center">{item.questionsAsked}</TableCell>
+
                       <TableCell className="text-center">
                         {item.rating ? (
                           <span className="text-amber-500">{"★".repeat(item.rating)}</span>
@@ -3667,9 +3811,7 @@ function WebinarDetailedViewComponent({
                 <TableHead>Student</TableHead>
                 <TableHead>Class</TableHead>
                 <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center">Watch Time</TableHead>
-                <TableHead className="text-center">Questions</TableHead>
-                <TableHead className="text-center">Polls</TableHead>
+
                 <TableHead className="text-center">Rating</TableHead>
               </TableRow>
             </TableHeader>
@@ -3693,20 +3835,7 @@ function WebinarDetailedViewComponent({
                   </TableCell>
                   <TableCell>{attendance.className}</TableCell>
                   <TableCell className="text-center">{getStatusBadge(attendance.status)}</TableCell>
-                  <TableCell className="text-center">
-                    {attendance.watchTime !== undefined ? (
-                      <div>
-                        <p className="font-medium">{attendance.watchTime}/{webinar.duration} min</p>
-                        <p className="text-xs text-muted-foreground">{attendance.watchPercentage?.toFixed(0)}%</p>
-                      </div>
-                    ) : "-"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-violet-600 font-medium">{attendance.questionsAsked}</span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-blue-600 font-medium">{attendance.pollsAnswered}</span>
-                  </TableCell>
+
                   <TableCell className="text-center flex items-center justify-center gap-2">
                     {attendance.rating ? (
                       <span className="text-amber-500">{"★".repeat(attendance.rating)}</span>
