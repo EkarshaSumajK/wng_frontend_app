@@ -320,6 +320,30 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
     webinars: { done: 1, total: 4, rate: 25 },
     lastActive: "2024-12-10",
   },
+  {
+    id: "student-11",
+    name: "Liam Anderson",
+    className: "Grade 6 - Section A",
+    grade: "6",
+    section: "A",
+    rollNumber: "6A06",
+    assessments: { done: 3, total: 5, rate: 60 },
+    activities: { done: 5, total: 9, rate: 55.5 },
+    webinars: { done: 2, total: 4, rate: 50 },
+    lastActive: "2024-12-14",
+  },
+  {
+    id: "student-12",
+    name: "Charlotte Thomas",
+    className: "Grade 7 - Section B",
+    grade: "7",
+    section: "B",
+    rollNumber: "7B05",
+    assessments: { done: 4, total: 5, rate: 80 },
+    activities: { done: 7, total: 9, rate: 77.7 },
+    webinars: { done: 3, total: 4, rate: 75 },
+    lastActive: "2024-12-15",
+  },
 ];
 
 // Assessment details mock data - showing how many STUDENTS submitted each assessment

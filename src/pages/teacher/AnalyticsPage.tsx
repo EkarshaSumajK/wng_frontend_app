@@ -243,6 +243,7 @@ export default function TeacherAnalyticsPage() {
           ) : overviewData ? (
             <OverallView
               data={overviewData}
+              students={studentsData?.students || []}
               onSelectStudent={(id) => {
                 setSelectedStudentId(id);
                 setActiveTab("student");
@@ -398,12 +399,16 @@ export default function TeacherAnalyticsPage() {
 }
 
 
+import { AnalyticsLeaderboard, type LeaderboardEntry } from "@/components/shared/AnalyticsLeaderboard";
+
 // Overall View Component
 function OverallView({
   data,
+  students = [],
   onSelectStudent,
 }: {
   data: TeacherOverview;
+  students?: StudentItem[];
   onSelectStudent?: (id: string) => void;
 }) {
   const { summary, risk_distribution, engagement, top_performers, at_risk_students } =
@@ -561,111 +566,22 @@ function OverallView({
         </Card>
       </div>
 
-      {/* Top Performers & At-Risk */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500" />
-              Top Performers
-            </CardTitle>
-            <CardDescription>Students with highest engagement</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {top_performers.length > 0 ? (
-                top_performers.slice(0, 5).map((student, index) => (
-                  <div
-                    key={student.student_id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-muted/50 cursor-pointer hover:bg-muted hover:shadow-md transition-all"
-                    onClick={() => onSelectStudent?.(student.student_id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{
-                          backgroundColor:
-                            COLORS.gradient[index % COLORS.gradient.length],
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-medium">{student.student_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {student.class_name}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-orange-500" />
-                      <span className="font-bold text-orange-600">
-                        {student.daily_streak} days
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No data available
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              Needs Attention
-            </CardTitle>
-            <CardDescription>High-risk students requiring follow-up</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {at_risk_students.length > 0 ? (
-                at_risk_students.slice(0, 5).map((student) => (
-                  <div
-                    key={student.student_id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 cursor-pointer hover:bg-red-100 dark:hover:bg-red-950/50 hover:shadow-md transition-all"
-                    onClick={() => onSelectStudent?.(student.student_id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center text-red-600 font-bold">
-                        {student.student_name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
-                      <div>
-                        <p className="font-medium">{student.student_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {student.class_name}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="font-bold text-red-600">
-                          {student.wellbeing_score}%
-                        </p>
-                        <p className="text-xs text-muted-foreground">Wellbeing</p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-red-400" />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4">
-                  <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
-                  <p className="text-muted-foreground">No high-risk students</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Comprehensive Leaderboard */}
+      <div className="grid gap-6">
+        <AnalyticsLeaderboard
+          title="Student Leaderboard"
+          description="Comprehensive ranking based on wellbeing and activity scores"
+          students={students.map((s) => ({
+            id: s.student_id,
+            name: s.name,
+            className: s.class_name || "Unknown",
+            score: s.wellbeing_score || 0,
+            scoreLabel: "Wellbeing Score",
+            streak: s.daily_streak,
+            riskLevel: s.risk_level,
+            avatar: undefined, // Add avatar if available
+          }))}
+        />
       </div>
     </div>
   );

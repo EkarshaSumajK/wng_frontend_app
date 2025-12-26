@@ -112,6 +112,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { AnalyticsLeaderboard, type LeaderboardEntry } from "@/components/shared/AnalyticsLeaderboard";
 
 const COLORS = {
   primary: "#8b5cf6",
@@ -424,6 +425,7 @@ export default function TeacherEngagementAnalyticsPage() {
               teacherTotals={teacherTotals}
               onClassSelect={handleClassSelect}
               labels={labels}
+              students={filteredStudents}
             />
           )}
 
@@ -463,12 +465,14 @@ function MyClassesView({
   teacherTotals,
   onClassSelect,
   labels,
+  students,
 }: {
   type: EngagementType;
   teacherClasses: ClassEngagementSummary[];
   teacherTotals: any;
   onClassSelect: (classId: string) => void;
   labels: { done: string; pending: string };
+  students: StudentEngagementSummary[];
 }) {
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
@@ -648,6 +652,30 @@ function MyClassesView({
         </Card>
       </div>
 
+      {/* Class Leaderboard */}
+      <div className="grid gap-6">
+        <AnalyticsLeaderboard
+          title="Class Performance Leaderboard"
+          description={`Ranking based on ${type} performance`}
+          students={teacherClasses.map((cls) => { // Changed from filteredClasses to teacherClasses
+             const data = type === "assessments" ? cls.assessments : type === "activities" ? cls.activities : cls.webinars;
+             const pending = data.total - data.done;
+             const riskLevel: "high" | "medium" | "low" = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
+
+             return {
+                id: cls.id,
+                name: cls.name, // Class name as student name
+                className: `Grade ${cls.grade}`, // Grade as class name
+                score: data.rate,
+                scoreLabel: "Completion Rate",
+                streak: 0,
+                riskLevel: riskLevel,
+                avatar: undefined,
+             };
+          })}
+        />
+      </div>
+
       {/* Class Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {teacherClasses.map((cls) => {
@@ -698,107 +726,29 @@ function MyClassesView({
         })}
       </div>
 
-      {/* Best Performers & Non-Submitters */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Best Performers */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500" />
-              Top Performers
-            </CardTitle>
-            <CardDescription>Students with highest engagement in your classes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {mockTopPerformers.slice(0, 5).map((student, index) => (
-                <div
-                  key={student.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-200/50 dark:border-amber-800/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md"
-                      style={{
-                        background: index === 0 ? "linear-gradient(135deg, #fbbf24, #f59e0b)" :
-                          index === 1 ? "linear-gradient(135deg, #9ca3af, #6b7280)" :
-                          index === 2 ? "linear-gradient(135deg, #d97706, #b45309)" :
-                          "linear-gradient(135deg, #8b5cf6, #7c3aed)"
-                      }}
-                    >
-                      #{student.rank}
-                    </div>
-                    <div>
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-xs text-muted-foreground">{student.className}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <Flame className="w-4 h-4 text-orange-500" />
-                        <span className="font-bold text-orange-600">{student.streak} days</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Streak</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">{student.overallRate}%</p>
-                      <p className="text-xs text-muted-foreground">Rate</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Non-Submitters / Needs Attention */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              Needs Attention
-            </CardTitle>
-            <CardDescription>Students with pending submissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {mockNonSubmitters.slice(0, 5).map((student) => (
-                <div
-                  key={student.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-xs text-muted-foreground">{student.className}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <p className="font-bold text-red-600">{student.daysInactive}</p>
-                      <p className="text-xs text-muted-foreground">Days Inactive</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex gap-2 text-xs">
-                        <Badge variant="outline" className="text-red-600 border-red-300">
-                          {student.pendingAssessments} Assess
-                        </Badge>
-                        <Badge variant="outline" className="text-orange-600 border-orange-300">
-                          {student.pendingActivities} Act
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">Pending</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Engagement Leaderboard */}
+      <div className="grid gap-6">
+        <AnalyticsLeaderboard
+            title="Engagement Leaderboard"
+            description={`Ranking based on ${type} performance`}
+            students={students.map((s) => {
+                const data = type === "assessments" ? s.assessments : type === "activities" ? s.activities : s.webinars;
+                // Calculate pending count for "Needs Attention" check
+                const pending = data.total - data.done;
+                const riskLevel = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
+                
+                return {
+                    id: s.id,
+                    name: s.name,
+                    className: s.className,
+                    score: data.rate,
+                    scoreLabel: "Completion Rate",
+                    streak: 0, // Mock data doesn't have streak on summary, could map from mockTopPerformers if needed
+                    riskLevel: riskLevel,
+                    rank: undefined // Let component calculate
+                };
+            })}
+        />
       </div>
 
       {/* Type-specific Analytics */}
@@ -1158,12 +1108,12 @@ function ClassDetailView({
         </Card>
       </div>
 
-      {/* Weekly Trend */}
+      {/* Trend Chart */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            Weekly Progress
+            {type === "webinars" ? "Monthly" : "Weekly"} Progress
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1173,9 +1123,9 @@ function ClassDetailView({
             } satisfies ChartConfig}
             className="h-[250px]"
           >
-            <LineChart data={trendData}>
+            <LineChart data={type === "webinars" ? mockEngagementTrends.monthly : mockEngagementTrends.weekly}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="week" tickLine={false} axisLine={false} />
+              <XAxis dataKey={type === "webinars" ? "month" : "week"} tickLine={false} axisLine={false} />
               <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
@@ -2564,6 +2514,23 @@ function TeacherAssessmentDetailView({
                 </CardContent>
               </Card>
 
+              <div className="grid gap-6 mb-6">
+                <AnalyticsLeaderboard
+                  title="Assessment Top Performers"
+                  description="Ranking based on score and completion time"
+                  students={questionsData.studentResponses.map((sr) => ({
+                    id: sr.studentId,
+                    name: sr.studentName,
+                    className: sr.className,
+                    score: sr.percentage,
+                    scoreLabel: "Score",
+                    streak: 0,
+                    riskLevel: sr.percentage < 50 ? "high" : sr.percentage < 70 ? "medium" : "low",
+                    avatar: undefined,
+                  }))}
+                />
+              </div>
+
               {/* Student Responses */}
               <Card>
                 <CardHeader className="pb-3">
@@ -2965,6 +2932,23 @@ function TeacherActivityDetailView({
                   </div>
                 </CardContent>
               </Card>
+
+              <div className="grid gap-6 mb-6">
+                <AnalyticsLeaderboard
+                  title="Activity Top Performers"
+                  description="Ranking based on progress and completion"
+                  students={tasksData.studentResponses.map((sr) => ({
+                    id: sr.studentId,
+                    name: sr.studentName,
+                    className: sr.className,
+                    score: sr.progress,
+                    scoreLabel: "Progress",
+                    streak: 0,
+                    riskLevel: sr.progress < 50 ? "high" : sr.progress < 80 ? "medium" : "low",
+                    avatar: undefined,
+                  }))}
+                />
+              </div>
 
               {/* Student Responses */}
               <Card>

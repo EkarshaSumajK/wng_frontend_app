@@ -118,6 +118,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { AnalyticsLeaderboard, type LeaderboardEntry } from "@/components/shared/AnalyticsLeaderboard";
 
 const COLORS = {
   primary: "#8b5cf6",
@@ -203,7 +204,7 @@ export default function EngagementAnalyticsPage() {
 
   const handleClassSelect = (classId: string) => {
     setSelectedClassId(classId);
-    setViewLevel("student");
+    setViewLevel("class"); // Keep view level as class
     setSearchQuery("");
   };
 
@@ -406,16 +407,16 @@ export default function EngagementAnalyticsPage() {
             <TabsList className="h-11 p-1 bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-sm">
               <TabsTrigger value="school" className="rounded-lg gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <School className="w-4 h-4" />
-                <span className="hidden sm:inline">School</span>
+                <span className="hidden sm:inline">Overall</span>
               </TabsTrigger>
               <TabsTrigger value="class" className="rounded-lg gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Class-wise</span>
               </TabsTrigger>
-              <TabsTrigger value="student" className="rounded-lg gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              {/* <TabsTrigger value="student" className="rounded-lg gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">Student-wise</span>
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
           </Tabs>
 
@@ -423,7 +424,7 @@ export default function EngagementAnalyticsPage() {
           {(selectedClassId || selectedStudentId) && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Button variant="link" className="p-0 h-auto" onClick={handleBackToSchool}>
-                School
+                Overall
               </Button>
               {selectedClassId && (
                 <>
@@ -554,6 +555,20 @@ function EngagementContent({
   }
 
   if (viewLevel === "class") {
+    if (selectedClassId) {
+      return (
+        <StudentView
+          type={type}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filteredStudents={filteredStudents}
+          selectedClassId={selectedClassId}
+          onStudentSelect={onStudentSelect}
+          onBackToClasses={onBackToClasses}
+        />
+      );
+    }
+
     return (
       <ClassView
         type={type}
@@ -567,6 +582,7 @@ function EngagementContent({
     );
   }
 
+  // Fallback for direct student view if somehow reached
   return (
     <StudentView
       type={type}
@@ -630,21 +646,30 @@ function SchoolView({ type, timePeriod }: { type: EngagementType; timePeriod: Ti
     }
   }
 
-  // Get trend data based on time period
-  const getTrendData = () => {
-    switch (timePeriod) {
-      case "today":
-      case "week":
-        return { data: mockEngagementTrends.daily, key: "date" };
-      case "month":
-        return { data: mockEngagementTrends.weekly, key: "week" };
-      case "year":
-        return { data: mockEngagementTrends.monthly, key: "month" };
-      default:
-        return { data: mockEngagementTrends.monthly, key: "month" };
-    }
-  };
-  const { data: trendData, key: trendKey } = getTrendData();
+  // Determine trend data based on selected type and time period
+  const trendData = type === "webinars" 
+    ? mockEngagementTrends.monthly 
+    : (() => {
+      switch (timePeriod) {
+        case "today": return mockEngagementTrends.daily;
+        case "week": return mockEngagementTrends.daily;
+        case "month": return mockEngagementTrends.weekly;
+        case "year": return mockEngagementTrends.monthly;
+        default: return mockEngagementTrends.daily;
+      }
+    })();
+
+  const trendKey = type === "webinars" 
+    ? "month" 
+    : (() => {
+      switch (timePeriod) {
+        case "today": 
+        case "week": return "date";
+        case "month": return "week";
+        case "year": return "month";
+        default: return "date";
+      }
+    })();
   const labels = type === "assessments" ? { done: "Submitted", pending: "Pending" } :
     type === "activities" ? { done: "Completed", pending: "Not Started" } :
     { done: "Attended", pending: "Missed" };
@@ -772,7 +797,8 @@ function SchoolView({ type, timePeriod }: { type: EngagementType; timePeriod: Ti
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              {timePeriod === "today" || timePeriod === "week" ? "Daily" : 
+              {type === "webinars" ? "Monthly" : 
+               timePeriod === "today" || timePeriod === "week" ? "Daily" : 
                timePeriod === "month" ? "Weekly" : "Monthly"} Trend
             </CardTitle>
             <CardDescription>Engagement rate over time</CardDescription>
@@ -801,6 +827,31 @@ function SchoolView({ type, timePeriod }: { type: EngagementType; timePeriod: Ti
             </ChartContainer>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Engagement Leaderboard */}
+       <div className="grid gap-6">
+        <AnalyticsLeaderboard
+            title="School Engagement Leaderboard"
+            description={`Ranking based on ${type} performance`}
+            students={mockStudentEngagement.map((s) => {
+                const data = type === "assessments" ? s.assessments : type === "activities" ? s.activities : s.webinars;
+                // Calculate pending count for "Needs Attention" check
+                const pending = data.total - data.done;
+                const riskLevel: "high" | "medium" | "low" = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
+                
+                return {
+                    id: s.id,
+                    name: s.name,
+                    className: s.className,
+                    score: data.rate,
+                    scoreLabel: "Completion Rate",
+                    streak: 0, 
+                    riskLevel: riskLevel,
+                    avatar: undefined,
+                };
+            })}
+        />
       </div>
 
       {/* Details Table - Shows how many students completed each item */}
@@ -921,108 +972,7 @@ function SchoolView({ type, timePeriod }: { type: EngagementType; timePeriod: Ti
         </CardContent>
       </Card>
 
-      {/* Best Performers & Non-Submitters */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Best Performers */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500" />
-              Best Performers
-            </CardTitle>
-            <CardDescription>Students with highest engagement rates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {mockTopPerformers.slice(0, 5).map((student, index) => (
-                <div
-                  key={student.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-200/50 dark:border-amber-800/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md"
-                      style={{
-                        background: index === 0 ? "linear-gradient(135deg, #fbbf24, #f59e0b)" :
-                          index === 1 ? "linear-gradient(135deg, #9ca3af, #6b7280)" :
-                          index === 2 ? "linear-gradient(135deg, #d97706, #b45309)" :
-                          "linear-gradient(135deg, #8b5cf6, #7c3aed)"
-                      }}
-                    >
-                      #{student.rank}
-                    </div>
-                    <div>
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-xs text-muted-foreground">{student.className}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <Flame className="w-4 h-4 text-orange-500" />
-                        <span className="font-bold text-orange-600">{student.streak} days</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Streak</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">{student.overallRate}%</p>
-                      <p className="text-xs text-muted-foreground">Rate</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Non-Submitters / Needs Attention */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              Needs Attention
-            </CardTitle>
-            <CardDescription>Students with pending submissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {mockNonSubmitters.slice(0, 5).map((student) => (
-                <div
-                  key={student.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-xs text-muted-foreground">{student.className}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <p className="font-bold text-red-600">{student.daysInactive}</p>
-                      <p className="text-xs text-muted-foreground">Days Inactive</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex gap-2 text-xs">
-                        <Badge variant="outline" className="text-red-600 border-red-300">
-                          {student.pendingAssessments} Assess
-                        </Badge>
-                        <Badge variant="outline" className="text-orange-600 border-orange-300">
-                          {student.pendingActivities} Act
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">Pending</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Grade-wise Performance Comparison */}
       <Card>
@@ -1374,6 +1324,30 @@ function ClassView({
           </ChartContainer>
         </CardContent>
       </Card>
+
+      {/* Class Leaderboard */}
+      <div className="grid gap-6">
+        <AnalyticsLeaderboard
+          title="Class Performance Leaderboard"
+          description={`Ranking based on ${type} performance`}
+          students={filteredClasses.map((cls) => {
+             const data = type === "assessments" ? cls.assessments : type === "activities" ? cls.activities : cls.webinars;
+             const pending = data.total - data.done;
+             const riskLevel: "high" | "medium" | "low" = pending >= 3 ? "high" : pending >= 1 ? "medium" : "low";
+
+             return {
+                id: cls.id,
+                name: cls.name, // Class name as student name
+                className: `Grade ${cls.grade}`, // Grade as class name
+                score: data.rate,
+                scoreLabel: "Completion Rate",
+                streak: 0,
+                riskLevel: riskLevel,
+                avatar: undefined,
+             };
+          })}
+        />
+      </div>
 
       {/* Class Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -2712,6 +2686,23 @@ function AssessmentDetailedViewComponent({
             </Card>
           </div>
 
+          <div className="grid gap-6 mb-6">
+            <AnalyticsLeaderboard
+              title="Assessment Top Performers"
+              description="Ranking based on score and completion time"
+              students={filteredSubmissions.map((s) => ({
+                id: s.studentId,
+                name: s.studentName,
+                className: s.className,
+                score: s.score || 0,
+                scoreLabel: "Score",
+                streak: 0,
+                riskLevel: (s.score || 0) < 50 ? "high" : (s.score || 0) < 70 ? "medium" : "low",
+                avatar: undefined,
+              }))}
+            />
+          </div>
+
           {/* Student Submissions Table */}
           <Card>
             <CardHeader>
@@ -3219,6 +3210,23 @@ function ActivityDetailedViewComponent({
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          <div className="grid gap-6 mb-6">
+            <AnalyticsLeaderboard
+              title="Activity Top Performers"
+              description="Ranking based on progress and completion"
+              students={tasksData ? tasksData.studentResponses.map((sr) => ({
+                id: sr.studentId,
+                name: sr.studentName,
+                className: sr.className,
+                score: sr.progress,
+                scoreLabel: "Progress",
+                streak: 0,
+                riskLevel: sr.progress < 50 ? "high" : sr.progress < 80 ? "medium" : "low",
+                avatar: undefined,
+              })) : []}
+            />
           </div>
 
           {/* Student Completions Table */}
