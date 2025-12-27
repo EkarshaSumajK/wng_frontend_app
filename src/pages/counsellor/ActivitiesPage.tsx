@@ -45,7 +45,8 @@ import {
   getActivityType,
   getActivityCognitive,
   getActivitySensory,
-  getActivityFramework
+  getActivityFramework,
+  getActivityThumbnail
 } from '@/services/activities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -141,8 +142,8 @@ const gradeImages: Record<string, string> = {
 };
 
 const diagnosisImages: Record<string, string> = {
-  VISUAL_IMPAIRMENT: 'https://images.unsplash.com/photo-1616051071474-9f3726481251?q=80&w=1000&auto=format&fit=crop',
-  HEARING_IMPAIRMENT: 'https://images.unsplash.com/photo-1594815550232-6883f53529b4?q=80&w=1000&auto=format&fit=crop',
+  VISUAL_IMPAIRMENT: 'https://wecapable.com/wp-content/uploads/2021/09/children-with-visual-impairment-wecapable.jpg',
+  HEARING_IMPAIRMENT: 'https://professionals.cid.edu/wp-content/uploads/languageblog.jpg',
   INTELLECTUAL_DISABILITIES: 'https://images.unsplash.com/photo-1555848962-6e79363ec58f?q=80&w=1000&auto=format&fit=crop',
   LEARNING_DISABILITIES: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1000&auto=format&fit=crop',
   ANXIETY_DISORDERS: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=1000&auto=format&fit=crop',
@@ -151,6 +152,8 @@ const diagnosisImages: Record<string, string> = {
   TRAUMA_PTSD: 'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=1000&auto=format&fit=crop',
   AUTISM_SPECTRUM_DISORDER: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1000&auto=format&fit=crop',
 };
+
+const FALLBACK_THUMBNAIL = 'https://imagine-public.x.ai/imagine-public/images/d4d1378b-2eef-457e-a7b4-dfcb5bf29891.png?cache=1&dl=1';
 
 
 
@@ -350,16 +353,22 @@ export default function ActivitiesPage() {
                     >
                       {/* Thumbnail / App Icon Style */}
                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                        {activity.thumbnail_url ? (
+                        {getActivityThumbnail(activity) ? (
                           <img 
-                            src={activity.thumbnail_url} 
+                            src={getActivityThumbnail(activity)!} 
                             alt={activity.activity_name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = FALLBACK_THUMBNAIL;
+                            }}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                            <span className="text-4xl">✨</span>
-                          </div>
+                          <img 
+                            src={FALLBACK_THUMBNAIL} 
+                            alt={activity.activity_name}
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          />
                         )}
                         {/* Duration Badge Overlay */}
                         <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -417,9 +426,12 @@ export default function ActivitiesPage() {
               <CarouselContent className="-ml-4">
                 {activities
                   .filter((a: any) => {
-                    const dur = getActivityDuration(a);
-                    const durNum = dur ? parseInt(dur) : 0;
-                    return durNum >= 5 && durNum <= 10;
+                    const dur = getActivityDuration(a) || '';
+                    const parts = dur.match(/(\d+)/g);
+                    if (!parts) return false;
+                    const min = parseInt(parts[0]);
+                    const max = parts.length > 1 ? parseInt(parts[1]) : min;
+                    return min >= 5 && max <= 10;
                   })
                   .map((activity: any) => (
                   <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
@@ -429,16 +441,22 @@ export default function ActivitiesPage() {
                      >
                        {/* Thumbnail / App Icon Style */}
                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                         {activity.thumbnail_url ? (
+                         {getActivityThumbnail(activity) ? (
                            <img 
-                             src={activity.thumbnail_url} 
+                             src={getActivityThumbnail(activity)!} 
                              alt={activity.activity_name}
-                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                             onError={(e) => {
+                               const target = e.target as HTMLImageElement;
+                               target.src = FALLBACK_THUMBNAIL;
+                             }}
                            />
                          ) : (
-                           <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                             <span className="text-4xl">🧘</span>
-                           </div>
+                           <img 
+                             src={FALLBACK_THUMBNAIL} 
+                             alt={activity.activity_name}
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                           />
                          )}
                          {/* Duration Badge Overlay */}
                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -575,16 +593,22 @@ export default function ActivitiesPage() {
                      >
                        {/* Thumbnail / App Icon Style */}
                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                         {activity.thumbnail_url ? (
+                         {getActivityThumbnail(activity) ? (
                            <img 
-                             src={activity.thumbnail_url} 
+                             src={getActivityThumbnail(activity)!} 
                              alt={activity.activity_name}
-                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                             onError={(e) => {
+                               const target = e.target as HTMLImageElement;
+                               target.src = FALLBACK_THUMBNAIL;
+                             }}
                            />
                          ) : (
-                           <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                             <span className="text-4xl">🤝</span>
-                           </div>
+                           <img 
+                             src={FALLBACK_THUMBNAIL} 
+                             alt={activity.activity_name}
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                           />
                          )}
                          {/* Duration Badge Overlay */}
                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -919,12 +943,18 @@ export default function ActivitiesPage() {
                           <img 
                             src={activity.thumbnail_url} 
                             alt={activity.activity_name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = FALLBACK_THUMBNAIL;
+                            }}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                            <span className="text-4xl">📝</span>
-                          </div>
+                          <img 
+                            src={FALLBACK_THUMBNAIL} 
+                            alt={activity.activity_name}
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          />
                         )}
                         {/* Duration Badge Overlay */}
                         <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -980,7 +1010,7 @@ export default function ActivitiesPage() {
 
       {/* Activity Detail Modal */}
       <Dialog open={!!selectedActivityId} onOpenChange={() => setSelectedActivityId(null)}>
-        <DialogContent className="w-full max-w-[95vw] md:w-fit md:max-w-[90vw] lg:max-w-[85vw] max-h-[90vh] overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
+        <DialogContent className="w-full max-w-[95vw] min-w-[80vw] md:w-fit md:max-w-[90vw] lg:max-w-[85vw] max-h-[90vh] overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
           {isLoadingActivity ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
@@ -1217,7 +1247,7 @@ export default function ActivitiesPage() {
                   );
                 })()}
 
-                {/* Instructions */}
+                {/* Instructions
                 {(() => {
                   const instructions = getActivityInstructions(selectedActivity);
                   return instructions.length > 0 && (
@@ -1264,7 +1294,7 @@ export default function ActivitiesPage() {
                       </Card>
                     </Carousel>
                   );
-                })()}
+                })()} */}
 
                 {/* Materials Required */}
                 {(() => {
@@ -1339,7 +1369,7 @@ export default function ActivitiesPage() {
                       align: "start",
                       loop: true,
                     }}
-                    className="w-full"
+                    className="w-full mx-auto"
                   >
                     <Card className="border-2 border-amber-200 dark:border-amber-800">
                       <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 flex flex-row items-center justify-between space-y-0 py-2">
@@ -1352,7 +1382,7 @@ export default function ActivitiesPage() {
                           <CarouselNext className="static translate-y-0 translate-x-0 h-6 w-6 sm:h-7 sm:w-7" />
                         </div>
                       </CardHeader>
-                      <CardContent className="pt-2 pb-3">
+                      <CardContent className="pt-2 pb-3 max-w-6xl min-w-6xl mx-auto">
                         <CarouselContent>
                           {(() => {
                             const instructions = getActivityInstructions(selectedActivity);
@@ -1368,20 +1398,20 @@ export default function ActivitiesPage() {
                                           className="w-full h-auto max-h-[250px] sm:max-h-[350px] object-contain bg-white dark:bg-gray-900"
                                         />
                                         {/* Step number badge */}
-                                        <div className="absolute top-2 left-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
+                                        {/* <div className="absolute top-2 left-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
                                           <span className="text-sm sm:text-base font-bold text-white">{idx + 1}</span>
-                                        </div>
- <p className="text-xs  text-center sm:text-sm text-foreground leading-relaxed p-4 bg-gray-100 rounded-md mx-auto">
+                                        </div> */}
+ {/* <p className="text-xs  text-center sm:text-sm text-foreground leading-relaxed p-4 bg-gray-100 rounded-md mx-auto">
                                           {instructions[idx] || `Step ${idx + 1}`}
-                                        </p>
+                                        </p>   */}
                                       </div>
                                       {/* Instruction text */}
-                                      <div className="p-3 sm:p-4 bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 border-t border-amber-200 dark:border-amber-800">
+                                      {/* <div className="p-3 sm:p-4 bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 border-t border-amber-200 dark:border-amber-800">
                                        
                                         <div className="mt-2 text-[10px] sm:text-xs text-muted-foreground">
                                           Step {idx + 1} of {Object.keys(selectedActivity.flashcards!).length}
                                         </div>
-                                      </div>
+                                      </div> */}
                                     </CardContent>
                                   </Card>
                                 </div>

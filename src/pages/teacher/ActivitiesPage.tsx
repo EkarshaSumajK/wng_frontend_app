@@ -46,7 +46,8 @@ import {
   getActivityType,
   getActivityCognitive,
   getActivitySensory,
-  getActivityFramework
+  getActivityFramework,
+  getActivityThumbnail
 } from '@/services/activities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -146,8 +147,8 @@ const gradeImages: Record<string, string> = {
 };
 
 const diagnosisImages: Record<string, string> = {
-  VISUAL_IMPAIRMENT: 'https://picsum.photos/seed/visual-impairment/800/600',
-  HEARING_IMPAIRMENT: 'https://picsum.photos/seed/hearing-impairment/800/600',
+  VISUAL_IMPAIRMENT: 'https://wecapable.com/wp-content/uploads/2021/09/children-with-visual-impairment-wecapable.jpg',
+  HEARING_IMPAIRMENT: 'https://professionals.cid.edu/wp-content/uploads/languageblog.jpg',
   INTELLECTUAL_DISABILITIES: 'https://picsum.photos/seed/intellectual-disabilities/800/600',
   LEARNING_DISABILITIES: 'https://picsum.photos/seed/learning-disabilities/800/600',
   ANXIETY_DISORDERS: 'https://picsum.photos/seed/anxiety-disorders/800/600',
@@ -156,6 +157,8 @@ const diagnosisImages: Record<string, string> = {
   TRAUMA_PTSD: 'https://picsum.photos/seed/trauma-ptsd/800/600',
   AUTISM_SPECTRUM_DISORDER: 'https://picsum.photos/seed/autism-spectrum/800/600',
 };
+
+const FALLBACK_THUMBNAIL = 'https://imagine-public.x.ai/imagine-public/images/d4d1378b-2eef-457e-a7b4-dfcb5bf29891.png?cache=1&dl=1';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -362,17 +365,23 @@ export default function ActivitiesPage() {
                     >
                       {/* Thumbnail / App Icon Style */}
                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                        {activity.thumbnail_url ? (
-                          <img 
-                            src={activity.thumbnail_url} 
-                            alt={activity.activity_name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                            <span className="text-4xl">✨</span>
-                          </div>
-                        )}
+                          {getActivityThumbnail(activity) ? (
+                            <img 
+                              src={getActivityThumbnail(activity)!} 
+                              alt={activity.activity_name}
+                              className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = FALLBACK_THUMBNAIL;
+                              }}
+                            />
+                          ) : (
+                            <img 
+                              src={FALLBACK_THUMBNAIL} 
+                              alt={activity.activity_name}
+                              className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                            />
+                          )}
                         {/* Duration Badge Overlay */}
                         <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
                           {getActivityDuration(activity) || 'Flexible'}
@@ -429,9 +438,12 @@ export default function ActivitiesPage() {
               <CarouselContent className="-ml-4">
                 {activities
                   .filter((a: any) => {
-                    const dur = getActivityDuration(a);
-                    const durNum = dur ? parseInt(dur) : 0;
-                    return durNum >= 5 && durNum <= 10;
+                    const dur = getActivityDuration(a) || '';
+                    const parts = dur.match(/(\d+)/g);
+                    if (!parts) return false;
+                    const min = parseInt(parts[0]);
+                    const max = parts.length > 1 ? parseInt(parts[1]) : min;
+                    return min >= 5 && max <= 10;
                   })
                   .map((activity: any) => (
                   <CarouselItem key={activity.activity_id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
@@ -441,16 +453,22 @@ export default function ActivitiesPage() {
                      >
                        {/* Thumbnail / App Icon Style */}
                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                         {activity.thumbnail_url ? (
+                         {getActivityThumbnail(activity) ? (
                            <img 
-                             src={activity.thumbnail_url} 
+                             src={getActivityThumbnail(activity)!} 
                              alt={activity.activity_name}
-                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                             onError={(e) => {
+                               const target = e.target as HTMLImageElement;
+                               target.src = FALLBACK_THUMBNAIL;
+                             }}
                            />
                          ) : (
-                           <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                             <span className="text-4xl">🧘</span>
-                           </div>
+                           <img 
+                             src={FALLBACK_THUMBNAIL} 
+                             alt={activity.activity_name}
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                           />
                          )}
                          {/* Duration Badge Overlay */}
                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -587,16 +605,22 @@ export default function ActivitiesPage() {
                      >
                        {/* Thumbnail / App Icon Style */}
                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
-                         {activity.thumbnail_url ? (
+                         {getActivityThumbnail(activity) ? (
                            <img 
-                             src={activity.thumbnail_url} 
+                             src={getActivityThumbnail(activity)!} 
                              alt={activity.activity_name}
-                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                             onError={(e) => {
+                               const target = e.target as HTMLImageElement;
+                               target.src = FALLBACK_THUMBNAIL;
+                             }}
                            />
                          ) : (
-                           <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                             <span className="text-4xl">🤝</span>
-                           </div>
+                           <img 
+                             src={FALLBACK_THUMBNAIL} 
+                             alt={activity.activity_name}
+                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                           />
                          )}
                          {/* Duration Badge Overlay */}
                          <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -957,12 +981,18 @@ export default function ActivitiesPage() {
                           <img 
                             src={activity.thumbnail_url} 
                             alt={activity.activity_name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = FALLBACK_THUMBNAIL;
+                            }}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-secondary/20">
-                            <span className="text-4xl">📝</span>
-                          </div>
+                          <img 
+                            src={FALLBACK_THUMBNAIL} 
+                            alt={activity.activity_name}
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          />
                         )}
                         {/* Duration Badge Overlay */}
                         <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">

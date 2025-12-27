@@ -90,6 +90,7 @@ export interface ActivityResponse {
   // Metadata
   source: "curated" | "generated";
   flashcards: string[] | null; // S3 flashcard images when include_flashcards=true
+  thumbnail_url?: string | null; // URL from S3 presigned generation
 }
 
 export type ActivitySource = "all" | "curated" | "generated";
@@ -252,6 +253,11 @@ export function getActivitySensory(activity: ActivityResponse): string | null {
 // Helper to get framework
 export function getActivityFramework(activity: ActivityResponse): string | null {
   return activity.activity_data?.Framework || activity.framework || null;
+}
+
+// Helper to get thumbnail URL
+export function getActivityThumbnail(activity: ActivityResponse): string | null {
+  return activity.thumbnail_url || null;
 }
 
 export const activitiesApi = {
