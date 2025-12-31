@@ -114,6 +114,31 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { AnalyticsLeaderboard, type LeaderboardEntry } from "@/components/shared/AnalyticsLeaderboard";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  useCounsellorOverview, 
+  useCounsellorClasses, 
+  useCounsellorStudents,
+  useSchoolTrends,
+  useSchoolAssessments,
+  useSchoolActivities,
+  useSchoolWebinars,
+  useAssessmentDetails,
+  useActivityDetails,
+  useWebinarDetails
+} from "@/hooks/useCounsellorAnalytics";
+import { Loader2 } from "lucide-react";
+
+const daysFromPeriod = (period: any): number => {
+  if (typeof period === 'number') return period;
+  switch (period) {
+    case "today": return 1;
+    case "week": return 7;
+    case "month": return 30;
+    case "year": return 365;
+    default: return 30;
+  }
+};
 
 const COLORS = {
   primary: "#8b5cf6",
@@ -138,43 +163,128 @@ const teacherClasses = mockClassEngagement.slice(0, 3);
 
 export default function TeacherEngagementAnalyticsPage() {
   const [engagementType, setEngagementType] = useState<EngagementType>("assessments");
-  const [viewLevel, setViewLevel] = useState<ViewLevel>("myClasses");
+  const [viewLevel, setViewLevel] = useState<ViewLevel>("class");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [gradeFilter, setGradeFilter] = useState("all");
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Get time-based metrics
-  const currentMetrics = mockTimeBasedMetrics[timePeriod] || mockTimeBasedMetrics.month;
+  const { user } = useAuth();
+  const schoolId = user?.school_id || '';
+  const teacherId = user?.id || '';
+
+  // 1. Overview Data (filtered by teacher_id if possible, but overview might be school-wide)
+  // For teacher portal, we might want a teacher-specific overview hook if it exists.
+  // For now we use the school overview but we could filter it in the future.
+  const { data: overviewData, isLoading: isLoadingOverview } = useCounsellorOverview(schoolId, daysFromPeriod(timePeriod));
+  const currentMetrics = useMemo(() => {
+    if (!overviewData) return {
+      period: "Last 30 Days",
+      totalSubmissions: 0,
+      totalCompletions: 0,
+      totalAttendance: 0,
+      avgSubmissionRate: 0,
+      avgCompletionRate: 0,
+      avgAttendanceRate: 0,
+      newSubmissions: 0,
+      trend: "up" as const,
+      trendPercentage: 0
+    };
+
+    return {
+      period: `${format(new Date(overviewData.period.start_date), "MMM d")} - ${format(new Date(overviewData.period.end_date), "MMM d")}, ${new Date(overviewData.period.end_date).getFullYear()}`,
+      totalSubmissions: overviewData.engagement.total_assessments_completed,
+      totalCompletions: overviewData.engagement.total_activities_completed,
+      totalAttendance: 0,
+      avgSubmissionRate: overviewData.summary.avg_activity_completion,
+      avgCompletionRate: overviewData.summary.avg_activity_completion,
+      avgAttendanceRate: 0,
+      newSubmissions: 0,
+      trend: "up" as const,
+      trendPercentage: 0
+    };
+  }, [overviewData]);
+
+  // 2. Classes Data (Filtered by teacher_id)
+  const { data: classesData, isLoading: isLoadingClasses } = useCounsellorClasses(schoolId, { teacher_id: teacherId });
+  const teacherClasses = useMemo(() => {
+    return (classesData?.classes || []).map((cls: any): ClassEngagementSummary => ({
+      id: cls.class_id || cls.id,
+      name: cls.name,
+      grade: cls.grade,
+      section: cls.section || '',
+      teacherName: cls.teacherName || cls.teacher_name || 'N/A',
+      totalStudents: cls.totalStudents || cls.total_students || 0,
+      assessments: cls.assessments || { done: 0, total: 0, rate: 0 },
+      activities: cls.activities || { done: 0, total: 0, rate: 0 },
+      webinars: cls.webinars || { done: 0, total: 0, rate: 0 }
+    }));
+  }, [classesData]);
+
+  const filteredClasses = useMemo(() => {
+    return teacherClasses.filter((cls) => {
+      const matchesSearch = cls.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesGrade = gradeFilter === "all" || cls.grade === gradeFilter;
+      return matchesSearch && matchesGrade;
+    });
+  }, [searchQuery, gradeFilter, teacherClasses]);
+
+  // 3. Students Data (Filtered by teacher_id)
+  const { data: studentsData, isLoading: isLoadingStudents } = useCounsellorStudents(schoolId, { teacher_id: teacherId });
+  const allStudents = useMemo(() => {
+    return (studentsData?.students || []).map((s: any): StudentEngagementSummary => ({
+      id: s.student_id || s.id,
+      name: s.name,
+      classId: s.class_id || '',
+      className: s.className || s.class_name || '',
+      grade: s.grade || '',
+      section: s.section || '',
+      rollNumber: s.rollNumber || s.roll_number || '',
+      assessments: { 
+        done: s.assessments_completed || 0, 
+        total: s.assessments_total || 0, 
+        rate: s.assessments_total ? (s.assessments_completed / s.assessments_total * 100) : 0 
+      },
+      activities: { 
+        done: s.activities_completed || 0, 
+        total: s.activities_total || 0, 
+        rate: s.activities_total ? (s.activities_completed / s.activities_total * 100) : 0 
+      },
+      webinars: { 
+        done: s.webinars_attended || 0, 
+        total: s.webinars_total || 0, 
+        rate: s.webinars_total ? (s.webinars_attended / s.webinars_total * 100) : 0 
+      },
+      lastActive: s.last_active || new Date().toISOString()
+    }));
+  }, [studentsData]);
 
   // Filter students based on search and selected class
   const filteredStudents = useMemo(() => {
-    let students = mockStudentEngagement;
+    let students = allStudents;
     if (selectedClassId) {
-      const selectedClass = teacherClasses.find((c) => c.id === selectedClassId);
-      if (selectedClass) {
-        students = students.filter((s) => s.className === selectedClass.name);
-      }
-    } else {
-      // Show only students from teacher's classes
-      const teacherClassNames = teacherClasses.map((c) => c.name);
-      students = students.filter((s) => teacherClassNames.includes(s.className));
+      students = students.filter((s) => s.classId === selectedClassId);
     }
     if (searchQuery) {
       students = students.filter((s) =>
         s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.className.toLowerCase().includes(searchQuery.toLowerCase())
+        (s.className || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return students;
-  }, [searchQuery, selectedClassId]);
+  }, [searchQuery, selectedClassId, allStudents]);
+
+  // 4. Trends Data
+  const { data: trendsData, isLoading: isLoadingTrends } = useSchoolTrends(schoolId, daysFromPeriod(timePeriod), teacherId);
 
   // Calculate totals for teacher's classes
+  // IMPORTANT: This must come BEFORE any conditional returns to maintain hook order
   const teacherTotals = useMemo(() => {
     const totals = {
       totalStudents: 0,
@@ -191,15 +301,26 @@ export default function TeacherEngagementAnalyticsPage() {
       totals.webinars.done += cls.webinars.done;
       totals.webinars.total += cls.webinars.total;
     });
-    totals.assessments.rate = (totals.assessments.done / totals.assessments.total) * 100;
-    totals.activities.rate = (totals.activities.done / totals.activities.total) * 100;
-    totals.webinars.rate = (totals.webinars.done / totals.webinars.total) * 100;
+    totals.assessments.rate = totals.assessments.total > 0 ? (totals.assessments.done / totals.assessments.total) * 100 : 0;
+    totals.activities.rate = totals.activities.total > 0 ? (totals.activities.done / totals.activities.total) * 100 : 0;
+    totals.webinars.rate = totals.webinars.total > 0 ? (totals.webinars.done / totals.webinars.total) * 100 : 0;
     return totals;
-  }, []);
+  }, [teacherClasses]);
+
+  if (isLoadingOverview || isLoadingClasses || isLoadingStudents || isLoadingTrends) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-lg font-medium text-muted-foreground">Loading Your Analytics...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleClassSelect = (classId: string) => {
     setSelectedClassId(classId);
-    setViewLevel("student");
+    setViewLevel("class");
     setSearchQuery("");
   };
 
@@ -427,6 +548,7 @@ export default function TeacherEngagementAnalyticsPage() {
               onClassSelect={handleClassSelect}
               labels={labels}
               students={filteredStudents}
+              trendsData={trendsData}
             />
           )}
 
@@ -436,8 +558,9 @@ export default function TeacherEngagementAnalyticsPage() {
               teacherClasses={teacherClasses}
               selectedClassId={selectedClassId}
               onClassSelect={handleClassSelect}
-              labels={labels}
-            />
+            labels={labels}
+            onViewStudents={() => setViewLevel("student")}
+          />
           )}
 
           {viewLevel === "student" && (
@@ -467,6 +590,7 @@ function MyClassesView({
   onClassSelect,
   labels,
   students,
+  trendsData,
 }: {
   type: EngagementType;
   teacherClasses: ClassEngagementSummary[];
@@ -474,46 +598,72 @@ function MyClassesView({
   onClassSelect: (classId: string) => void;
   labels: { done: string; pending: string };
   students: StudentEngagementSummary[];
+  trendsData: any;
 }) {
+  const { user } = useAuth();
+  const schoolId = user?.school_id || '';
+  const teacherId = user?.id || '';
+
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedWebinarId, setSelectedWebinarId] = useState<string | null>(null);
   const [detailsSearchQuery, setDetailsSearchQuery] = useState("");
   const [detailsClassFilter, setDetailsClassFilter] = useState("all");
+
+  // Fetch real data for details table
+  const { data: assessmentsData } = useSchoolAssessments(schoolId, 30, undefined, teacherId);
+  const { data: activitiesData } = useSchoolActivities(schoolId, 30, undefined, teacherId);
+  const { data: webinarsData } = useSchoolWebinars(schoolId, 30, undefined, teacherId);
   
+  // Fetch detailed data when an item is selected
+  const { data: assessmentDetail } = useAssessmentDetails(schoolId, selectedAssessmentId || '');
+  const { data: activityDetail } = useActivityDetails(schoolId, selectedActivityId || '');
+  const { data: webinarDetail } = useWebinarDetails(schoolId, selectedWebinarId || '');
+
   // Show detailed assessment view if selected
   if (selectedAssessmentId && type === "assessments") {
-    const assessmentDetail = mockAssessmentDetailedViews[selectedAssessmentId];
-    if (assessmentDetail) {
-      return <TeacherAssessmentDetailView assessment={assessmentDetail} onBack={() => setSelectedAssessmentId(null)} />;
+    const detail = assessmentDetail || mockAssessmentDetailedViews[selectedAssessmentId];
+    if (detail) {
+      return <TeacherAssessmentDetailView assessment={detail} onBack={() => setSelectedAssessmentId(null)} />;
     }
   }
   
   // Show detailed activity view if selected
   if (selectedActivityId && type === "activities") {
-    const activityDetail = mockActivityDetailedViews[selectedActivityId];
-    if (activityDetail) {
-      return <TeacherActivityDetailView activity={activityDetail} onBack={() => setSelectedActivityId(null)} />;
+    const detail = activityDetail || mockActivityDetailedViews[selectedActivityId];
+    if (detail) {
+      return <TeacherActivityDetailView activity={detail} onBack={() => setSelectedActivityId(null)} />;
     }
   }
   
   // Show detailed webinar view if selected
   if (selectedWebinarId && type === "webinars") {
-    const webinarDetail = mockWebinarDetailedViews[selectedWebinarId];
-    if (webinarDetail) {
-      return <TeacherWebinarDetailView webinar={webinarDetail} onBack={() => setSelectedWebinarId(null)} />;
+    const detail = webinarDetail || mockWebinarDetailedViews[selectedWebinarId];
+    if (detail) {
+      return <TeacherWebinarDetailView webinar={detail} onBack={() => setSelectedWebinarId(null)} />;
     }
   }
   
   const engagementData = type === "assessments" ? teacherTotals.assessments :
     type === "activities" ? teacherTotals.activities : teacherTotals.webinars;
 
-  const pieData = [
+  // Debug logging
+  console.log('Teacher Classes:', teacherClasses);
+  console.log('Teacher Totals:', teacherTotals);
+  console.log('Engagement Data:', engagementData);
+  console.log('Trends Data:', trendsData);
+
+  // Pie chart data with fallback for empty data
+  const pieData = engagementData.total > 0 ? [
     { name: labels.done, value: engagementData.done, color: COLORS.success },
     { name: labels.pending, value: engagementData.total - engagementData.done, color: COLORS.warning },
+  ] : [
+    { name: labels.done, value: 0, color: COLORS.success },
+    { name: "No Data", value: 1, color: "#e5e7eb" },
   ];
 
-  const chartData = teacherClasses.map((cls) => {
+  // Bar chart data - use real data if available, otherwise show placeholder
+  const chartData = teacherClasses.length > 0 ? teacherClasses.map((cls) => {
     const data = type === "assessments" ? cls.assessments :
       type === "activities" ? cls.activities : cls.webinars;
     return {
@@ -521,23 +671,79 @@ function MyClassesView({
       rate: data.rate,
       fullName: cls.name,
     };
-  });
+  }) : [
+    { name: "No Classes", rate: 0, fullName: "No classes assigned" }
+  ];
 
-  // Trend Data Logic
-  const timePeriod = "30"; // Default or props if available
-  const trendData = type === "webinars" 
-    ? mockEngagementTrends.monthly 
-    : mockEngagementTrends.daily; // Defaulting to daily for now as per Counsellor logic fallback
+  console.log('Pie Data:', pieData);
+  console.log('Chart Data:', chartData);
 
-  const trendKey = type === "webinars" ? "month" : "date";
+  // Trend Data Logic - Aggregate by week for better visibility
+  const trendData = useMemo(() => {
+    let dailyData: any[] = [];
+    
+    if (!trendsData?.trends || trendsData.trends.length === 0) {
+      // Fallback to mock trends data
+      console.log('Using mock trends data - API returned empty');
+      dailyData = mockEngagementTrends.map((d: any) => ({
+        date: new Date(d.date),
+        assessments: d.assessments,
+        activities: d.activities,
+        webinars: d.webinars,
+      }));
+    } else {
+      // Map backend trends to expected format
+      dailyData = trendsData.trends.map((d: any) => ({
+        date: new Date(d.date),
+        assessments: d.assessments_completed || 0,
+        activities: d.activities_completed || 0,
+        webinars: d.webinars_attended || 0,
+      }));
+    }
 
-  // Details Table Logic
-  const details = type === "assessments" ? mockAssessmentDetails :
-    type === "activities" ? mockActivityDetails : mockWebinarDetails;
+    // Aggregate by week
+    const weeklyData = new Map<string, { assessments: number[], activities: number[], webinars: number[] }>();
+    
+    dailyData.forEach((item) => {
+      const weekKey = `Week ${format(item.date, "w")} (${format(item.date, "MMM d")})`;
+      
+      if (!weeklyData.has(weekKey)) {
+        weeklyData.set(weekKey, { assessments: [], activities: [], webinars: [] });
+      }
+      
+      const week = weeklyData.get(weekKey)!;
+      week.assessments.push(item.assessments);
+      week.activities.push(item.activities);
+      week.webinars.push(item.webinars);
+    });
+
+    // Calculate averages for each week
+    const aggregated = Array.from(weeklyData.entries()).map(([week, data]) => ({
+      week,
+      assessments: Math.round(data.assessments.reduce((a, b) => a + b, 0) / data.assessments.length),
+      activities: Math.round(data.activities.reduce((a, b) => a + b, 0) / data.activities.length),
+      webinars: Math.round(data.webinars.reduce((a, b) => a + b, 0) / data.webinars.length),
+    }));
+
+    console.log('Weekly aggregated trend data:', aggregated);
+    return aggregated;
+  }, [trendsData]);
+
+  const trendKey = "week";
+
+  // Details Table Logic - Use real API data with fallback to mock
+  const details = type === "assessments" 
+    ? (assessmentsData?.assessments || mockAssessmentDetails)
+    : type === "activities" 
+    ? (activitiesData?.activities || mockActivityDetails)
+    : (webinarsData?.webinars || mockWebinarDetails);
+
+  console.log('Details data:', details);
 
   // Filter details
   const filteredDetails = details.filter((item: any) => {
-    const matchesSearch = item.title.toLowerCase().includes(detailsSearchQuery.toLowerCase()) ||
+    const matchesSearch = item.title?.toLowerCase().includes(detailsSearchQuery.toLowerCase()) ||
+      (item.name && item.name.toLowerCase().includes(detailsSearchQuery.toLowerCase())) ||
       (item.type && item.type.toLowerCase().includes(detailsSearchQuery.toLowerCase())) ||
       (item.category && item.category.toLowerCase().includes(detailsSearchQuery.toLowerCase()));
     return matchesSearch;
@@ -660,9 +866,9 @@ function MyClassesView({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              {type === "webinars" ? "Monthly" : "Daily"} Trend
+              Weekly Trend
             </CardTitle>
-            <CardDescription>Engagement rate over time</CardDescription>
+            <CardDescription>Average weekly engagement across all classes</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
@@ -673,8 +879,16 @@ function MyClassesView({
             >
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey={trendKey} tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} domain={[0, 100]} />
+                <XAxis 
+                  dataKey={trendKey} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickMargin={8}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} domain={[0, 'auto']} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line
                   type="monotone"
@@ -775,10 +989,15 @@ function MyClassesView({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDetails.map((item: any) => {
-                // Approximate teacher-specific data from mock (since specific class data mapping is complex without backend)
-                // For now, we display global stats from mock to populate the UI structure
-                const rate = item.submissionRate || item.completionRate || item.attendanceRate || 0;
+              {filteredDetails.length > 0 ? filteredDetails.map((item: any) => {
+                // Handle both API and mock data field names
+                const title = item.title || item.name || 'Untitled';
+                const rate = item.submissionRate || item.completionRate || item.attendanceRate || 
+                             item.submission_rate || item.completion_rate || item.attendance_rate || 0;
+                const totalAssigned = item.totalStudentsAssigned || item.total_students_assigned || 
+                                     item.total_students || 0;
+                const itemType = item.type || item.category || item.date || 'N/A';
+                
                 return (
                   <TableRow 
                     key={item.id}
@@ -790,28 +1009,38 @@ function MyClassesView({
                     }}
                   >
                     <TableCell className="font-medium max-w-[200px]">
-                      <div className="truncate">{item.title}</div>
-                      {item.dueDate && item.dueDate !== "Ongoing" && (
-                        <div className="text-xs text-muted-foreground">Due: {item.dueDate}</div>
+                      <div className="truncate">{title}</div>
+                      {(item.dueDate || item.due_date) && item.dueDate !== "Ongoing" && (
+                        <div className="text-xs text-muted-foreground">
+                          Due: {item.dueDate || item.due_date}
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{item.type || item.category || item.date}</Badge>
+                      <Badge variant="outline">{itemType}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="font-semibold">{item.totalStudentsAssigned || 120}</span>
+                      <span className="font-semibold">{totalAssigned || 'N/A'}</span>
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={`font-bold ${rate >= 80 ? "text-green-500" : rate >= 60 ? "text-yellow-500" : "text-red-500"}`}>
-                        {rate.toFixed(0)}%
+                        {typeof rate === 'number' ? rate.toFixed(0) : 0}%
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                        <Badge variant={rate >= 50 ? "default" : "secondary"}>Active</Badge>
+                        <Badge variant={rate >= 50 ? "default" : "secondary"}>
+                          {item.status || 'Active'}
+                        </Badge>
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              }) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    No {type} found. {type === "assessments" ? "Create assessments" : type === "activities" ? "Create activities" : "Schedule webinars"} to see data here.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -1105,20 +1334,32 @@ function ClassDetailView({
   selectedClassId,
   onClassSelect,
   labels,
+  onViewStudents,
 }: {
   type: EngagementType;
   teacherClasses: ClassEngagementSummary[];
   selectedClassId: string | null;
   onClassSelect: (classId: string) => void;
   labels: { done: string; pending: string };
+  onViewStudents?: () => void;
 }) {
+  const { user } = useAuth();
+  const schoolId = user?.school_id || '';
+  const teacherId = user?.id || '';
+
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedWebinarId, setSelectedWebinarId] = useState<string | null>(null);
-  
+
+  // Real data hooks with class filter
+  const { data: assessmentsData, isLoading: isLoadingAssessments } = useSchoolAssessments(schoolId, 30, selectedClassId || undefined, teacherId);
+  const { data: activitiesData, isLoading: isLoadingActivities } = useSchoolActivities(schoolId, 30, selectedClassId || undefined, teacherId);
+  const { data: webinarsData, isLoading: isLoadingWebinars } = useSchoolWebinars(schoolId, 30, selectedClassId || undefined, teacherId);
+  const { data: trendsData, isLoading: isLoadingTrends } = useSchoolTrends(schoolId, 30, teacherId);
+
   // Show detailed assessment view if selected
   if (selectedAssessmentId && type === "assessments") {
-    const assessmentDetail = mockAssessmentDetailedViews[selectedAssessmentId];
+    const assessmentDetail = (assessmentsData?.assessments || []).find((a: any) => a.id === selectedAssessmentId);
     if (assessmentDetail) {
       return <TeacherAssessmentDetailView assessment={assessmentDetail} onBack={() => setSelectedAssessmentId(null)} />;
     }
@@ -1126,7 +1367,7 @@ function ClassDetailView({
   
   // Show detailed activity view if selected
   if (selectedActivityId && type === "activities") {
-    const activityDetail = mockActivityDetailedViews[selectedActivityId];
+    const activityDetail = (activitiesData?.activities || []).find((a: any) => a.id === selectedActivityId);
     if (activityDetail) {
       return <TeacherActivityDetailView activity={activityDetail} onBack={() => setSelectedActivityId(null)} />;
     }
@@ -1134,7 +1375,7 @@ function ClassDetailView({
   
   // Show detailed webinar view if selected
   if (selectedWebinarId && type === "webinars") {
-    const webinarDetail = mockWebinarDetailedViews[selectedWebinarId];
+    const webinarDetail = (webinarsData?.webinars || []).find((w: any) => w.id === selectedWebinarId);
     if (webinarDetail) {
       return <TeacherWebinarDetailView webinar={webinarDetail} onBack={() => setSelectedWebinarId(null)} />;
     }
@@ -1192,7 +1433,26 @@ function ClassDetailView({
     type === "activities" ? selectedClass.activities : selectedClass.webinars;
   const completed = data.done;
 
-  const trendData = mockEngagementTrends.weekly;
+  const trendData = (trendsData?.trends || []).map((d: any) => ({
+    date: format(new Date(d.date), "MMM d"),
+    assessments: d.assessments_completed,
+    activities: d.activities_completed,
+    webinars: d.webinars_attended || 0,
+    month: format(new Date(d.date), "MMM"),
+    week: `W${format(new Date(d.date), "w")}`
+  }));
+
+  if (isLoadingAssessments || isLoadingActivities || isLoadingWebinars || isLoadingTrends) {
+    return (
+      <div className="flex h-[300px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const tableData = type === "assessments" ? (assessmentsData?.assessments || []) :
+                    type === "activities" ? (activitiesData?.activities || []) :
+                    (webinarsData?.webinars || []);
 
   return (
     <div className="space-y-6">
@@ -1200,7 +1460,7 @@ function ClassDetailView({
       <Card className="bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-teal-500/10 border-2">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">
                 {selectedClass.grade}{selectedClass.section}
               </div>
@@ -1208,12 +1468,56 @@ function ClassDetailView({
                 <h2 className="text-2xl font-bold">{selectedClass.name}</h2>
                 <div className="flex items-center gap-3 mt-1">
                   <Badge variant="secondary">{selectedClass.totalStudents} students</Badge>
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="h-auto p-0 text-primary font-semibold flex items-center gap-1"
+                    onClick={onViewStudents}
+                  >
+                    View Student Results <ChevronRight className="w-3 h-3" />
+                  </Button>
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-4xl font-bold text-primary">{data.rate.toFixed(1)}%</p>
-              <p className="text-sm text-muted-foreground">Completion Rate</p>
+
+            <div className="flex items-center gap-8">
+                {/* Stats Text */}
+                <div className="text-right">
+                  <div className="flex items-baseline justify-end gap-2">
+                     <p className="text-4xl font-bold text-primary">{data.rate.toFixed(1)}%</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Completion Rate</p>
+                </div>
+
+                {/* Pie Chart */}
+                <div className="h-[80px] w-[80px] relative">
+                   <ChartContainer
+                      config={{
+                        done: { label: labels.done, color: COLORS.success },
+                        pending: { label: labels.pending, color: COLORS.warning },
+                      } satisfies ChartConfig}
+                      className="h-full w-full"
+                    >
+                      <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Pie
+                          data={[
+                            { name: labels.done, value: completed, color: COLORS.success },
+                            { name: labels.pending, value: Math.max(0, data.total - completed), color: COLORS.warning },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={20}
+                          outerRadius={35}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                           <Cell key="cell-done" fill={COLORS.success} />
+                           <Cell key="cell-pending" fill={COLORS.warning} />
+                        </Pie>
+                      </PieChart>
+                    </ChartContainer>
+                </div>
             </div>
           </div>
         </CardContent>
@@ -1229,7 +1533,7 @@ function ClassDetailView({
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-3xl font-bold text-yellow-500">{data.total - completed}</p>
+            <p className="text-3xl font-bold text-yellow-500">{Math.max(0, data.total - completed)}</p>
             <p className="text-sm text-muted-foreground">{labels.pending}</p>
           </CardContent>
         </Card>
@@ -1246,7 +1550,7 @@ function ClassDetailView({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            {type === "webinars" ? "Monthly" : "Weekly"} Progress
+            Trend Progress
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1256,9 +1560,9 @@ function ClassDetailView({
             } satisfies ChartConfig}
             className="h-[250px]"
           >
-            <LineChart data={type === "webinars" ? mockEngagementTrends.monthly : mockEngagementTrends.weekly}>
+            <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey={type === "webinars" ? "month" : "week"} tickLine={false} axisLine={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} />
               <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
@@ -1277,6 +1581,7 @@ function ClassDetailView({
       <ItemDetailsTable 
         type={type} 
         labels={labels} 
+        data={tableData}
         onAssessmentSelect={setSelectedAssessmentId}
         onActivitySelect={setSelectedActivityId}
         onWebinarSelect={setSelectedWebinarId}
@@ -1289,27 +1594,22 @@ function ClassDetailView({
 function ItemDetailsTable({ 
   type, 
   labels,
+  data,
   onAssessmentSelect,
   onActivitySelect,
   onWebinarSelect,
 }: { 
   type: EngagementType; 
   labels: { done: string; pending: string };
+  data: any[];
   onAssessmentSelect?: (id: string) => void;
   onActivitySelect?: (id: string) => void;
   onWebinarSelect?: (id: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [classFilter, setClassFilter] = useState("all");
   
-  const details = type === "assessments" ? mockAssessmentDetails :
-    type === "activities" ? mockActivityDetails : mockWebinarDetails;
-
-  // Get unique classes for filter
-  const uniqueClasses = [...new Set(mockClassEngagement.map(c => c.name))].sort();
-  
-  // Filter details based on search
-  const filteredDetails = details.filter((item: any) => {
+  // Filter data based on search
+  const filteredData = (data || []).filter((item: any) => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.type && item.type.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -1339,17 +1639,6 @@ function ItemDetailsTable({
                 className="pl-10"
               />
             </div>
-            <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Classes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Classes</SelectItem>
-                {uniqueClasses.map((cls) => (
-                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </CardHeader>
@@ -1365,10 +1654,10 @@ function ItemDetailsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredDetails.map((item: any) => {
-              const studentsCompleted = item.studentsSubmitted || item.studentsCompleted || item.studentsAttended;
-              const totalStudents = item.totalStudentsAssigned || item.totalStudentsInvited;
-              const rate = item.submissionRate || item.completionRate || item.attendanceRate;
+            {filteredData.map((item: any) => {
+              const studentsCompleted = item.studentsSubmitted || item.studentsCompleted || item.studentsAttended || 0;
+              const totalStudents = item.totalStudentsAssigned || item.totalStudentsInvited || 1;
+              const rate = item.submissionRate || item.completionRate || item.attendanceRate || 0;
               return (
                 <TableRow 
                   key={item.id}
@@ -1381,7 +1670,7 @@ function ItemDetailsTable({
                 >
                   <TableCell className="font-medium">{item.title}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{item.type || item.category || item.date}</Badge>
+                    <Badge variant="outline">{item.type || item.category || (item.date ? format(new Date(item.date), "MMM d, yyyy") : "N/A")}</Badge>
                   </TableCell>
                   <TableCell className="text-center">{totalStudents}</TableCell>
                   <TableCell className="text-center">
@@ -1395,7 +1684,7 @@ function ItemDetailsTable({
                 </TableRow>
               );
             })}
-            {filteredDetails.length === 0 && (
+            {filteredData.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No {type} found matching your search
@@ -3282,6 +3571,7 @@ function TeacherWebinarDetailView({
             <span>⏱️ {webinar.duration} mins</span>
             <span>👤 {webinar.presenter} ({webinar.presenterRole})</span>
           </div>
+
         </div>
         <CardContent className="pt-4">
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
@@ -3404,3 +3694,4 @@ function TeacherWebinarDetailView({
     </div>
   );
 }
+

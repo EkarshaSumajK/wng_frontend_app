@@ -34,6 +34,7 @@ export interface ClassEngagementSummary {
 export interface StudentEngagementSummary {
   id: string;
   name: string;
+  classId: string;
   className: string;
   grade: string;
   section: string;
@@ -203,6 +204,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-1",
     name: "Emma Thompson",
+    classId: "class-1",
     className: "Grade 6 - Section A",
     grade: "6",
     section: "A",
@@ -215,6 +217,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-2",
     name: "Liam Anderson",
+    classId: "class-1",
     className: "Grade 6 - Section A",
     grade: "6",
     section: "A",
@@ -227,6 +230,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-3",
     name: "Sophia Martinez",
+    classId: "class-1",
     className: "Grade 6 - Section A",
     grade: "6",
     section: "A",
@@ -239,6 +243,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-4",
     name: "Noah Williams",
+    classId: "class-2",
     className: "Grade 6 - Section B",
     grade: "6",
     section: "B",
@@ -251,6 +256,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-5",
     name: "Olivia Johnson",
+    classId: "class-3",
     className: "Grade 7 - Section A",
     grade: "7",
     section: "A",
@@ -263,6 +269,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-6",
     name: "Ethan Brown",
+    classId: "class-3",
     className: "Grade 7 - Section A",
     grade: "7",
     section: "A",
@@ -275,6 +282,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-7",
     name: "Ava Davis",
+    classId: "class-4",
     className: "Grade 7 - Section B",
     grade: "7",
     section: "B",
@@ -287,6 +295,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-8",
     name: "Mason Garcia",
+    classId: "class-5",
     className: "Grade 8 - Section A",
     grade: "8",
     section: "A",
@@ -299,6 +308,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-9",
     name: "Isabella Wilson",
+    classId: "class-5",
     className: "Grade 8 - Section A",
     grade: "8",
     section: "A",
@@ -311,6 +321,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-10",
     name: "James Taylor",
+    classId: "class-6",
     className: "Grade 8 - Section B",
     grade: "8",
     section: "B",
@@ -323,6 +334,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-11",
     name: "Liam Anderson",
+    classId: "class-1",
     className: "Grade 6 - Section A",
     grade: "6",
     section: "A",
@@ -335,6 +347,7 @@ export const mockStudentEngagement: StudentEngagementSummary[] = [
   {
     id: "student-12",
     name: "Charlotte Thomas",
+    classId: "class-4",
     className: "Grade 7 - Section B",
     grade: "7",
     section: "B",

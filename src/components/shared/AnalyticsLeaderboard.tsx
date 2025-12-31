@@ -59,6 +59,10 @@ interface AnalyticsLeaderboardProps {
   title?: string;
   description?: string;
   isLoading?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  totalStudents?: number;
 }
 
 export function AnalyticsLeaderboard({
@@ -66,6 +70,10 @@ export function AnalyticsLeaderboard({
   title = "Student Leaderboard",
   description = "Rankings based on overall performance and engagement",
   isLoading = false,
+  currentPage,
+  totalPages: externalTotalPages,
+  onPageChange,
+  totalStudents,
 }: AnalyticsLeaderboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [classFilter, setClassFilter] = useState("all");
@@ -74,7 +82,7 @@ export function AnalyticsLeaderboard({
   const [sortConfig, setSortConfig] = useState<{
     key: "rank" | "name" | "streak" | "score";
     direction: "asc" | "desc";
-  }>({  key: "score", direction: "desc" });
+  }>({  key: "rank", direction: "asc" }); // Default to Rank ASC (1, 2, 3...)
 
   // Get unique classes for filter
   const uniqueClasses = useMemo(() => {
@@ -82,9 +90,21 @@ export function AnalyticsLeaderboard({
     return Array.from(classes).sort();
   }, [students]);
 
+  const isServerSide = currentPage !== undefined && onPageChange !== undefined;
+
+  // Pre-calculate ranks based on the incoming sorted order (which is by score from backend)
+  // This ensures that when we sort by name/etc on client, the original "Performance Rank" persists.
+  const rankedStudents = useMemo(() => {
+    return students.map((s, i) => ({
+      ...s,
+      // Fixed rank based on position in the global list
+      calculatedRank: (isServerSide ? ((currentPage || 1) - 1) * itemsPerPage : 0) + i + 1
+    }));
+  }, [students, isServerSide, currentPage, itemsPerPage]);
+
   // Filter and Sort Logic
   const processedData = useMemo(() => {
-    let filtered = [...students];
+    let filtered = [...rankedStudents];
 
     // 1. Search
     if (searchQuery) {
@@ -100,8 +120,9 @@ export function AnalyticsLeaderboard({
 
     // 3. Sort
     filtered.sort((a, b) => {
-      const aValue = a[sortConfig.key === "rank" ? "score" : sortConfig.key] ?? 0; // Rank is inverse of score usually
-      const bValue = b[sortConfig.key === "rank" ? "score" : sortConfig.key] ?? 0;
+      // Use calculatedRank for 'rank' or 'score' sorting as they are correlated
+      const aValue = sortConfig.key === "rank" ? a.calculatedRank : (a[sortConfig.key === "streak" ? "score" : sortConfig.key] ?? 0);
+      const bValue = sortConfig.key === "rank" ? b.calculatedRank : (b[sortConfig.key === "streak" ? "score" : sortConfig.key] ?? 0);
 
       if (sortConfig.key === "name") {
         return sortConfig.direction === "asc"
@@ -109,31 +130,28 @@ export function AnalyticsLeaderboard({
           : b.name.localeCompare(a.name);
       }
       
-      // For Rank: High score = Low rank number (1st, 2nd...)
-      // But if we sort by 'rank' directly (if provided), we assume 1 is better. 
-      // If we sort by 'score', higher is better (desc default).
-      
       if (typeof aValue === 'number' && typeof bValue === 'number') {
+           // If sorting by Rank directly: Asc = 1, 2, 3 (Best first). Desc = 10, 9...
+           // If sorting by Score: Desc = 100, 99 (Best first). Asc = 0, 1...
+           if (sortConfig.key === "rank") {
+               return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
+           }
           return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
       }
       return 0;
     });
     
-    // Assign Ranks dynamically after sort (if sorting by score)
-    // Only if currently sorting by score descending
-    if (sortConfig.key === "score" && sortConfig.direction === "desc") {
-        return filtered.map((item, index) => ({
-            ...item,
-            calculatedRank: index + 1
-        }));
-    }
-    
-    return filtered.map((item) => ({ ...item, calculatedRank: item.rank || 0}));
-  }, [students, searchQuery, classFilter, sortConfig]);
+    return filtered;
+  }, [rankedStudents, searchQuery, classFilter, sortConfig]);
 
-  // Pagination
-  const totalPages = Math.ceil(processedData.length / itemsPerPage);
-  const paginatedData = processedData.slice(
+  // Pagination Logic
+  // If external pagination is provided, use it. Otherwise, use internal state.
+  
+  const totalPages = isServerSide ? (externalTotalPages || 1) : Math.ceil(processedData.length / itemsPerPage);
+  
+  // If server-side, we just show 'processedData' (which should be the current page)
+  // If client-side, we slice 'processedData'
+  const paginatedData = isServerSide ? processedData : processedData.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
@@ -220,7 +238,7 @@ export function AnalyticsLeaderboard({
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="w-[80px] text-center cursor-pointer" onClick={() => handleSort("score")}>
+                <TableHead className="w-[80px] text-center cursor-pointer" onClick={() => handleSort("rank")}>
                    <div className="flex items-center justify-center gap-1">
                      Rank <ArrowUpDown className="w-3 h-3" />
                    </div>
@@ -294,27 +312,32 @@ export function AnalyticsLeaderboard({
           </Table>
         </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
+         {/* Pagination Controls */}
+         {totalPages > 1 && (
             <div className="mt-4">
                <Pagination>
                 <PaginationContent>
                     <PaginationItem>
                     <PaginationPrevious 
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        onClick={() => {
+                            const newPage = isServerSide ? Math.max(1, (currentPage || 1) - 1) : Math.max(1, page - 1);
+                            if (isServerSide && onPageChange) onPageChange(newPage);
+                            else setPage(newPage);
+                        }}
+                        className={(isServerSide ? currentPage : page) === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                     />
                     </PaginationItem>
                     
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                       const activePage = isServerSide ? currentPage : page;
                        // Simple logic for small number of pages, can be enhanced for large datasets
                        if (
                            totalPages > 7 && 
-                           (pageNum < page - 1 || pageNum > page + 1) && 
+                           (pageNum < (activePage || 1) - 1 || pageNum > (activePage || 1) + 1) && 
                            pageNum !== 1 && 
                            pageNum !== totalPages
                        ) {
-                           if (pageNum === page - 2 || pageNum === page + 2) {
+                           if (pageNum === (activePage || 1) - 2 || pageNum === (activePage || 1) + 2) {
                                return (
                                    <PaginationItem key={pageNum}>
                                        <PaginationEllipsis />
@@ -327,8 +350,11 @@ export function AnalyticsLeaderboard({
                        return (
                         <PaginationItem key={pageNum}>
                             <PaginationLink 
-                                isActive={pageNum === page}
-                                onClick={() => setPage(pageNum)}
+                                isActive={pageNum === activePage}
+                                onClick={() => {
+                                    if (isServerSide && onPageChange) onPageChange(pageNum);
+                                    else setPage(pageNum);
+                                }}
                                 className="cursor-pointer"
                             >
                             {pageNum}
@@ -339,14 +365,24 @@ export function AnalyticsLeaderboard({
 
                     <PaginationItem>
                     <PaginationNext 
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        onClick={() => {
+                            const newPage = isServerSide ? Math.min(totalPages, (currentPage || 1) + 1) : Math.min(totalPages, page + 1);
+                             if (isServerSide && onPageChange) onPageChange(newPage);
+                             else setPage(newPage);
+                        }}
+                        className={(isServerSide ? currentPage : page) === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                     />
                     </PaginationItem>
                 </PaginationContent>
                </Pagination>
                <div className="text-center text-xs text-muted-foreground mt-2">
-                    Showing {(page - 1) * itemsPerPage + 1} to {Math.min(page * itemsPerPage, processedData.length)} of {processedData.length} students
+                    Showing {isServerSide ? 
+                        ((currentPage || 1) - 1) * itemsPerPage + 1 : 
+                        (page - 1) * itemsPerPage + 1
+                    } to {isServerSide ? 
+                        Math.min((currentPage || 1) * itemsPerPage, totalStudents || 0) : 
+                        Math.min(page * itemsPerPage, processedData.length)
+                    } of {isServerSide ? (totalStudents || 0) : processedData.length} students
                </div>
             </div>
         )}
